@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espiral Op Art Sinestésico</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            height: 100%;
+            width: 100%;
+        }
+        canvas {
+            display: block;
+        }
+        #audio-control {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff99;
+            border: 1px solid #00ff99;
+            padding: 10px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #audio-control:hover {
+            background: #00ff99;
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="spiralCanvas"></canvas>
+    <button id="audio-control">Iniciar Sonido</button>
+
+    <script>
+        const canvas = document.getElementById('spiralCanvas');
+        const ctx = canvas.getContext('2d');
+        const audioControlBtn = document.getElementById('audio-control');
+
+        let width, height;
+        let time = 0;
+        let opArtFactor = 0;
+        let currentParams = {};
+        let targetParams = {};
+        let backgroundParticles = [];
+        const NUM_BACKGROUND_PARTICLES = 700;
+        const INTERPOLATION_SPEED = 0.005;
+        const PHASE_DURATION = 10;
+
+        // --- Audio Context and Nodes ---
+        let audioCtx;
+        let oscillator1, oscillator2, gainNode, lfo, filterNode, filterLFO, filterLFOGain;
+        // New audio nodes for percussion and bass
+        let drumOsc, drumGain;
+        let bassOsc, bassFilter, bassGain;
+        let isPlaying = false;
+
+        // For simple sequencing
+        let lastBeatTime = 0;
+        const BEAT_INTERVAL = 2; // seconds per beat
+
+        function initAudio() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Main Oscillators for the drone (Binaural Beats)
+            oscillator1 = audioCtx.createOscillator();
+            oscillator1.type = 'sine';
+            oscillator1.frequency.setValueAtTime(432, audioCtx.currentTime); // Base frequency
+
+            oscillator2 = audioCtx.createOscillator();
+            oscillator2.type = 'sine';
+            oscillator2.frequency.setValueAtTime(436, audioCtx.currentTime); // Base + 4Hz for binaural beat
+
+            // Low-pass filter for mantra-like timbre
+            filterNode = audioCtx.createBiquadFilter();
+            filterNode.type = 'lowpass';
+            filterNode.frequency.setValueAtTime(2000, audioCtx.currentTime); // Initial cutoff frequency
+            filterNode.Q.setValueAtTime(1, audioCtx.currentTime); // Resonance
+
+            // Gain node for volume control
+            gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime); // Initial volume
+
+            // LFO for subtle volume modulation (breathing effect)
+            lfo = audioCtx.createOscillator();
+            lfo.type = 'sine';
+            lfo.frequency.setValueAtTime(0.1, audioCtx.currentTime); // Very slow modulation (0.1 Hz)
+
+            // LFO for filter frequency modulation (subtle timbre movement)
+            filterLFO = audioCtx.createOscillator();
+            filterLFO.type = 'sine';
+            filterLFO.frequency.setValueAtTime(0.05, audioCtx.currentTime); // Even slower modulation
+
+            filterLFOGain = audioCtx.createGain();
+            filterLFOGain.gain.setValueAtTime(1000, audioCtx.currentTime); // Modulation depth for filter frequency
+
+            // --- New: Percussion (Tambor) ---
+            drumOsc = audioCtx.createOscillator();
+            drumOsc.type = 'sine'; // Simple sine wave for a soft thump
+            drumOsc.frequency.setValueAtTime(60, audioCtx.currentTime); // Low frequency for drum
+            drumGain = audioCtx.createGain();
+            drumGain.gain.setValueAtTime(0, audioCtx.currentTime); // Start silent
+
+            // --- New: Bass/Didgeridoo ---
+            bassOsc = audioCtx.createOscillator();
+            bassOsc.type = 'sawtooth'; // Sawtooth for richer harmonics
+            bassOsc.frequency.setValueAtTime(40, audioCtx.currentTime); // Very low frequency
+            bassFilter = audioCtx.createBiquadFilter();
+            bassFilter.type = 'lowpass';
+            bassFilter.frequency.setValueAtTime(200, audioCtx.currentTime); // Initial bass filter cutoff
+            bassFilter.Q.setValueAtTime(5, audioCtx.currentTime); // Resonance for didgeridoo-like effect
+            bassGain = audioCtx.createGain();
+            bassGain.gain.setValueAtTime(0.03, audioCtx.currentTime); // Subtle bass volume
+
+            // Connect LFO to gain node's gain parameter
+            lfo.connect(gainNode.gain);
+
+            // Connect filter LFO to filter frequency via gain
+            filterLFO.connect(filterLFOGain);
+            filterLFOGain.connect(filterNode.frequency);
+
+            // Connect oscillators to filter, then filter to gainNode, and gain node to destination
+            oscillator1.connect(filterNode);
+            oscillator2.connect(filterNode);
+            filterNode.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            // Connect drum
+            drumOsc.connect(drumGain);
+            drumGain.connect(audioCtx.destination);
+
+            // Connect bass
+            bassOsc.connect(bassFilter);
+            bassFilter.connect(bassGain);
+            bassGain.connect(audioCtx.destination);
+
+            oscillator1.start();
+            oscillator2.start();
+            lfo.start();
+            filterLFO.start();
+            drumOsc.start();
+            bassOsc.start();
+        }
+
+        function playDrum() {
+            if (!isPlaying || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            drumGain.gain.cancelScheduledValues(now);
+            drumGain.gain.setValueAtTime(0.2, now); // Attack
+            drumGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5); // Decay
+        }
+
+        function toggleAudio() {
+            if (!audioCtx) {
+                initAudio();
+            }
+
+            if (isPlaying) {
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1); // Fade out drone
+                drumGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5); // Fade out drum
+                bassGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1); // Fade out bass
+
+                setTimeout(() => {
+                    audioCtx.suspend();
+                    audioControlBtn.textContent = 'Iniciar Sonido';
+                }, 1000);
+            } else {
+                audioCtx.resume();
+                gainNode.gain.exponentialRampToValueAtTime(0.05, audioCtx.currentTime + 1); // Fade in drone
+                bassGain.gain.exponentialRampToValueAtTime(0.03, audioCtx.currentTime + 1); // Fade in bass
+                audioControlBtn.textContent = 'Detener Sonido';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        audioControlBtn.addEventListener('click', toggleAudio);
+
+        // --- Visuals Code ---
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initBackground();
+        }
+
+        window.addEventListener('resize', resize);
+        
+        function initBackground() {
+            backgroundParticles = [];
+            for (let i = 0; i < NUM_BACKGROUND_PARTICLES; i++) {
+                backgroundParticles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    speed: 0.1 + Math.random() * 0.4,
+                    size: 0.5 + Math.random() * 1.5,
+                    opacity: 0.05 + Math.random() * 0.15
+                });
+            }
+        }
+
+        function generateRandomParams() {
+            return {
+                arms: 3 + Math.floor(Math.random() * 10),
+                frequency: 0.01 + Math.random() * 0.04,
+                amplitude: 0.2 + Math.random() * 0.8,
+                spin: (Math.random() - 0.5) * 0.02,
+                density: 300 + Math.random() * 400
+            };
+        }
+
+        function setupNewTargetPhase() {
+            targetParams = generateRandomParams();
+        }
+
+        function interpolateParams() {
+            for (const key in targetParams) {
+                if (typeof targetParams[key] === 'number') {
+                    currentParams[key] += (targetParams[key] - currentParams[key]) * INTERPOLATION_SPEED;
+                }
+            }
+        }
+
+        function draw() {
+            time += 0.01;
+            opArtFactor = Math.min(1, opArtFactor + 0.00005);
+
+            // Audio-visual reaction: modulate filter frequency based on opArtFactor
+            if (isPlaying && filterNode) {
+                const minFilterFreq = 500;
+                const maxFilterFreq = 5000;
+                const currentFilterFreq = minFilterFreq + (maxFilterFreq - minFilterFreq) * opArtFactor;
+                filterNode.frequency.linearRampToValueAtTime(currentFilterFreq, audioCtx.currentTime + 0.1);
+            }
+
+            // New: Trigger drum beat
+            if (isPlaying && audioCtx && audioCtx.currentTime >= lastBeatTime + BEAT_INTERVAL) {
+                playDrum();
+                lastBeatTime = audioCtx.currentTime;
+            }
+
+            // New: Subtle bass modulation
+            if (isPlaying && bassFilter) {
+                const bassFreqMod = 1 + Math.sin(time * 0.5) * 0.1; // Subtle pitch wobble
+                bassOsc.frequency.linearRampToValueAtTime(40 * bassFreqMod, audioCtx.currentTime + 0.1);
+
+                const bassFilterMod = 1 + Math.cos(time * 0.3) * 0.5; // Subtle filter wobble
+                bassFilter.frequency.linearRampToValueAtTime(200 * bassFilterMod, audioCtx.currentTime + 0.1);
+            }
+
+
+            if (time % PHASE_DURATION < 0.01) {
+                setupNewTargetPhase();
+            }
+            interpolateParams();
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            backgroundParticles.forEach(p => {
+                p.y += p.speed;
+                if (p.y > height) {
+                    p.y = 0;
+                    p.x = Math.random() * width;
+                }
+                ctx.fillStyle = `rgba(150, 150, 150, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            for (let i = 0; i < currentParams.density; i++) {
+                for (let j = 0; j < currentParams.arms; j++) {
+                    const angle = i * currentParams.frequency + (Math.PI * 2 * j) / currentParams.arms + time * currentParams.spin;
+                    const radius = i * (1 + Math.sin(i * 0.01 + time) * currentParams.amplitude);
+
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+
+                    const saturation = 100 * (1 - opArtFactor);
+                    const lightness = 50 + 20 * Math.sin(i * 0.1 + time);
+                    let hue = (time * 10 + angle * 20) % 360;
+                    let color;
+
+                    if (opArtFactor > 0.5) {
+                        const cycle = Math.sin(i * 0.1 + angle + time * 5);
+                        color = cycle > (opArtFactor - 0.5) * 2 - 1 ? '#FFFFFF' : '#000000';
+                    } else {
+                        color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    }
+
+                    ctx.fillStyle = color;
+                    
+                    const dotSize = 1 + Math.abs(Math.cos(angle * 4 + time)) * (1 + opArtFactor * 4);
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        resize();
+        currentParams = generateRandomParams();
+        setupNewTargetPhase();
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Partículas: Caos y Complejidad</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            height: 100%;
+            width: 100%;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="chaosCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('chaosCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+        const numParticles = 500;
+        let hue = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        // Atractor extraño (Clifford Attractor) para el movimiento caótico
+        const a = -1.4, b = 1.6, c = 1.0, d = 0.7;
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.px = x;
+                this.py = y;
+                this.color = `hsl(${hue}, 100%, 50%)`;
+            }
+
+            update() {
+                this.px = this.x;
+                this.py = this.y;
+
+                // Ecuaciones del atractor de Clifford
+                const nextX = Math.sin(a * this.py) + c * Math.cos(a * this.px);
+                const nextY = Math.sin(b * this.px) + d * Math.cos(b * this.py);
+
+                // Escalamos y centramos el atractor en la pantalla
+                this.x = (nextX * width / 4) + width / 2;
+                this.y = (nextY * height / 4) + height / 2;
+
+                this.color = `hsl(${hue % 360}, 100%, 70%)`;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.moveTo(this.px, this.py);
+                ctx.lineTo(this.x, this.y);
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 0.5;
+                ctx.stroke();
+            }
+        }
+
+        function init() {
+            particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                // Inicializamos las partículas en posiciones ligeramente diferentes
+                // para que sigan trayectorias distintas (sensibilidad a las condiciones iniciales)
+                particles.push(new Particle(Math.random() - 0.5, Math.random() - 0.5));
+            }
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function animate() {
+            // Fondo con estela para un efecto visual más orgánico
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, width, height);
+
+            hue += 0.1;
+
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        init();
+        animate();
+
+        // Reinicia la simulación al hacer clic, mostrando la sensibilidad a las condiciones iniciales
+        canvas.addEventListener('click', () => {
+            // Cambiamos los parámetros del atractor para una nueva estructura caótica
+            a = -2.0 + Math.random() * 2;
+            b = 1.0 + Math.random() * 1.5;
+            c = 1.0 + Math.random() * 1.0;
+            d = 0.5 + Math.random() * 1.0;
+            init();
+        });
+
+    </script>
+</body>
+</html>

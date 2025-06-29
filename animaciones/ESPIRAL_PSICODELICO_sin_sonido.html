@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espiral Op Art Sutil</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+            height: 100%;
+            width: 100%;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="spiralCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('spiralCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let time = 0;
+        let opArtFactor = 0;
+        let currentParams = {};
+        let targetParams = {};
+        let backgroundParticles = [];
+        const NUM_BACKGROUND_PARTICLES = 700;
+        const INTERPOLATION_SPEED = 0.005; // Velocidad de la transición sutil
+        const PHASE_DURATION = 10; // Duración de cada fase en segundos
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            initBackground();
+        }
+
+        window.addEventListener('resize', resize);
+        
+        function initBackground() {
+            backgroundParticles = [];
+            for (let i = 0; i < NUM_BACKGROUND_PARTICLES; i++) {
+                backgroundParticles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    speed: 0.1 + Math.random() * 0.4,
+                    size: 0.5 + Math.random() * 1.5,
+                    opacity: 0.05 + Math.random() * 0.15
+                });
+            }
+        }
+
+        function generateRandomParams() {
+            return {
+                arms: 3 + Math.floor(Math.random() * 10),
+                frequency: 0.01 + Math.random() * 0.04,
+                amplitude: 0.2 + Math.random() * 0.8,
+                spin: (Math.random() - 0.5) * 0.02,
+                density: 300 + Math.random() * 400
+            };
+        }
+
+        function setupNewTargetPhase() {
+            targetParams = generateRandomParams();
+        }
+
+        function interpolateParams() {
+            for (const key in targetParams) {
+                if (typeof targetParams[key] === 'number') {
+                    currentParams[key] += (targetParams[key] - currentParams[key]) * INTERPOLATION_SPEED;
+                }
+            }
+        }
+
+        function draw() {
+            time += 0.01;
+            opArtFactor = Math.min(1, opArtFactor + 0.00005);
+
+            // Transición sutil entre fases
+            if (time % PHASE_DURATION < 0.01) { // Cuando el tiempo se acerca a un múltiplo de PHASE_DURATION
+                setupNewTargetPhase();
+            }
+            interpolateParams();
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            // 1. DIBUJAR CAPA DE FONDO (ATMÓSFERA)
+            backgroundParticles.forEach(p => {
+                p.y += p.speed;
+                if (p.y > height) {
+                    p.y = 0;
+                    p.x = Math.random() * width;
+                }
+                ctx.fillStyle = `rgba(150, 150, 150, ${p.opacity})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 2. DIBUJAR CAPA PRINCIPAL (ESPIRAL)
+            const centerX = width / 2;
+            const centerY = height / 2;
+
+            for (let i = 0; i < currentParams.density; i++) {
+                for (let j = 0; j < currentParams.arms; j++) {
+                    const angle = i * currentParams.frequency + (Math.PI * 2 * j) / currentParams.arms + time * currentParams.spin;
+                    const radius = i * (1 + Math.sin(i * 0.01 + time) * currentParams.amplitude);
+
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+
+                    const saturation = 100 * (1 - opArtFactor);
+                    const lightness = 50 + 20 * Math.sin(i * 0.1 + time);
+                    let hue = (time * 10 + angle * 20) % 360;
+                    let color;
+
+                    if (opArtFactor > 0.5) {
+                        const cycle = Math.sin(i * 0.1 + angle + time * 5);
+                        color = cycle > (opArtFactor - 0.5) * 2 - 1 ? '#FFFFFF' : '#000000';
+                    } else {
+                        color = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+                    }
+
+                    ctx.fillStyle = color;
+                    
+                    const dotSize = 1 + Math.abs(Math.cos(angle * 4 + time)) * (1 + opArtFactor * 4);
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, dotSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        resize();
+        currentParams = generateRandomParams(); // Inicializa los parámetros actuales
+        setupNewTargetPhase(); // Define los primeros parámetros objetivo
+        draw();
+    </script>
+</body>
+</html>

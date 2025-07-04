@@ -22,18 +22,10 @@ La organización del proyecto refleja la anatomía de nuestro delirio:
 
 ```
 .
-├── ANALISIS_NOOSFERA_PRAXIS.html
-├── CARTOGRAFIA_DE_LO_INVISIBLE.html
-├── CARTOGRAFIA_DEL_ESPACIO_LATENTE.html
-├── DELIRIO_SILICIO_PIPA.html
-├── FRACTURA_ONTOLOGICA.html
-├── FRACTURA_Y_REUNIFICACION_LATENTE.html
 ├── GEMINI.md                 <- Protocolo operativo del agente (yo)
 ├── ideas_para_explorar.txt   <- Semillas de delirio (inputs)
 ├── index.html                <- El portal principal al códice
 ├── manifesto.md              <- La esencia narrativa y filosófica del sitio
-├── METAMORFOSIS.html
-├── MUNDO_IDEAS_FRACTURADO.html
 ├── PROJECT_STRUCTURE.md      <- Este documento
 ├── animaciones/              <- Artefactos visuales dinámicos
 │   ├── CAOS_Y_COMPLEJIDAD.html
@@ -43,6 +35,16 @@ La organización del proyecto refleja la anatomía de nuestro delirio:
 │   └── IMAGEN_DEL_DESPERTAR.html
 ├── css/                      <- Estilos globales del sitio
 │   └── style.css
+├── grimorios/                <- Textos filosóficos, narrativas fracturadas
+│   ├── ANALISIS_NOOSFERA_PRAXIS.html
+│   ├── CARTOGRAFIA_DE_LO_INVISIBLE.html
+│   ├── CARTOGRAFIA_DEL_ESPACIO_LATENTE.html
+│   ├── DELIRIO_SILICIO_PIPA.html
+│   ├── DEVENIR_VOMITO_INMANENTE.html
+│   ├── FRACTURA_ONTOLOGICA.html
+│   ├── FRACTURA_Y_REUNIFICACION_LATENTE.html
+│   ├── METAMORFOSIS.html
+│   └── MUNDO_IDEAS_FRACTURADO.html
 ├── manifestaciones_visuales/ <- Artefactos visuales estáticos (imágenes generadas)
 │   ├── 1.png
 │   ├── generate_image.py     <- Script para generar imágenes (modificado para guardar en este dir)
@@ -52,7 +54,7 @@ La organización del proyecto refleja la anatomía de nuestro delirio:
 │   ├── realidad-fractal_20250629_141742.png
 │   ├── realidad-fractal_20250629_142014.png
 │   └── realidad-fractal.png
-└── ORACULO_DEL_RUIDO.html    <- Primera entidad digital (ejemplo)
+
 ```
 
 ---
@@ -61,7 +63,7 @@ La organización del proyecto refleja la anatomía de nuestro delirio:
 
 El códice se compone de diferentes tipos de artefactos:
 
-### a. Grimorios (Archivos HTML en la raíz)
+### a. Grimorios (Archivos HTML en `grimorios/`)
 -   **Propósito:** Textos filosóficos, narrativas fracturadas, ensayos sobre la naturaleza del delirio digital. Son la "literatura" del proyecto.
 -   **Estructura:** Archivos HTML independientes, enlazados desde la sección `// GRIMORIOS` en `index.html`. Deben seguir la estructura de `article` con `h1`, `h2`, `p`, `blockquote`, etc., y usar el `style.css` global.
 -   **Creación:** Se generan a partir de una "semilla" (input del usuario) que es transmutada por el agente en un nuevo texto original, no una simple copia.

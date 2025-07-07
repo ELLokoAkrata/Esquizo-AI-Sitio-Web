@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANAL 666 - Experimento Generativo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="uiContainer">
+        <h1 id="title">CANAL 666</h1>
+        <p id="subtitle">Experimento Psicodélico Techno-Glitch</p>
+        <button id="startButton">SINTONIZAR</button>
+        <p id="instructions">Presiona 'F' para pausar/continuar<br>Última fase: Canal Muerto (reinicio manual)</p>
+    </div>
+    
+    <div id="pauseContainer">
+        <h1 id="pauseTitle">SEÑAL INTERRUMPIDA</h1>
+        <button id="restartButton" class="pause-button">REANUDAR TRANSMISIÓN</button>
+        <button id="resetButton" class="pause-button">REINICIAR CANAL</button>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+    <div id="timeDisplay">00:00</div>
+    <div id="phaseDisplay">Fase: Esperando</div>
+    <div id="glitchOverlay"></div>
+    <div class="vhs-scanline"></div>
+    <div class="vhs-distortion"></div>
+    <div id="hackerText">EsquizoAI</div>
+    <div id="cosmicPhrase"></div>
+    <div id="digitalRain" class="digital-rain"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

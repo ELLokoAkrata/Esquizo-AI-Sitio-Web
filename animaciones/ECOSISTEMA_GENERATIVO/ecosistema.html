@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experimento Generativo Tech-Glitch</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+</head>
+<body>
+    <div id="uiContainer">
+        <h1 id="title">EXPERIMENTO Generativo</h1>
+        <p id="subtitle">Tech-Glitch Interactivo</p>
+        <button id="startButton">INICIAR DEMO</button>
+        <p id="instructions">Presiona 'F' para pausar/continuar<br>Controles: 1-5 para efectos especiales</p>
+    </div>
+    
+    <div id="pauseContainer">
+        <h1 id="pauseTitle">DIMENSIÓN PAUSADA</h1>
+        <button id="restartButton" class="pause-button">CONTINUAR EXPERIMENTO</button>
+        <button id="resetButton" class="pause-button">REINICIAR UNIVERSO</button>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+    <canvas id="visualizer"></canvas>
+    <div id="timeDisplay">00:00</div>
+    <div id="phaseDisplay">Fase: Inicio</div>
+
+    <script src="script.js"></script>
+</body>
+</html>

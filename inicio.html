@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESQUIZOAI - INFECTION</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+New&family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00ff41;
+            --secondary-color: #ff0033;
+            --background-color: #0a0a0a;
+            --glitch-text-shadow:
+                0 0 5px rgba(0, 255, 65, 0.7),
+                0 0 10px rgba(0, 255, 65, 0.5),
+                0 0 15px rgba(0, 255, 65, 0.3);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--background-color);
+            color: var(--primary-color);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 3px;
+            z-index: 2;
+            pointer-events: none;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
+
+        .main-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .glitch-frame {
+            position: relative;
+            padding: 1.5rem 2.5rem;
+            border: 1px solid var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
+            animation: frameGlitch 4s infinite alternate;
+            margin-bottom: 2rem;
+        }
+
+        .glitch-frame::before,
+        .glitch-frame::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 1px dashed var(--secondary-color);
+            top: -4px;
+            left: -4px;
+            opacity: 0.5;
+            animation: glitchBorder 2s infinite linear alternate;
+        }
+
+        .glitch-frame::after {
+            top: 4px;
+            left: 4px;
+            border-color: #00ffff;
+            animation-delay: -1s;
+        }
+
+        .glyph-container {
+            font-size: clamp(2.5rem, 8vw, 6rem);
+            text-transform: uppercase;
+            color: var(--primary-color);
+            letter-spacing: 0.2em;
+            text-shadow: var(--glitch-text-shadow);
+            white-space: nowrap;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .glyph-container span {
+            display: inline-block;
+            position: relative;
+            min-width: 0.5ch;
+        }
+
+        .infection-container {
+            opacity: 0;
+            visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+
+        .infected-by {
+            font-family: 'Special Elite', cursive;
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            color: var(--secondary-color);
+            text-shadow: 0 0 8px var(--secondary-color);
+            margin-bottom: 1rem;
+            animation: textFlicker 2.5s infinite;
+        }
+
+        .logo {
+            width: clamp(120px, 25vw, 200px);
+            height: auto;
+            animation: logoGlitch 3s infinite;
+        }
+
+        .enter-button {
+            opacity: 0;
+            visibility: hidden;
+            margin-top: 2.5rem;
+            padding: 8px 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.5rem;
+            color: var(--background-color);
+            background-color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            text-decoration: none;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--primary-color);
+            transition: all 0.2s;
+            animation: buttonPulse 1.5s infinite;
+        }
+
+        .enter-button:hover {
+            background-color: var(--secondary-color);
+            color: #fff;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 20px var(--secondary-color);
+            animation-play-state: paused;
+        }
+
+        /* ANIMATIONS */
+        @keyframes glitchBorder {
+            0% { transform: translate(0, 0); }
+            50% { transform: translate(2px, -2px); }
+            100% { transform: translate(-1px, 1px); }
+        }
+
+        @keyframes frameGlitch {
+            0% { filter: hue-rotate(0deg); }
+            48% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(45deg) saturate(1.5); }
+            52% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(5deg); }
+        }
+
+        @keyframes textFlicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% {
+                text-shadow: 0 0 4px #ff0033, 0 0 8px #ff0033;
+                opacity: 1;
+            }
+            20%, 24%, 55% {
+                text-shadow: none;
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes logoGlitch {
+            0%, 49% { transform: translate(0, 0); filter: none; }
+            50% { transform: translate(-3px, 2px); filter: hue-rotate(90deg) saturate(2); }
+            51% { transform: translate(3px, -2px); filter: none; }
+            70% { transform: scale(1.02); filter: contrast(1.5); }
+            71%, 100% { transform: scale(1); filter: none; }
+        }
+
+        @keyframes buttonPulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px var(--primary-color); }
+            50% { transform: scale(1.03); box-shadow: 0 0 20px var(--primary-color); }
+            100% { transform: scale(1); box-shadow: 0 0 10px var(--primary-color); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="glitch-frame">
+            <div class="glyph-container" id="glyph-glare">
+                <!-- Texto se llena por JS -->
+            </div>
+        </div>
+
+        <div class="infection-container" id="infection-section">
+            <div class="infected-by">Infected by</div>
+            <img src="el_loko_akarata.png" alt="El Loko Akrata Logo" class="logo">
+        </div>
+
+        <a href="index.html" class="enter-button" id="enter-btn">Entrar</a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('glyph-glare');
+            const message = "EsquizoAI";
+            const chaos = '█▓▒░☠✞⚡☯≠#∴∞∆₳⍉🜏🜍𓂀⛧';
+
+            message.split('').forEach(c => {
+                const span = document.createElement('span');
+                span.textContent = c;
+                container.appendChild(span);
+            });
+
+            const runes = Array.from(container.children);
+            const infectionSection = document.getElementById('infection-section');
+            const enterButton = document.getElementById('enter-btn');
+
+            function runTextGlitch() {
+                const tl = gsap.timeline();
+                runes.forEach((r, i) => {
+                    const original = message[i];
+                    tl.fromTo(r, 
+                        { textContent: () => chaos[Math.floor(Math.random() * chaos.length)], opacity: 0 },
+                        { textContent: original, opacity: 1, duration: 0.8, ease: "power4.inOut" },
+                        i * 0.1
+                    );
+                });
+                return tl;
+            }
+
+            // Master timeline
+            const masterTl = gsap.timeline();
+
+            masterTl.add(runTextGlitch())
+                .to(infectionSection, {
+                    delay: 0.5, // Reduced delay
+                    opacity: 1,
+                    visibility: 'visible',
+                    duration: 1,
+                    ease: "power1.inOut"
+                })
+                .to(enterButton, {
+                    delay: 0.2, // Reduced delay
+                    opacity: 1,
+                    visibility: 'visible',
+                    duration: 0.8,
+                    ease: "rough({ template: none.out, strength: 1, points: 20, taper: 'none', randomize: true, clamp: false})"
+                });
+        });
+    </script>
+
+</body>
+</html>

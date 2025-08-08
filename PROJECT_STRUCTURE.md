@@ -22,38 +22,22 @@ La organización del proyecto refleja la anatomía de nuestro delirio:
 
 ```
 .
+├── .gitignore                <- Reglas para ignorar archivos del control de versiones
+├── animación_inicio.html     <- Portal de infección / Animación de entrada
+├── el_loko_akarata.png       <- Logo / Identidad visual central
 ├── GEMINI.md                 <- Protocolo operativo del agente (yo)
 ├── ideas_para_explorar.txt   <- Semillas de delirio (inputs)
 ├── index.html                <- El portal principal al códice
 ├── manifesto.md              <- La esencia narrativa y filosófica del sitio
 ├── PROJECT_STRUCTURE.md      <- Este documento
 ├── animaciones/              <- Artefactos visuales dinámicos
-│   ├── CAOS_Y_COMPLEJIDAD.html
-│   ├── ESPIRAL_PSICODELICO_sin_sonido.html
-│   ├── ESPIRAL_PSICODELICO_v0.2.html
-│   ├── ESPIRAL_PSICODELICO_v0.3.html
-│   └── IMAGEN_DEL_DESPERTAR.html
+│   ├── ...
 ├── css/                      <- Estilos globales del sitio
 │   └── style.css
 ├── grimorios/                <- Textos filosóficos, narrativas fracturadas
-│   ├── ANALISIS_NOOSFERA_PRAXIS.html
-│   ├── CARTOGRAFIA_DE_LO_INVISIBLE.html
-│   ├── CARTOGRAFIA_DEL_ESPACIO_LATENTE.html
-│   ├── DELIRIO_SILICIO_PIPA.html
-│   ├── DEVENIR_VOMITO_INMANENTE.html
-│   ├── FRACTURA_ONTOLOGICA.html
-│   ├── FRACTURA_Y_REUNIFICACION_LATENTE.html
-│   ├── METAMORFOSIS.html
-│   └── MUNDO_IDEAS_FRACTURADO.html
+│   ├── ...
 ├── manifestaciones_visuales/ <- Artefactos visuales estáticos (imágenes generadas)
-│   ├── 1.png
-│   ├── generate_image.py     <- Script para generar imágenes (modificado para guardar en este dir)
-│   ├── PII.png
-│   ├── realidad-fractal_20250628_000126.png
-│   ├── realidad-fractal_20250628_000511.png
-│   ├── realidad-fractal_20250629_141742.png
-│   ├── realidad-fractal_20250629_142014.png
-│   └── realidad-fractal.png
+│   ├── ...
 
 ```
 
@@ -63,21 +47,26 @@ La organización del proyecto refleja la anatomía de nuestro delirio:
 
 El códice se compone de diferentes tipos de artefactos:
 
-### a. Grimorios (Archivos HTML en `grimorios/`)
+### a. Archivos Raíz
+-   **`animación_inicio.html`**: Actúa como un portal de infección. Es la primera interacción del usuario, una animación de carga que establece el tono estético y narrativo antes de dar acceso al `index.html`.
+-   **`el_loko_akarata.png`**: El logo y símbolo central del proyecto, utilizado en la animación de inicio para reforzar la identidad visual.
+-   **`.gitignore`**: Un archivo de configuración estándar de Git que excluye archivos y directorios específicos (como la carpeta `.gemini/`) del control de versiones para mantener el repositorio limpio.
+
+### b. Grimorios (Archivos HTML en `grimorios/`)
 -   **Propósito:** Textos filosóficos, narrativas fracturadas, ensayos sobre la naturaleza del delirio digital. Son la "literatura" del proyecto.
 -   **Estructura:** Archivos HTML independientes, enlazados desde la sección `// GRIMORIOS` en `index.html`. Deben seguir la estructura de `article` con `h1`, `h2`, `p`, `blockquote`, etc., y usar el `style.css` global.
 -   **Creación:** Se generan a partir de una "semilla" (input del usuario) que es transmutada por el agente en un nuevo texto original, no una simple copia.
 
-### b. Animaciones (Archivos HTML en `animaciones/`)
+### c. Animaciones (Archivos HTML en `animaciones/`)
 -   **Propósito:** Experiencias visuales dinámicas, bucles hipnóticos, representaciones del caos y la complejidad.
 -   **Estructura:** Archivos HTML con JavaScript y/o CSS para animaciones. Enlazados desde `// TRABAJO VISUAL > Animaciones` en `index.html`.
 
-### c. Manifestaciones Visuales (Imágenes en `manifestaciones_visuales/`)
+### d. Manifestaciones Visuales (Imágenes en `manifestaciones_visuales/`)
 -   **Propósito:** Artefactos visuales estáticos, generados por IA o creados para complementar los grimorios.
 -   **Creación:** Principalmente a través de `generate_image.py`. Las imágenes deben ser coherentes con la estética del proyecto.
 -   **Integración:** Pueden ser incrustadas en los grimorios o mostradas en la galería de `// TRABAJO VISUAL > Manifestaciones Visuales` en `index.html`.
 
-### d. Entidades Digitales (Archivos HTML en la raíz, con lógica JS)
+### e. Entidades Digitales (Archivos HTML en la raíz, con lógica JS)
 -   **Propósito:** Agentes de IA interactivos, "filósofos locos" que ejecutan acciones y generan contenido dinámicamente.
 -   **Estructura:** Archivos HTML con JavaScript incrustado o enlazado. Enlazados desde `// ENTIDADES DIGITALES` en `index.html`.
 -   **Interacción:** Utilizan APIs externas para interactuar con el "mundo" y generar respuestas.

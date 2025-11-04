@@ -6,59 +6,140 @@
     <title>ATRACTOR DE LORENZ | EsquizoAI</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             overflow: hidden;
             background: #0a0a0a;
             display: flex;
+            height: 100vh;
+            font-family: 'Courier New', monospace;
+        }
+
+        #sidebar {
+            width: 320px;
+            background: rgba(0, 20, 0, 0.95);
+            border-right: 2px solid var(--primary-color, #00ff41);
+            padding: 20px;
+            display: flex;
             flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+            z-index: 100;
+        }
+
+        #canvas-container {
+            flex: 1;
+            display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            position: relative;
         }
 
         #canvas {
             border: 2px solid var(--primary-color, #00ff41);
             box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
             image-rendering: crisp-edges;
-            position: relative;
-            z-index: 1;
         }
 
-        .info {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+        .sidebar-section {
+            border: 1px solid var(--primary-color, #00ff41);
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-section h3 {
             color: var(--primary-color, #00ff41);
-            font-family: 'Courier New', monospace;
             font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--primary-color, #00ff41);
+            padding-bottom: 5px;
             text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
-            line-height: 1.6;
-            z-index: 100;
-            pointer-events: none;
         }
 
         .equation {
             color: var(--secondary-color, #ff0033);
             font-weight: bold;
+            font-size: 13px;
+            margin: 5px 0;
+            text-shadow: 0 0 5px rgba(255, 0, 51, 0.5);
         }
 
-        .controls {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
+        .param {
             color: var(--primary-color, #00ff41);
-            font-family: 'Courier New', monospace;
             font-size: 12px;
-            z-index: 100;
-            pointer-events: none;
+            margin: 5px 0;
+        }
+
+        .param-value {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .controls-list {
+            list-style: none;
+            color: var(--primary-color, #00ff41);
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        .controls-list li {
+            margin: 5px 0;
+        }
+
+        .controls-list kbd {
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid var(--primary-color, #00ff41);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        .description {
+            color: #00ffff;
+            font-size: 11px;
+            line-height: 1.6;
+            font-style: italic;
+            margin-top: 10px;
         }
 
         .volver {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
+            width: 100%;
+        }
+
+        .volver button {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 0, 51, 0.2);
+            border: 2px solid var(--secondary-color, #ff0033);
+            color: var(--secondary-color, #ff0033);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: all 0.3s;
+            text-shadow: 0 0 5px rgba(255, 0, 51, 0.5);
+        }
+
+        .volver button:hover {
+            background: rgba(255, 0, 51, 0.4);
+            box-shadow: 0 0 20px rgba(255, 0, 51, 0.5);
+        }
+
+        .status {
+            color: #ffff00;
+            font-size: 11px;
+            margin-top: 5px;
         }
 
         .scanlines {
@@ -77,40 +158,100 @@
             );
             z-index: 999;
         }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            #sidebar {
+                width: 100%;
+                height: 200px;
+                border-right: none;
+                border-bottom: 2px solid var(--primary-color, #00ff41);
+            }
+        }
     </style>
 </head>
 <body>
     <div class="scanlines"></div>
 
-    <div class="info">
-        >$ ATRACTOR_DE_LORENZ.exe<br>
-        <span class="equation">dx/dt = σ(y - x)</span><br>
-        <span class="equation">dy/dt = x(ρ - z) - y</span><br>
-        <span class="equation">dz/dt = xy - βz</span><br>
-        <br>
-        σ=<span id="sigma">10</span> | ρ=<span id="rho">28</span> | β=<span id="beta">2.667</span><br>
-        puntos: <span id="points">0</span><br>
-        <br>
-        <em>"La belleza del caos determinista"</em>
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <!-- Header -->
+        <div class="sidebar-section">
+            <h3>>$ ATRACTOR_DE_LORENZ.exe</h3>
+            <p class="description">"La belleza del caos determinista"</p>
+        </div>
+
+        <!-- Ecuaciones -->
+        <div class="sidebar-section">
+            <h3>Ecuaciones Diferenciales</h3>
+            <div class="equation">dx/dt = σ(y - x)</div>
+            <div class="equation">dy/dt = x(ρ - z) - y</div>
+            <div class="equation">dz/dt = xy - βz</div>
+        </div>
+
+        <!-- Parámetros -->
+        <div class="sidebar-section">
+            <h3>Parámetros</h3>
+            <div class="param">σ (sigma) = <span class="param-value" id="sigma">10</span></div>
+            <div class="param">ρ (rho) = <span class="param-value" id="rho">28</span></div>
+            <div class="param">β (beta) = <span class="param-value" id="beta">2.667</span></div>
+            <div class="status">Puntos: <span id="points">0</span></div>
+            <div class="status">Estado: <span id="status">Calculando...</span></div>
+        </div>
+
+        <!-- Controles -->
+        <div class="sidebar-section">
+            <h3>Controles</h3>
+            <ul class="controls-list">
+                <li><kbd>SPACE</kbd> Pausar/Reanudar</li>
+                <li><kbd>R</kbd> Resetear sistema</li>
+                <li><kbd>↑</kbd> / <kbd>↓</kbd> Velocidad ±</li>
+                <li><kbd>←</kbd> / <kbd>→</kbd> Rotar manual</li>
+                <li><kbd>A</kbd> Auto-rotación ON/OFF</li>
+            </ul>
+        </div>
+
+        <!-- Botón volver -->
+        <div class="volver">
+            <button onclick="window.location.href='../index.html'">← VOLVER AL CÓDICE</button>
+        </div>
     </div>
 
-    <div class="controls">
-        [R] reset | [SPACE] pause | [↑↓] speed | [←→] rotate
+    <!-- Canvas container -->
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
     </div>
-
-    <a href="../index.html" class="volver">
-        <button class="btn-primary">← VOLVER</button>
-    </a>
-
-    <canvas id="canvas"></canvas>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
+        const statusEl = document.getElementById('status');
 
-        // Dimensiones
-        canvas.width = 900;
-        canvas.height = 700;
+        // Dimensiones dinámicas del canvas
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            const maxWidth = container.clientWidth - 40;
+            const maxHeight = container.clientHeight - 40;
+
+            // Mantener aspect ratio 9:7 aproximadamente
+            const ratio = 9/7;
+            let width = maxWidth;
+            let height = width / ratio;
+
+            if (height > maxHeight) {
+                height = maxHeight;
+                width = height * ratio;
+            }
+
+            canvas.width = Math.floor(width);
+            canvas.height = Math.floor(height);
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
         // Parámetros del atractor de Lorenz
         let sigma = 10;
@@ -239,11 +380,24 @@
             requestAnimationFrame(draw);
         }
 
+        // Actualizar estado en sidebar
+        function updateStatus() {
+            if (paused) {
+                statusEl.textContent = 'Pausado';
+                statusEl.style.color = '#ff0033';
+            } else {
+                statusEl.textContent = 'Calculando...';
+                statusEl.style.color = '#ffff00';
+            }
+        }
+
         // Controles de teclado
         document.addEventListener('keydown', (e) => {
             switch(e.key) {
                 case ' ':
+                    e.preventDefault();
                     paused = !paused;
+                    updateStatus();
                     break;
                 case 'r':
                 case 'R':
@@ -254,16 +408,20 @@
                     rotationAngle = 0;
                     break;
                 case 'ArrowUp':
+                    e.preventDefault();
                     speed = Math.min(speed + 0.5, 5);
                     break;
                 case 'ArrowDown':
+                    e.preventDefault();
                     speed = Math.max(speed - 0.5, 0.1);
                     break;
                 case 'ArrowLeft':
+                    e.preventDefault();
                     autoRotate = false;
                     rotationAngle -= 0.05;
                     break;
                 case 'ArrowRight':
+                    e.preventDefault();
                     autoRotate = false;
                     rotationAngle += 0.05;
                     break;
@@ -273,6 +431,9 @@
                     break;
             }
         });
+
+        // Inicializar estado
+        updateStatus();
 
         // Glitch effect aleatorio
         setInterval(() => {

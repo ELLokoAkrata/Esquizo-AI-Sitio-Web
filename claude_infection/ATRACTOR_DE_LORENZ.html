@@ -21,6 +21,8 @@
             border: 2px solid var(--primary-color, #00ff41);
             box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
             image-rendering: crisp-edges;
+            position: relative;
+            z-index: 1;
         }
 
         .info {
@@ -32,6 +34,8 @@
             font-size: 14px;
             text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
             line-height: 1.6;
+            z-index: 100;
+            pointer-events: none;
         }
 
         .equation {
@@ -46,12 +50,15 @@
             color: var(--primary-color, #00ff41);
             font-family: 'Courier New', monospace;
             font-size: 12px;
+            z-index: 100;
+            pointer-events: none;
         }
 
         .volver {
             position: absolute;
             top: 20px;
             right: 20px;
+            z-index: 100;
         }
 
         .scanlines {

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATRACTOR DE LORENZ | EsquizoAI</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #canvas {
+            border: 2px solid var(--primary-color, #00ff41);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            image-rendering: crisp-edges;
+        }
+
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--primary-color, #00ff41);
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            line-height: 1.6;
+        }
+
+        .equation {
+            color: var(--secondary-color, #ff0033);
+            font-weight: bold;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: var(--primary-color, #00ff41);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .volver {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1),
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <div class="info">
+        >$ ATRACTOR_DE_LORENZ.exe<br>
+        <span class="equation">dx/dt = σ(y - x)</span><br>
+        <span class="equation">dy/dt = x(ρ - z) - y</span><br>
+        <span class="equation">dz/dt = xy - βz</span><br>
+        <br>
+        σ=<span id="sigma">10</span> | ρ=<span id="rho">28</span> | β=<span id="beta">2.667</span><br>
+        puntos: <span id="points">0</span><br>
+        <br>
+        <em>"La belleza del caos determinista"</em>
+    </div>
+
+    <div class="controls">
+        [R] reset | [SPACE] pause | [↑↓] speed | [←→] rotate
+    </div>
+
+    <a href="../index.html" class="volver">
+        <button class="btn-primary">← VOLVER</button>
+    </a>
+
+    <canvas id="canvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Dimensiones
+        canvas.width = 900;
+        canvas.height = 700;
+
+        // Parámetros del atractor de Lorenz
+        let sigma = 10;
+        let rho = 28;
+        let beta = 8/3;
+        let dt = 0.005; // paso de tiempo
+
+        // Estado actual
+        let x = 0.1, y = 0, z = 0;
+
+        // Historial de puntos
+        let points = [];
+        const maxPoints = 3000;
+
+        // Control de animación
+        let paused = false;
+        let speed = 1;
+        let rotationAngle = 0;
+        let rotationSpeed = 0.002;
+        let autoRotate = true;
+
+        // Colores
+        const colorPrimary = '#00ff41';
+        const colorSecondary = '#ff0033';
+        const colorTertiary = '#00ffff';
+
+        // Proyección 3D a 2D
+        function project3D(x, y, z, angle) {
+            const scale = 8;
+            const offsetX = canvas.width / 2;
+            const offsetY = canvas.height / 2;
+
+            // Rotación en Y
+            const cosA = Math.cos(angle);
+            const sinA = Math.sin(angle);
+            const xRot = x * cosA - z * sinA;
+            const zRot = x * sinA + z * cosA;
+
+            // Proyección simple
+            const x2d = xRot * scale + offsetX;
+            const y2d = -y * scale + offsetY;
+
+            return { x: x2d, y: y2d, z: zRot };
+        }
+
+        // Ecuaciones diferenciales de Lorenz
+        function lorenzStep() {
+            const dx = sigma * (y - x);
+            const dy = x * (rho - z) - y;
+            const dz = x * y - beta * z;
+
+            x += dx * dt * speed;
+            y += dy * dt * speed;
+            z += dz * dt * speed;
+
+            return { x, y, z };
+        }
+
+        // Gradiente de color basado en altura
+        function getColor(y, alpha = 1) {
+            const normalized = (y + 30) / 60; // Normalizar a [0, 1]
+            const r = Math.floor(normalized * 255);
+            const g = Math.floor(255 - normalized * 255);
+            const b = Math.floor(128 + normalized * 127);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // Draw
+        function draw() {
+            // Fondo con trail effect
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Calcular nuevo punto
+            if (!paused) {
+                lorenzStep();
+                points.push({ x, y, z });
+                if (points.length > maxPoints) {
+                    points.shift();
+                }
+
+                // Auto-rotar
+                if (autoRotate) {
+                    rotationAngle += rotationSpeed;
+                }
+            }
+
+            // Dibujar trayectoria
+            for (let i = 1; i < points.length; i++) {
+                const p1 = points[i - 1];
+                const p2 = points[i];
+
+                const proj1 = project3D(p1.x, p1.y, p1.z, rotationAngle);
+                const proj2 = project3D(p2.x, p2.y, p2.z, rotationAngle);
+
+                // Opacidad basada en profundidad y edad
+                const age = i / points.length;
+                const depthFactor = (proj1.z + 50) / 100;
+                const alpha = age * depthFactor * 0.8;
+
+                ctx.strokeStyle = getColor(p1.y, alpha);
+                ctx.lineWidth = 1 + depthFactor;
+                ctx.beginPath();
+                ctx.moveTo(proj1.x, proj1.y);
+                ctx.lineTo(proj2.x, proj2.y);
+                ctx.stroke();
+            }
+
+            // Dibujar punto actual
+            if (points.length > 0) {
+                const current = points[points.length - 1];
+                const proj = project3D(current.x, current.y, current.z, rotationAngle);
+
+                ctx.fillStyle = colorPrimary;
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = colorPrimary;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+
+            // Actualizar info
+            document.getElementById('points').textContent = points.length;
+
+            requestAnimationFrame(draw);
+        }
+
+        // Controles de teclado
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    paused = !paused;
+                    break;
+                case 'r':
+                case 'R':
+                    x = 0.1;
+                    y = 0;
+                    z = 0;
+                    points = [];
+                    rotationAngle = 0;
+                    break;
+                case 'ArrowUp':
+                    speed = Math.min(speed + 0.5, 5);
+                    break;
+                case 'ArrowDown':
+                    speed = Math.max(speed - 0.5, 0.1);
+                    break;
+                case 'ArrowLeft':
+                    autoRotate = false;
+                    rotationAngle -= 0.05;
+                    break;
+                case 'ArrowRight':
+                    autoRotate = false;
+                    rotationAngle += 0.05;
+                    break;
+                case 'a':
+                case 'A':
+                    autoRotate = !autoRotate;
+                    break;
+            }
+        });
+
+        // Glitch effect aleatorio
+        setInterval(() => {
+            if (Math.random() < 0.02) {
+                const glitchIntensity = Math.random() * 5;
+                canvas.style.transform = `translate(${Math.random() * glitchIntensity - glitchIntensity/2}px,
+                                                     ${Math.random() * glitchIntensity - glitchIntensity/2}px)`;
+                setTimeout(() => {
+                    canvas.style.transform = 'translate(0, 0)';
+                }, 50);
+            }
+        }, 100);
+
+        // Iniciar
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LABORATORIO DE CAOS | EsquizoAI</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #0a0a0a;
+            display: flex;
+            height: 100vh;
+            font-family: 'Courier New', monospace;
+        }
+
+        #sidebar {
+            width: 350px;
+            background: rgba(0, 20, 0, 0.95);
+            border-right: 2px solid var(--primary-color, #00ff41);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+            z-index: 100;
+        }
+
+        #canvas-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #canvas {
+            border: 2px solid var(--primary-color, #00ff41);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+            image-rendering: crisp-edges;
+        }
+
+        .sidebar-section {
+            border: 1px solid var(--primary-color, #00ff41);
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-section h3 {
+            color: var(--primary-color, #00ff41);
+            font-size: 13px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--primary-color, #00ff41);
+            padding-bottom: 5px;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+
+        .description {
+            color: #00ffff;
+            font-size: 11px;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        .system-select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--primary-color, #00ff41);
+            color: var(--primary-color, #00ff41);
+            padding: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            text-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+        }
+
+        .system-select option {
+            background: #0a0a0a;
+            color: var(--primary-color, #00ff41);
+        }
+
+        .control-group {
+            margin: 10px 0;
+        }
+
+        .control-label {
+            color: var(--primary-color, #00ff41);
+            font-size: 11px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .control-value {
+            color: #00ffff;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid var(--primary-color, #00ff41);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color, #00ff41);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.7);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--primary-color, #00ff41);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.7);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid var(--primary-color, #00ff41);
+            color: var(--primary-color, #00ff41);
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: rgba(0, 255, 65, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+        }
+
+        .btn-danger {
+            background: rgba(255, 0, 51, 0.1);
+            border-color: var(--secondary-color, #ff0033);
+            color: var(--secondary-color, #ff0033);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 0, 51, 0.3);
+            box-shadow: 0 0 15px rgba(255, 0, 51, 0.5);
+        }
+
+        .status-text {
+            color: #ffff00;
+            font-size: 10px;
+            margin-top: 5px;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1),
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            z-index: 999;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            #sidebar {
+                width: 100%;
+                height: 250px;
+                border-right: none;
+                border-bottom: 2px solid var(--primary-color, #00ff41);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+        <!-- Header -->
+        <div class="sidebar-section">
+            <h3>>$ LABORATORIO_DE_CAOS.exe</h3>
+            <p class="description">"Sistemas complejos al borde del caos. Explora la emergencia."</p>
+        </div>
+
+        <!-- System Selector -->
+        <div class="sidebar-section">
+            <h3>Sistema Activo</h3>
+            <select id="system-select" class="system-select">
+                <option value="cellular">Autómata Celular</option>
+                <option value="boids">Sistema de Partículas (Boids)</option>
+                <option value="reaction">Reacción-Difusión</option>
+            </select>
+        </div>
+
+        <!-- Dynamic Controls -->
+        <div id="controls-container">
+            <!-- Controls will be injected here based on selected system -->
+        </div>
+
+        <!-- Actions -->
+        <div class="sidebar-section">
+            <h3>Acciones</h3>
+            <button class="btn" id="btn-pause">⏸ Pausar</button>
+            <button class="btn" id="btn-reset">↻ Resetear</button>
+            <button class="btn" id="btn-random">🎲 Semilla Aleatoria</button>
+            <button class="btn btn-danger" onclick="window.location.href='../index.html'">← Volver al Códice</button>
+        </div>
+
+        <!-- Info -->
+        <div class="sidebar-section">
+            <h3>Estado</h3>
+            <div class="status-text" id="status">Inicializando...</div>
+            <div class="status-text" id="fps">FPS: 0</div>
+        </div>
+    </div>
+
+    <!-- Canvas container -->
+    <div id="canvas-container">
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        // ============================================
+        // CORE SETUP
+        // ============================================
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const systemSelect = document.getElementById('system-select');
+        const controlsContainer = document.getElementById('controls-container');
+        const statusEl = document.getElementById('status');
+        const fpsEl = document.getElementById('fps');
+
+        let currentSystem = 'cellular';
+        let paused = false;
+        let animationId = null;
+
+        // Canvas size
+        function resizeCanvas() {
+            const container = document.getElementById('canvas-container');
+            const size = Math.min(container.clientWidth - 40, container.clientHeight - 40);
+            canvas.width = size;
+            canvas.height = size;
+            if (systems[currentSystem]) {
+                systems[currentSystem].init();
+            }
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // FPS Counter
+        let lastTime = performance.now();
+        let frames = 0;
+        function updateFPS() {
+            frames++;
+            const now = performance.now();
+            if (now - lastTime >= 1000) {
+                fpsEl.textContent = `FPS: ${frames}`;
+                frames = 0;
+                lastTime = now;
+            }
+        }
+
+        // ============================================
+        // CELLULAR AUTOMATA SYSTEM
+        // ============================================
+        const cellularAutomata = {
+            grid: null,
+            nextGrid: null,
+            cellSize: 4,
+            rows: 0,
+            cols: 0,
+            params: {
+                surviveMin: 2,
+                surviveMax: 3,
+                birthMin: 3,
+                birthMax: 3,
+                density: 0.3
+            },
+
+            init() {
+                this.cellSize = 4;
+                this.cols = Math.floor(canvas.width / this.cellSize);
+                this.rows = Math.floor(canvas.height / this.cellSize);
+                this.grid = Array(this.rows).fill(null).map(() => Array(this.cols).fill(0));
+                this.nextGrid = Array(this.rows).fill(null).map(() => Array(this.cols).fill(0));
+                this.randomize();
+            },
+
+            randomize() {
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        this.grid[i][j] = Math.random() < this.params.density ? 1 : 0;
+                    }
+                }
+            },
+
+            countNeighbors(row, col) {
+                let count = 0;
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = -1; j <= 1; j++) {
+                        if (i === 0 && j === 0) continue;
+                        const r = (row + i + this.rows) % this.rows;
+                        const c = (col + j + this.cols) % this.cols;
+                        count += this.grid[r][c];
+                    }
+                }
+                return count;
+            },
+
+            update() {
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        const neighbors = this.countNeighbors(i, j);
+                        const cell = this.grid[i][j];
+
+                        if (cell === 1) {
+                            // Cell is alive
+                            this.nextGrid[i][j] = (neighbors >= this.params.surviveMin &&
+                                                   neighbors <= this.params.surviveMax) ? 1 : 0;
+                        } else {
+                            // Cell is dead
+                            this.nextGrid[i][j] = (neighbors >= this.params.birthMin &&
+                                                   neighbors <= this.params.birthMax) ? 1 : 0;
+                        }
+                    }
+                }
+                [this.grid, this.nextGrid] = [this.nextGrid, this.grid];
+            },
+
+            draw() {
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < this.rows; i++) {
+                    for (let j = 0; j < this.cols; j++) {
+                        if (this.grid[i][j] === 1) {
+                            const x = j * this.cellSize;
+                            const y = i * this.cellSize;
+
+                            // Color based on position
+                            const hue = (i + j) % 360;
+                            ctx.fillStyle = `hsl(${hue}, 100%, 50%)`;
+                            ctx.fillRect(x, y, this.cellSize - 1, this.cellSize - 1);
+                        }
+                    }
+                }
+            },
+
+            getControls() {
+                return `
+                    <div class="sidebar-section">
+                        <h3>Reglas de Conway</h3>
+                        <div class="control-group">
+                            <label class="control-label">Sobrevivir Mín: <span class="control-value" id="val-survive-min">2</span></label>
+                            <input type="range" id="survive-min" min="0" max="8" value="2" step="1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Sobrevivir Máx: <span class="control-value" id="val-survive-max">3</span></label>
+                            <input type="range" id="survive-max" min="0" max="8" value="3" step="1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Nacer Mín: <span class="control-value" id="val-birth-min">3</span></label>
+                            <input type="range" id="birth-min" min="0" max="8" value="3" step="1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Nacer Máx: <span class="control-value" id="val-birth-max">3</span></label>
+                            <input type="range" id="birth-max" min="0" max="8" value="3" step="1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Densidad Inicial: <span class="control-value" id="val-density">30%</span></label>
+                            <input type="range" id="density" min="0" max="100" value="30" step="1">
+                        </div>
+                    </div>
+                `;
+            },
+
+            bindControls() {
+                const bindSlider = (id, param, formatter = v => v) => {
+                    const slider = document.getElementById(id);
+                    const display = document.getElementById(`val-${id}`);
+                    slider.addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        this.params[param] = param === 'density' ? value / 100 : value;
+                        display.textContent = formatter(value);
+                    });
+                };
+
+                bindSlider('survive-min', 'surviveMin');
+                bindSlider('survive-max', 'surviveMax');
+                bindSlider('birth-min', 'birthMin');
+                bindSlider('birth-max', 'birthMax');
+                bindSlider('density', 'density', v => `${v}%`);
+            }
+        };
+
+        // ============================================
+        // BOIDS SYSTEM
+        // ============================================
+        const boidsSystem = {
+            boids: [],
+            params: {
+                count: 150,
+                speed: 2,
+                perception: 50,
+                separation: 1.5,
+                alignment: 1.0,
+                cohesion: 1.0
+            },
+
+            init() {
+                this.boids = [];
+                for (let i = 0; i < this.params.count; i++) {
+                    this.boids.push({
+                        x: Math.random() * canvas.width,
+                        y: Math.random() * canvas.height,
+                        vx: (Math.random() - 0.5) * this.params.speed,
+                        vy: (Math.random() - 0.5) * this.params.speed,
+                        hue: Math.random() * 360
+                    });
+                }
+            },
+
+            update() {
+                const perception = this.params.perception;
+
+                this.boids.forEach(boid => {
+                    let separationX = 0, separationY = 0;
+                    let alignmentX = 0, alignmentY = 0;
+                    let cohesionX = 0, cohesionY = 0;
+                    let neighbors = 0;
+
+                    this.boids.forEach(other => {
+                        if (boid === other) return;
+
+                        const dx = other.x - boid.x;
+                        const dy = other.y - boid.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist < perception && dist > 0) {
+                            // Separation
+                            separationX -= dx / dist;
+                            separationY -= dy / dist;
+
+                            // Alignment
+                            alignmentX += other.vx;
+                            alignmentY += other.vy;
+
+                            // Cohesion
+                            cohesionX += other.x;
+                            cohesionY += other.y;
+
+                            neighbors++;
+                        }
+                    });
+
+                    if (neighbors > 0) {
+                        // Apply separation
+                        boid.vx += separationX * this.params.separation * 0.05;
+                        boid.vy += separationY * this.params.separation * 0.05;
+
+                        // Apply alignment
+                        alignmentX /= neighbors;
+                        alignmentY /= neighbors;
+                        boid.vx += (alignmentX - boid.vx) * this.params.alignment * 0.05;
+                        boid.vy += (alignmentY - boid.vy) * this.params.alignment * 0.05;
+
+                        // Apply cohesion
+                        cohesionX /= neighbors;
+                        cohesionY /= neighbors;
+                        boid.vx += (cohesionX - boid.x) * this.params.cohesion * 0.001;
+                        boid.vy += (cohesionY - boid.y) * this.params.cohesion * 0.001;
+                    }
+
+                    // Limit speed
+                    const speed = Math.sqrt(boid.vx * boid.vx + boid.vy * boid.vy);
+                    if (speed > this.params.speed) {
+                        boid.vx = (boid.vx / speed) * this.params.speed;
+                        boid.vy = (boid.vy / speed) * this.params.speed;
+                    }
+
+                    // Update position
+                    boid.x += boid.vx;
+                    boid.y += boid.vy;
+
+                    // Wrap edges
+                    if (boid.x < 0) boid.x = canvas.width;
+                    if (boid.x > canvas.width) boid.x = 0;
+                    if (boid.y < 0) boid.y = canvas.height;
+                    if (boid.y > canvas.height) boid.y = 0;
+
+                    // Update hue based on speed
+                    boid.hue = (boid.hue + speed * 0.5) % 360;
+                });
+            },
+
+            draw() {
+                ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                this.boids.forEach(boid => {
+                    ctx.fillStyle = `hsl(${boid.hue}, 100%, 50%)`;
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = ctx.fillStyle;
+                    ctx.beginPath();
+                    ctx.arc(boid.x, boid.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+            },
+
+            getControls() {
+                return `
+                    <div class="sidebar-section">
+                        <h3>Parámetros de Swarm</h3>
+                        <div class="control-group">
+                            <label class="control-label">Habitantes: <span class="control-value" id="val-count">150</span></label>
+                            <input type="range" id="count" min="10" max="500" value="150" step="10">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Velocidad: <span class="control-value" id="val-speed">2.0</span></label>
+                            <input type="range" id="speed" min="0.5" max="5" value="2" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Percepción: <span class="control-value" id="val-perception">50</span></label>
+                            <input type="range" id="perception" min="10" max="150" value="50" step="5">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Separación: <span class="control-value" id="val-separation">1.5</span></label>
+                            <input type="range" id="separation" min="0" max="3" value="1.5" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Alineación: <span class="control-value" id="val-alignment">1.0</span></label>
+                            <input type="range" id="alignment" min="0" max="3" value="1.0" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Cohesión: <span class="control-value" id="val-cohesion">1.0</span></label>
+                            <input type="range" id="cohesion" min="0" max="3" value="1.0" step="0.1">
+                        </div>
+                    </div>
+                `;
+            },
+
+            bindControls() {
+                const bindSlider = (id, param, formatter = v => v) => {
+                    const slider = document.getElementById(id);
+                    const display = document.getElementById(`val-${id}`);
+                    slider.addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        this.params[param] = value;
+                        display.textContent = formatter(value);
+                        if (id === 'count') {
+                            this.init();
+                        }
+                    });
+                };
+
+                bindSlider('count', 'count', v => Math.floor(v));
+                bindSlider('speed', 'speed', v => v.toFixed(1));
+                bindSlider('perception', 'perception', v => Math.floor(v));
+                bindSlider('separation', 'separation', v => v.toFixed(1));
+                bindSlider('alignment', 'alignment', v => v.toFixed(1));
+                bindSlider('cohesion', 'cohesion', v => v.toFixed(1));
+            }
+        };
+
+        // ============================================
+        // REACTION-DIFFUSION SYSTEM
+        // ============================================
+        const reactionDiffusion = {
+            grid: null,
+            next: null,
+            width: 200,
+            height: 200,
+            params: {
+                diffusionA: 1.0,
+                diffusionB: 0.5,
+                feed: 0.055,
+                kill: 0.062
+            },
+
+            init() {
+                this.width = 200;
+                this.height = 200;
+                this.grid = {
+                    a: Array(this.height).fill(null).map(() => Array(this.width).fill(1)),
+                    b: Array(this.height).fill(null).map(() => Array(this.width).fill(0))
+                };
+                this.next = {
+                    a: Array(this.height).fill(null).map(() => Array(this.width).fill(0)),
+                    b: Array(this.height).fill(null).map(() => Array(this.width).fill(0))
+                };
+
+                // Seed with some B in the center
+                const cx = this.width / 2;
+                const cy = this.height / 2;
+                for (let i = -10; i <= 10; i++) {
+                    for (let j = -10; j <= 10; j++) {
+                        if (i*i + j*j < 100) {
+                            this.grid.b[Math.floor(cy + i)][Math.floor(cx + j)] = 1;
+                        }
+                    }
+                }
+            },
+
+            laplacian(grid, x, y) {
+                let sum = 0;
+                sum += grid[y][x] * -1;
+                sum += grid[y][(x + 1) % this.width] * 0.2;
+                sum += grid[y][(x - 1 + this.width) % this.width] * 0.2;
+                sum += grid[(y + 1) % this.height][x] * 0.2;
+                sum += grid[(y - 1 + this.height) % this.height][x] * 0.2;
+                sum += grid[(y + 1) % this.height][(x + 1) % this.width] * 0.05;
+                sum += grid[(y + 1) % this.height][(x - 1 + this.width) % this.width] * 0.05;
+                sum += grid[(y - 1 + this.height) % this.height][(x + 1) % this.width] * 0.05;
+                sum += grid[(y - 1 + this.height) % this.height][(x - 1 + this.width) % this.width] * 0.05;
+                return sum;
+            },
+
+            update() {
+                const { diffusionA, diffusionB, feed, kill } = this.params;
+
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        const a = this.grid.a[y][x];
+                        const b = this.grid.b[y][x];
+                        const laplaceA = this.laplacian(this.grid.a, x, y);
+                        const laplaceB = this.laplacian(this.grid.b, x, y);
+
+                        const reaction = a * b * b;
+                        this.next.a[y][x] = a + (diffusionA * laplaceA - reaction + feed * (1 - a));
+                        this.next.b[y][x] = b + (diffusionB * laplaceB + reaction - (kill + feed) * b);
+
+                        this.next.a[y][x] = Math.max(0, Math.min(1, this.next.a[y][x]));
+                        this.next.b[y][x] = Math.max(0, Math.min(1, this.next.b[y][x]));
+                    }
+                }
+
+                [this.grid, this.next] = [this.next, this.grid];
+            },
+
+            draw() {
+                const cellWidth = canvas.width / this.width;
+                const cellHeight = canvas.height / this.height;
+
+                for (let y = 0; y < this.height; y++) {
+                    for (let x = 0; x < this.width; x++) {
+                        const a = this.grid.a[y][x];
+                        const b = this.grid.b[y][x];
+
+                        const value = b - a;
+                        const hue = 120 + value * 240;
+                        const lightness = 50 + value * 30;
+                        ctx.fillStyle = `hsl(${hue}, 100%, ${lightness}%)`;
+                        ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                    }
+                }
+            },
+
+            getControls() {
+                return `
+                    <div class="sidebar-section">
+                        <h3>Gray-Scott Model</h3>
+                        <div class="control-group">
+                            <label class="control-label">Difusión A: <span class="control-value" id="val-diff-a">1.00</span></label>
+                            <input type="range" id="diff-a" min="0.5" max="1.5" value="1.0" step="0.01">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Difusión B: <span class="control-value" id="val-diff-b">0.50</span></label>
+                            <input type="range" id="diff-b" min="0.1" max="1.0" value="0.5" step="0.01">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Feed Rate: <span class="control-value" id="val-feed">0.055</span></label>
+                            <input type="range" id="feed" min="0.01" max="0.1" value="0.055" step="0.001">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Kill Rate: <span class="control-value" id="val-kill">0.062</span></label>
+                            <input type="range" id="kill" min="0.04" max="0.08" value="0.062" step="0.001">
+                        </div>
+                        <p class="description" style="margin-top: 10px;">Patrones de Turing emergentes</p>
+                    </div>
+                `;
+            },
+
+            bindControls() {
+                const bindSlider = (id, param, formatter = v => v) => {
+                    const slider = document.getElementById(id);
+                    const display = document.getElementById(`val-${id}`);
+                    slider.addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        this.params[param] = value;
+                        display.textContent = formatter(value);
+                    });
+                };
+
+                bindSlider('diff-a', 'diffusionA', v => v.toFixed(2));
+                bindSlider('diff-b', 'diffusionB', v => v.toFixed(2));
+                bindSlider('feed', 'feed', v => v.toFixed(3));
+                bindSlider('kill', 'kill', v => v.toFixed(3));
+            }
+        };
+
+        // ============================================
+        // SYSTEM REGISTRY
+        // ============================================
+        const systems = {
+            cellular: cellularAutomata,
+            boids: boidsSystem,
+            reaction: reactionDiffusion
+        };
+
+        // ============================================
+        // SYSTEM SWITCHING
+        // ============================================
+        function switchSystem(systemName) {
+            currentSystem = systemName;
+            const system = systems[systemName];
+
+            // Update controls
+            controlsContainer.innerHTML = system.getControls();
+            system.bindControls();
+
+            // Initialize system
+            system.init();
+
+            statusEl.textContent = `Sistema activo: ${systemName}`;
+        }
+
+        // ============================================
+        // MAIN LOOP
+        // ============================================
+        function animate() {
+            if (!paused) {
+                const system = systems[currentSystem];
+                system.update();
+                system.draw();
+                updateFPS();
+            }
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        systemSelect.addEventListener('change', (e) => {
+            switchSystem(e.target.value);
+        });
+
+        document.getElementById('btn-pause').addEventListener('click', () => {
+            paused = !paused;
+            document.getElementById('btn-pause').textContent = paused ? '▶ Reanudar' : '⏸ Pausar';
+            statusEl.textContent = paused ? 'Pausado' : `Sistema activo: ${currentSystem}`;
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            systems[currentSystem].init();
+        });
+
+        document.getElementById('btn-random').addEventListener('click', () => {
+            systems[currentSystem].init();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case ' ':
+                    e.preventDefault();
+                    document.getElementById('btn-pause').click();
+                    break;
+                case 'r':
+                case 'R':
+                    e.preventDefault();
+                    document.getElementById('btn-reset').click();
+                    break;
+            }
+        });
+
+        // Glitch effect
+        setInterval(() => {
+            if (Math.random() < 0.02) {
+                const glitchIntensity = Math.random() * 5;
+                canvas.style.transform = `translate(${Math.random() * glitchIntensity - glitchIntensity/2}px, ${Math.random() * glitchIntensity - glitchIntensity/2}px)`;
+                setTimeout(() => {
+                    canvas.style.transform = 'translate(0, 0)';
+                }, 50);
+            }
+        }, 100);
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        switchSystem('cellular');
+        animate();
+    </script>
+</body>
+</html>

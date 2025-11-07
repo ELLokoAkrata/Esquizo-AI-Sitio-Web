@@ -602,16 +602,20 @@
             next: null,
             width: 200,
             height: 200,
+            frameCount: 0,
             params: {
                 diffusionA: 1.0,
                 diffusionB: 0.5,
                 feed: 0.055,
-                kill: 0.062
+                kill: 0.062,
+                autoSeed: true,
+                seedInterval: 120
             },
 
             init() {
                 this.width = 200;
                 this.height = 200;
+                this.frameCount = 0;
                 this.grid = {
                     a: Array(this.height).fill(null).map(() => Array(this.width).fill(1)),
                     b: Array(this.height).fill(null).map(() => Array(this.width).fill(0))
@@ -621,15 +625,30 @@
                     b: Array(this.height).fill(null).map(() => Array(this.width).fill(0))
                 };
 
-                // Seed with some B in the center
-                const cx = this.width / 2;
-                const cy = this.height / 2;
-                for (let i = -10; i <= 10; i++) {
-                    for (let j = -10; j <= 10; j++) {
-                        if (i*i + j*j < 100) {
-                            this.grid.b[Math.floor(cy + i)][Math.floor(cx + j)] = 1;
+                // Seed with multiple random points
+                this.addMultipleSeeds(8);
+            },
+
+            addSeed(cx, cy, radius = 8) {
+                for (let i = -radius; i <= radius; i++) {
+                    for (let j = -radius; j <= radius; j++) {
+                        if (i*i + j*j < radius * radius) {
+                            const x = Math.floor(cx + j);
+                            const y = Math.floor(cy + i);
+                            if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+                                this.grid.b[y][x] = 1;
+                            }
                         }
                     }
+                }
+            },
+
+            addMultipleSeeds(count) {
+                for (let i = 0; i < count; i++) {
+                    const cx = Math.floor(Math.random() * this.width);
+                    const cy = Math.floor(Math.random() * this.height);
+                    const radius = 5 + Math.floor(Math.random() * 8);
+                    this.addSeed(cx, cy, radius);
                 }
             },
 
@@ -649,6 +668,12 @@
 
             update() {
                 const { diffusionA, diffusionB, feed, kill } = this.params;
+
+                // Add periodic seeds
+                this.frameCount++;
+                if (this.params.autoSeed && this.frameCount % this.params.seedInterval === 0) {
+                    this.addMultipleSeeds(2);
+                }
 
                 for (let y = 0; y < this.height; y++) {
                     for (let x = 0; x < this.width; x++) {
@@ -678,10 +703,12 @@
                         const a = this.grid.a[y][x];
                         const b = this.grid.b[y][x];
 
-                        const value = b - a;
-                        const hue = 120 + value * 240;
-                        const lightness = 50 + value * 30;
-                        ctx.fillStyle = `hsl(${hue}, 100%, ${lightness}%)`;
+                        // Mejorar visualización
+                        const value = (b - a + 1) / 2;
+                        const hue = 180 + value * 180;
+                        const saturation = 70 + value * 30;
+                        const lightness = 30 + value * 50;
+                        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
                         ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                     }
                 }
@@ -707,7 +734,10 @@
                             <label class="control-label">Kill Rate: <span class="control-value" id="val-kill">0.062</span></label>
                             <input type="range" id="kill" min="0.04" max="0.08" value="0.062" step="0.001">
                         </div>
-                        <p class="description" style="margin-top: 10px;">Patrones de Turing emergentes</p>
+                        <div class="control-group">
+                            <button class="btn" id="toggle-autoseed" style="margin-top: 10px;">🌱 Auto-Semillas: ON</button>
+                        </div>
+                        <p class="description" style="margin-top: 10px;">Click en canvas para agregar semillas manualmente</p>
                     </div>
                 `;
             },
@@ -727,6 +757,12 @@
                 bindSlider('diff-b', 'diffusionB', v => v.toFixed(2));
                 bindSlider('feed', 'feed', v => v.toFixed(3));
                 bindSlider('kill', 'kill', v => v.toFixed(3));
+
+                // Auto-seed toggle
+                document.getElementById('toggle-autoseed').addEventListener('click', (e) => {
+                    this.params.autoSeed = !this.params.autoSeed;
+                    e.target.textContent = this.params.autoSeed ? '🌱 Auto-Semillas: ON' : '🌱 Auto-Semillas: OFF';
+                });
             }
         };
 
@@ -802,6 +838,21 @@
                     e.preventDefault();
                     document.getElementById('btn-reset').click();
                     break;
+            }
+        });
+
+        // Canvas click for reaction-diffusion seeds
+        canvas.addEventListener('click', (e) => {
+            if (currentSystem === 'reaction') {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // Convert canvas coordinates to grid coordinates
+                const gridX = Math.floor((x / canvas.width) * reactionDiffusion.width);
+                const gridY = Math.floor((y / canvas.height) * reactionDiffusion.height);
+
+                reactionDiffusion.addSeed(gridX, gridY, 10);
             }
         });
 

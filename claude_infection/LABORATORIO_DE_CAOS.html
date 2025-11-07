@@ -220,6 +220,7 @@
                 <option value="cellular">Autómata Celular</option>
                 <option value="boids">Sistema de Partículas (Boids)</option>
                 <option value="reaction">Reacción-Difusión</option>
+                <option value="attractors">Atractores Extraños (Turbulencias)</option>
             </select>
         </div>
 
@@ -767,12 +768,294 @@
         };
 
         // ============================================
+        // STRANGE ATTRACTORS SYSTEM
+        // ============================================
+        const strangeAttractors = {
+            points: [],
+            maxPoints: 5000,
+            x: 0.1, y: 0, z: 0,
+            rotationAngle: 0,
+            rotationSpeed: 0.003,
+            currentAttractor: 'lorenz',
+            params: {
+                speed: 1.0,
+                trailLength: 0.7,
+                colorShift: 0,
+                turbulence: 1.0
+            },
+
+            attractors: {
+                lorenz: {
+                    name: 'Lorenz (Clásico)',
+                    init: () => ({ x: 0.1, y: 0, z: 0 }),
+                    step: function(x, y, z, dt) {
+                        const sigma = 10, rho = 28, beta = 8/3;
+                        return {
+                            dx: sigma * (y - x) * dt,
+                            dy: (x * (rho - z) - y) * dt,
+                            dz: (x * y - beta * z) * dt
+                        };
+                    },
+                    scale: 8
+                },
+                rossler: {
+                    name: 'Rössler (Espiral)',
+                    init: () => ({ x: 1, y: 1, z: 1 }),
+                    step: function(x, y, z, dt) {
+                        const a = 0.2, b = 0.2, c = 5.7;
+                        return {
+                            dx: (-y - z) * dt,
+                            dy: (x + a * y) * dt,
+                            dz: (b + z * (x - c)) * dt
+                        };
+                    },
+                    scale: 15
+                },
+                thomas: {
+                    name: 'Thomas (Caótico)',
+                    init: () => ({ x: 0.1, y: 0, z: 0 }),
+                    step: function(x, y, z, dt) {
+                        const b = 0.18;
+                        return {
+                            dx: (Math.sin(y) - b * x) * dt * 10,
+                            dy: (Math.sin(z) - b * y) * dt * 10,
+                            dz: (Math.sin(x) - b * z) * dt * 10
+                        };
+                    },
+                    scale: 25
+                },
+                aizawa: {
+                    name: 'Aizawa (Raro)',
+                    init: () => ({ x: 0.1, y: 0, z: 0 }),
+                    step: function(x, y, z, dt) {
+                        const a = 0.95, b = 0.7, c = 0.6, d = 3.5, e = 0.25, f = 0.1;
+                        return {
+                            dx: ((z - b) * x - d * y) * dt,
+                            dy: (d * x + (z - b) * y) * dt,
+                            dz: (c + a * z - (z * z * z) / 3 - (x * x + y * y) * (1 + e * z) + f * z * x * x * x) * dt
+                        };
+                    },
+                    scale: 18
+                },
+                dadras: {
+                    name: 'Dadras (Hipercaótico)',
+                    init: () => ({ x: 1, y: 1, z: 1 }),
+                    step: function(x, y, z, dt) {
+                        const a = 3, b = 2.7, c = 1.7, d = 2, e = 9;
+                        return {
+                            dx: (y - a * x + b * y * z) * dt,
+                            dy: (c * y - x * z + z) * dt,
+                            dz: (d * x * y - e * z) * dt
+                        };
+                    },
+                    scale: 12
+                },
+                halvorsen: {
+                    name: 'Halvorsen (Simétrico)',
+                    init: () => ({ x: 1, y: 0, z: 0 }),
+                    step: function(x, y, z, dt) {
+                        const a = 1.4;
+                        return {
+                            dx: (-a * x - 4 * y - 4 * z - y * y) * dt,
+                            dy: (-a * y - 4 * z - 4 * x - z * z) * dt,
+                            dz: (-a * z - 4 * x - 4 * y - x * x) * dt
+                        };
+                    },
+                    scale: 20
+                },
+                chen: {
+                    name: 'Chen (Mariposa)',
+                    init: () => ({ x: 1, y: 1, z: 1 }),
+                    step: function(x, y, z, dt) {
+                        const a = 35, b = 3, c = 28;
+                        return {
+                            dx: (a * (y - x)) * dt,
+                            dy: ((c - a) * x - x * z + c * y) * dt,
+                            dz: (x * y - b * z) * dt
+                        };
+                    },
+                    scale: 10
+                }
+            },
+
+            init() {
+                const attractor = this.attractors[this.currentAttractor];
+                const pos = attractor.init();
+                this.x = pos.x;
+                this.y = pos.y;
+                this.z = pos.z;
+                this.points = [];
+                this.rotationAngle = 0;
+                this.params.colorShift = Math.random() * 360;
+            },
+
+            update() {
+                const attractor = this.attractors[this.currentAttractor];
+                const dt = 0.005 * this.params.speed;
+
+                const delta = attractor.step(this.x, this.y, this.z, dt);
+
+                // Añadir turbulencia
+                const turb = this.params.turbulence * 0.01;
+                this.x += delta.dx + (Math.random() - 0.5) * turb;
+                this.y += delta.dy + (Math.random() - 0.5) * turb;
+                this.z += delta.dz + (Math.random() - 0.5) * turb;
+
+                this.points.push({ x: this.x, y: this.y, z: this.z });
+
+                const maxPoints = Math.floor(this.maxPoints * this.params.trailLength);
+                if (this.points.length > maxPoints) {
+                    this.points.shift();
+                }
+
+                this.rotationAngle += this.rotationSpeed;
+                this.params.colorShift += 0.5;
+            },
+
+            project3D(x, y, z) {
+                const attractor = this.attractors[this.currentAttractor];
+                const scale = attractor.scale;
+                const angle = this.rotationAngle;
+
+                // Rotación Y
+                const cosA = Math.cos(angle);
+                const sinA = Math.sin(angle);
+                const xRot = x * cosA - z * sinA;
+                const zRot = x * sinA + z * cosA;
+
+                // Rotación X suave
+                const angleX = Math.sin(angle * 0.5) * 0.3;
+                const cosX = Math.cos(angleX);
+                const sinX = Math.sin(angleX);
+                const yRot = y * cosX - zRot * sinX;
+                const zRot2 = y * sinX + zRot * cosX;
+
+                return {
+                    x: xRot * scale + canvas.width / 2,
+                    y: -yRot * scale + canvas.height / 2,
+                    z: zRot2
+                };
+            },
+
+            draw() {
+                // Fondo con trail psicodélico
+                ctx.fillStyle = `rgba(10, 10, 10, ${0.03 + (1 - this.params.trailLength) * 0.1})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                if (this.points.length < 2) return;
+
+                // Dibujar trayectoria con gradientes psicodélicos
+                for (let i = 1; i < this.points.length; i++) {
+                    const p1 = this.points[i - 1];
+                    const p2 = this.points[i];
+
+                    const proj1 = this.project3D(p1.x, p1.y, p1.z);
+                    const proj2 = this.project3D(p2.x, p2.y, p2.z);
+
+                    // Edad y profundidad para efectos
+                    const age = i / this.points.length;
+                    const depthFactor = (proj1.z + 50) / 100;
+                    const alpha = age * Math.max(0.3, depthFactor) * 0.9;
+
+                    // Color psicodélico basado en posición y tiempo
+                    const hue = (this.params.colorShift + age * 360 + proj1.z * 2) % 360;
+                    const saturation = 70 + Math.sin(age * Math.PI * 4) * 30;
+                    const lightness = 40 + depthFactor * 40;
+
+                    ctx.strokeStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+                    ctx.lineWidth = 1 + depthFactor * 2;
+
+                    // Glow effect
+                    ctx.shadowBlur = 5 + depthFactor * 10;
+                    ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+
+                    ctx.beginPath();
+                    ctx.moveTo(proj1.x, proj1.y);
+                    ctx.lineTo(proj2.x, proj2.y);
+                    ctx.stroke();
+                }
+
+                ctx.shadowBlur = 0;
+
+                // Punto actual con glow intenso
+                if (this.points.length > 0) {
+                    const current = this.points[this.points.length - 1];
+                    const proj = this.project3D(current.x, current.y, current.z);
+                    const hue = this.params.colorShift % 360;
+
+                    ctx.fillStyle = `hsl(${hue}, 100%, 60%)`;
+                    ctx.shadowBlur = 30;
+                    ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
+                    ctx.beginPath();
+                    ctx.arc(proj.x, proj.y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+            },
+
+            getControls() {
+                const attractorOptions = Object.keys(this.attractors)
+                    .map(key => `<option value="${key}">${this.attractors[key].name}</option>`)
+                    .join('');
+
+                return `
+                    <div class="sidebar-section">
+                        <h3>Atractor Extraño</h3>
+                        <select id="attractor-type" class="system-select" style="margin-bottom: 15px;">
+                            ${attractorOptions}
+                        </select>
+                        <p class="description">Hipercaóticos: Dadras tiene múltiples exponentes de Lyapunov positivos</p>
+                    </div>
+                    <div class="sidebar-section">
+                        <h3>Turbulencias</h3>
+                        <div class="control-group">
+                            <label class="control-label">Velocidad: <span class="control-value" id="val-speed">1.0</span></label>
+                            <input type="range" id="speed" min="0.1" max="3" value="1.0" step="0.1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Estela: <span class="control-value" id="val-trail">70%</span></label>
+                            <input type="range" id="trail" min="0" max="100" value="70" step="1">
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label">Turbulencia: <span class="control-value" id="val-turb">1.0</span></label>
+                            <input type="range" id="turb" min="0" max="5" value="1.0" step="0.1">
+                        </div>
+                        <p class="description" style="margin-top: 10px;">Turbulencia añade ruido caótico al sistema</p>
+                    </div>
+                `;
+            },
+
+            bindControls() {
+                // Attractor type selector
+                document.getElementById('attractor-type').addEventListener('change', (e) => {
+                    this.currentAttractor = e.target.value;
+                    this.init();
+                });
+
+                const bindSlider = (id, param, formatter = v => v) => {
+                    const slider = document.getElementById(id);
+                    const display = document.getElementById(`val-${id}`);
+                    slider.addEventListener('input', (e) => {
+                        const value = parseFloat(e.target.value);
+                        this.params[param] = param === 'trailLength' ? value / 100 : value;
+                        display.textContent = formatter(value);
+                    });
+                };
+
+                bindSlider('speed', 'speed', v => v.toFixed(1));
+                bindSlider('trail', 'trailLength', v => `${v}%`);
+                bindSlider('turb', 'turbulence', v => v.toFixed(1));
+            }
+        };
+
+        // ============================================
         // SYSTEM REGISTRY
         // ============================================
         const systems = {
             cellular: cellularAutomata,
             boids: boidsSystem,
-            reaction: reactionDiffusion
+            reaction: reactionDiffusion,
+            attractors: strangeAttractors
         };
 
         // ============================================

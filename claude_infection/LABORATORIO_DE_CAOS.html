@@ -426,21 +426,171 @@
         };
 
         // ============================================
-        // BOIDS SYSTEM
+        // BOIDS SYSTEM WITH GEOMETRIC PATTERNS
         // ============================================
         const boidsSystem = {
             boids: [],
+            time: 0,
             params: {
-                count: 150,
+                count: 200,
                 speed: 2,
                 perception: 50,
                 separation: 1.5,
                 alignment: 1.0,
-                cohesion: 1.0
+                cohesion: 1.0,
+                pattern: 'none',
+                patternStrength: 0.5
+            },
+
+            patterns: {
+                none: {
+                    name: 'Sin Patrón (Caos)',
+                    force: () => ({ fx: 0, fy: 0 })
+                },
+                vortex: {
+                    name: 'Vórtice/Espiral',
+                    force: function(x, y, cx, cy, time) {
+                        const dx = x - cx;
+                        const dy = y - cy;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 10) return { fx: 0, fy: 0 };
+
+                        // Fuerza tangencial (rotación) + fuerza radial (espiral)
+                        const angle = Math.atan2(dy, dx);
+                        const tangentX = -Math.sin(angle);
+                        const tangentY = Math.cos(angle);
+                        const radialX = -dx / dist;
+                        const radialY = -dy / dist;
+
+                        const spiral = Math.sin(time * 0.01 + dist * 0.02);
+
+                        return {
+                            fx: (tangentX * 2 + radialX * spiral) * 0.3,
+                            fy: (tangentY * 2 + radialY * spiral) * 0.3
+                        };
+                    }
+                },
+                hexagon: {
+                    name: 'Hexágono/Panal',
+                    force: function(x, y, cx, cy, time) {
+                        const scale = 80;
+                        const dx = (x - cx) / scale;
+                        const dy = (y - cy) / scale;
+
+                        // Lattice hexagonal
+                        const q = dx;
+                        const r = dy;
+                        const qr = Math.round(q);
+                        const rr = Math.round(r);
+                        const sr = Math.round(-q - r);
+
+                        const qDiff = Math.abs(qr - q);
+                        const rDiff = Math.abs(rr - r);
+                        const sDiff = Math.abs(sr - (-q - r));
+
+                        let targetQ, targetR;
+                        if (qDiff > rDiff && qDiff > sDiff) {
+                            targetQ = -rr - sr;
+                            targetR = rr;
+                        } else if (rDiff > sDiff) {
+                            targetQ = qr;
+                            targetR = -qr - sr;
+                        } else {
+                            targetQ = qr;
+                            targetR = rr;
+                        }
+
+                        const targetX = targetQ * scale + cx;
+                        const targetY = targetR * scale + cy;
+
+                        return {
+                            fx: (targetX - x) * 0.02,
+                            fy: (targetY - y) * 0.02
+                        };
+                    }
+                },
+                waves: {
+                    name: 'Ondas Circulares',
+                    force: function(x, y, cx, cy, time) {
+                        const dx = x - cx;
+                        const dy = y - cy;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        // Ondas concéntricas
+                        const wave = Math.sin(dist * 0.05 - time * 0.05) * 20;
+                        const targetDist = dist + wave;
+
+                        if (dist < 10) return { fx: 0, fy: 0 };
+
+                        const targetX = cx + (dx / dist) * targetDist;
+                        const targetY = cy + (dy / dist) * targetDist;
+
+                        return {
+                            fx: (targetX - x) * 0.01,
+                            fy: (targetY - y) * 0.01
+                        };
+                    }
+                },
+                grid: {
+                    name: 'Rejilla Ortogonal',
+                    force: function(x, y, cx, cy, time) {
+                        const cellSize = 60;
+                        const targetX = Math.round((x - cx) / cellSize) * cellSize + cx;
+                        const targetY = Math.round((y - cy) / cellSize) * cellSize + cy;
+
+                        return {
+                            fx: (targetX - x) * 0.03,
+                            fy: (targetY - y) * 0.03
+                        };
+                    }
+                },
+                galaxy: {
+                    name: 'Galaxia Espiral',
+                    force: function(x, y, cx, cy, time) {
+                        const dx = x - cx;
+                        const dy = y - cy;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 10) return { fx: 0, fy: 0 };
+
+                        const angle = Math.atan2(dy, dx);
+                        const spiralAngle = angle + Math.log(dist) * 0.3 + time * 0.02;
+
+                        const targetDist = dist * 0.99; // Leve atracción al centro
+                        const targetX = cx + Math.cos(spiralAngle) * targetDist;
+                        const targetY = cy + Math.sin(spiralAngle) * targetDist;
+
+                        return {
+                            fx: (targetX - x) * 0.02,
+                            fy: (targetY - y) * 0.02
+                        };
+                    }
+                },
+                fibonacci: {
+                    name: 'Espiral Fibonacci',
+                    force: function(x, y, cx, cy, time) {
+                        const dx = x - cx;
+                        const dy = y - cy;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 10) return { fx: 0, fy: 0 };
+
+                        const phi = 1.618033988749;
+                        const angle = Math.atan2(dy, dx);
+                        const fibAngle = angle + Math.log(dist) / Math.log(phi) + time * 0.01;
+
+                        const targetX = cx + Math.cos(fibAngle) * dist * 0.98;
+                        const targetY = cy + Math.sin(fibAngle) * dist * 0.98;
+
+                        return {
+                            fx: (targetX - x) * 0.025,
+                            fy: (targetY - y) * 0.025
+                        };
+                    }
+                }
             },
 
             init() {
                 this.boids = [];
+                this.time = 0;
                 for (let i = 0; i < this.params.count; i++) {
                     this.boids.push({
                         x: Math.random() * canvas.width,
@@ -453,7 +603,10 @@
             },
 
             update() {
+                this.time++;
                 const perception = this.params.perception;
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
 
                 this.boids.forEach(boid => {
                     let separationX = 0, separationY = 0;
@@ -461,6 +614,7 @@
                     let cohesionX = 0, cohesionY = 0;
                     let neighbors = 0;
 
+                    // Boid behaviors
                     this.boids.forEach(other => {
                         if (boid === other) return;
 
@@ -469,38 +623,37 @@
                         const dist = Math.sqrt(dx * dx + dy * dy);
 
                         if (dist < perception && dist > 0) {
-                            // Separation
                             separationX -= dx / dist;
                             separationY -= dy / dist;
-
-                            // Alignment
                             alignmentX += other.vx;
                             alignmentY += other.vy;
-
-                            // Cohesion
                             cohesionX += other.x;
                             cohesionY += other.y;
-
                             neighbors++;
                         }
                     });
 
                     if (neighbors > 0) {
-                        // Apply separation
                         boid.vx += separationX * this.params.separation * 0.05;
                         boid.vy += separationY * this.params.separation * 0.05;
 
-                        // Apply alignment
                         alignmentX /= neighbors;
                         alignmentY /= neighbors;
                         boid.vx += (alignmentX - boid.vx) * this.params.alignment * 0.05;
                         boid.vy += (alignmentY - boid.vy) * this.params.alignment * 0.05;
 
-                        // Apply cohesion
                         cohesionX /= neighbors;
                         cohesionY /= neighbors;
                         boid.vx += (cohesionX - boid.x) * this.params.cohesion * 0.001;
                         boid.vy += (cohesionY - boid.y) * this.params.cohesion * 0.001;
+                    }
+
+                    // Apply pattern force
+                    if (this.params.pattern !== 'none') {
+                        const pattern = this.patterns[this.params.pattern];
+                        const force = pattern.force(boid.x, boid.y, cx, cy, this.time);
+                        boid.vx += force.fx * this.params.patternStrength;
+                        boid.vy += force.fy * this.params.patternStrength;
                     }
 
                     // Limit speed
@@ -520,8 +673,9 @@
                     if (boid.y < 0) boid.y = canvas.height;
                     if (boid.y > canvas.height) boid.y = 0;
 
-                    // Update hue based on speed
-                    boid.hue = (boid.hue + speed * 0.5) % 360;
+                    // Update hue based on distance from center and speed
+                    const distFromCenter = Math.sqrt((boid.x - cx) ** 2 + (boid.y - cy) ** 2);
+                    boid.hue = (distFromCenter * 0.5 + this.time * 0.5) % 360;
                 });
             },
 
@@ -541,12 +695,26 @@
             },
 
             getControls() {
+                const patternOptions = Object.keys(this.patterns)
+                    .map(key => `<option value="${key}">${this.patterns[key].name}</option>`)
+                    .join('');
+
                 return `
+                    <div class="sidebar-section">
+                        <h3>Patrón Geométrico</h3>
+                        <select id="pattern-type" class="system-select" style="margin-bottom: 15px;">
+                            ${patternOptions}
+                        </select>
+                        <div class="control-group">
+                            <label class="control-label">Intensidad Patrón: <span class="control-value" id="val-pattern-strength">0.5</span></label>
+                            <input type="range" id="pattern-strength" min="0" max="2" value="0.5" step="0.1">
+                        </div>
+                    </div>
                     <div class="sidebar-section">
                         <h3>Parámetros de Swarm</h3>
                         <div class="control-group">
-                            <label class="control-label">Habitantes: <span class="control-value" id="val-count">150</span></label>
-                            <input type="range" id="count" min="10" max="500" value="150" step="10">
+                            <label class="control-label">Habitantes: <span class="control-value" id="val-count">200</span></label>
+                            <input type="range" id="count" min="10" max="500" value="200" step="10">
                         </div>
                         <div class="control-group">
                             <label class="control-label">Velocidad: <span class="control-value" id="val-speed">2.0</span></label>
@@ -573,6 +741,11 @@
             },
 
             bindControls() {
+                // Pattern selector
+                document.getElementById('pattern-type').addEventListener('change', (e) => {
+                    this.params.pattern = e.target.value;
+                });
+
                 const bindSlider = (id, param, formatter = v => v) => {
                     const slider = document.getElementById(id);
                     const display = document.getElementById(`val-${id}`);
@@ -586,6 +759,7 @@
                     });
                 };
 
+                bindSlider('pattern-strength', 'patternStrength', v => v.toFixed(1));
                 bindSlider('count', 'count', v => Math.floor(v));
                 bindSlider('speed', 'speed', v => v.toFixed(1));
                 bindSlider('perception', 'perception', v => Math.floor(v));

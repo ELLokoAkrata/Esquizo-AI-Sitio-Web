@@ -271,12 +271,11 @@
             const size = Math.min(container.clientWidth - 40, container.clientHeight - 40);
             canvas.width = size;
             canvas.height = size;
-            if (systems[currentSystem]) {
+            if (typeof systems !== 'undefined' && systems[currentSystem]) {
                 systems[currentSystem].init();
             }
         }
 
-        resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
         // FPS Counter
@@ -820,6 +819,7 @@
         // ============================================
         // INITIALIZE
         // ============================================
+        resizeCanvas();
         switchSystem('cellular');
         animate();
     </script>

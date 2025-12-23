@@ -279,4 +279,60 @@
             background-color: rgba(0, 255, 65, 0.2);
             box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
+
+        /* Estilos para Tools Cards */
+        .tool-card {
+            display: block;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.3), rgba(236, 72, 153, 0.2));
+            border: 2px solid #9333ea;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 280px;
+            max-width: 500px;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 30px rgba(147, 51, 234, 0.6), 0 0 60px rgba(255, 0, 255, 0.3);
+            border-color: #ff00ff;
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.5), rgba(236, 72, 153, 0.4));
+        }
+
+        .tool-card .tool-title {
+            font-size: 1.8rem;
+            color: #ff00ff;
+            text-shadow: 0 0 15px #ff00ff;
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-card .tool-subtitle {
+            font-size: 1rem;
+            color: #a855f7;
+            margin-bottom: 0.5rem;
+        }
+
+        .tool-card .tool-desc {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            line-height: 1.5;
+        }
+
+        .tool-card .tool-btn {
+            margin-top: 1rem;
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #9333ea;
+            color: white;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .tool-card:hover .tool-btn {
+            background: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
     

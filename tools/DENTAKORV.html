@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DENTAKORV v3.0 - Psycho Anarco-Punk Prompt Generator</title>
+    <style>
+        :root {
+            --bg-dark: #0a0510;
+            --bg-card: rgba(17, 12, 25, 0.85);
+            --purple-primary: #9333ea;
+            --purple-glow: rgba(147, 51, 234, 0.4);
+            --pink-accent: #ec4899;
+            --cyan-accent: #06b6d4;
+            --green-accent: #22c55e;
+            --yellow-accent: #eab308;
+            --red-accent: #ef4444;
+            --orange-accent: #f97316;
+            --blue-accent: #3b82f6;
+            --amber-accent: #d97706;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: rgba(147, 51, 234, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a0a2e 50%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #chaos-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        header {
+            position: relative;
+            z-index: 10;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            padding: 1rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(90deg, var(--pink-accent), var(--purple-primary), var(--cyan-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glitchTitle 4s infinite;
+        }
+
+        @keyframes glitchTitle {
+            0%, 90%, 100% { text-shadow: none; transform: none; }
+            92% { text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff; transform: skewX(-2deg); }
+            94% { text-shadow: -2px 0 #ff0000, 2px 0 #00ff00; transform: skewX(2deg); }
+        }
+
+        .subtitle { color: #a855f7; font-size: 0.9rem; margin-top: 0.25rem; }
+        .credits { color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem; }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #374151;
+            background: rgba(17, 24, 39, 0.5);
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover { border-color: rgba(147, 51, 234, 0.5); color: #c4b5fd; }
+        .nav-btn.active {
+            background: rgba(147, 51, 234, 0.5);
+            border-color: #a855f7;
+            color: white;
+            box-shadow: 0 0 20px var(--purple-glow);
+        }
+
+        main {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .section { display: none; }
+        .section.active { display: block; }
+
+        .generator-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .generator-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (min-width: 1200px) {
+            .generator-grid { grid-template-columns: 1fr 1fr 1fr; }
+        }
+
+        .column { display: flex; flex-direction: column; gap: 0.75rem; }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .card.purple { border-color: rgba(147, 51, 234, 0.3); }
+        .card.pink { border-color: rgba(236, 72, 153, 0.3); }
+        .card.cyan { border-color: rgba(6, 182, 212, 0.3); }
+        .card.yellow { border-color: rgba(234, 179, 8, 0.3); }
+        .card.red { border-color: rgba(239, 68, 68, 0.3); }
+        .card.green { border-color: rgba(34, 197, 94, 0.3); }
+        .card.orange { border-color: rgba(249, 115, 22, 0.3); }
+        .card.blue { border-color: rgba(59, 130, 246, 0.3); }
+        .card.amber { border-color: rgba(217, 119, 6, 0.3); }
+        .card.gray { border-color: rgba(107, 114, 128, 0.3); }
+
+        .card-label { font-size: 0.8rem; margin-bottom: 0.4rem; display: block; }
+        .card.purple .card-label { color: #a855f7; }
+        .card.pink .card-label { color: #ec4899; }
+        .card.cyan .card-label { color: #06b6d4; }
+        .card.yellow .card-label { color: #eab308; }
+        .card.red .card-label { color: #ef4444; }
+        .card.green .card-label { color: #22c55e; }
+        .card.orange .card-label { color: #f97316; }
+        .card.blue .card-label { color: #3b82f6; }
+        .card.amber .card-label { color: #d97706; }
+        .card.gray .card-label { color: #9ca3af; }
+
+        select, input, textarea {
+            width: 100%;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.4rem;
+            padding: 0.4rem;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+        }
+
+        textarea { resize: none; height: 60px; }
+        .hint { font-size: 0.7rem; color: #6b7280; margin-top: 0.2rem; }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .toggle-btn {
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .toggle-btn.on { background: #dc2626; color: white; }
+        .toggle-btn.off { background: #374151; color: #9ca3af; }
+        .toggle-btn.on-blue { background: #2563eb; color: white; }
+        .toggle-btn.on-green { background: #16a34a; color: white; }
+        .toggle-btn.on-amber { background: #d97706; color: white; }
+        .toggle-btn.on-cyan { background: #0891b2; color: white; }
+        .toggle-btn.on-pink { background: #db2777; color: white; }
+
+        .multi-select { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+        .multi-btn {
+            padding: 0.3rem 0.5rem;
+            border-radius: 0.3rem;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        .multi-btn.active {
+            background: rgba(147, 51, 234, 0.5);
+            border-color: #a855f7;
+            color: white;
+        }
+
+        .ratio-buttons { display: flex; gap: 0.4rem; }
+        .ratio-btn {
+            flex: 1;
+            padding: 0.4rem;
+            border-radius: 0.4rem;
+            border: 1px solid #374151;
+            background: #1f2937;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        .ratio-btn.active {
+            background: rgba(147, 51, 234, 0.5);
+            border-color: #a855f7;
+            color: white;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(90deg, var(--pink-accent), var(--purple-primary), var(--cyan-accent));
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            margin-top: 1rem;
+            font-family: inherit;
+            box-shadow: 0 0 30px var(--purple-glow);
+        }
+        .generate-btn:hover { opacity: 0.9; }
+        .generate-btn:active { transform: scale(0.99); }
+
+        .output-card {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            margin-top: 1rem;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .output-label { color: #22c55e; font-size: 0.85rem; }
+
+        .copy-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.4rem;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        .copy-btn.default { background: #7c3aed; color: white; }
+        .copy-btn.copied { background: #16a34a; color: white; }
+
+        .output-text {
+            background: rgba(0,0,0,0.5);
+            border-radius: 0.4rem;
+            padding: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 0.85rem;
+            color: #d1d5db;
+            line-height: 1.5;
+        }
+
+        /* Docs & DB styles */
+        .docs-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        @media (min-width: 768px) { .docs-grid { grid-template-columns: 1fr 1fr; } }
+        @media (min-width: 1024px) { .docs-grid { grid-template-columns: 1fr 1fr 1fr; } }
+
+        .doc-card {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .doc-header {
+            background: rgba(88, 28, 135, 0.5);
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .doc-header h3 { color: #c4b5fd; font-size: 0.9rem; }
+        .doc-content {
+            padding: 0.8rem;
+            max-height: 220px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            color: #d1d5db;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        .db-intro {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 0.8rem;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            margin-bottom: 1rem;
+        }
+        .db-intro h3 { color: #06b6d4; margin-bottom: 0.5rem; }
+        .db-intro p { color: #9ca3af; font-size: 0.85rem; }
+
+        .prompt-item {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            border: 1px solid #374151;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+        .prompt-summary {
+            padding: 0.6rem 0.8rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        .prompt-summary:hover { background: rgba(31, 41, 55, 0.5); }
+        .prompt-id { color: #a855f7; font-family: monospace; }
+        .prompt-title { color: white; margin-left: 0.5rem; }
+        .prompt-tags { display: flex; gap: 0.2rem; }
+        .tag {
+            font-size: 0.65rem;
+            background: #374151;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.2rem;
+            color: #d1d5db;
+        }
+        .prompt-details {
+            display: none;
+            padding: 0.8rem;
+            border-top: 1px solid #374151;
+        }
+        .prompt-details.open { display: block; }
+        .prompt-text {
+            font-size: 0.7rem;
+            color: #9ca3af;
+            background: rgba(0,0,0,0.5);
+            border-radius: 0.4rem;
+            padding: 0.6rem;
+            white-space: pre-wrap;
+            margin-bottom: 0.5rem;
+        }
+        .prompt-copy-btn {
+            padding: 0.4rem 0.8rem;
+            background: #7c3aed;
+            border: none;
+            border-radius: 0.4rem;
+            color: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.8rem;
+            transition: background 0.3s;
+        }
+        .prompt-copy-btn:hover { background: #6d28d9; }
+
+        footer {
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0,0,0,0.5);
+            margin-top: 2rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        footer p { color: #6b7280; font-size: 0.75rem; }
+        footer .quote { color: rgba(168, 85, 247, 0.5); margin-top: 0.5rem; }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(147, 51, 234, 0.2);
+            border: 1px solid var(--purple-primary);
+            color: #a855f7;
+            text-decoration: none;
+            border-radius: 0.4rem;
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            background: rgba(147, 51, 234, 0.4);
+            box-shadow: 0 0 15px var(--purple-glow);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
+        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
+
+        .section-divider {
+            grid-column: 1 / -1;
+            border-top: 1px dashed rgba(147, 51, 234, 0.3);
+            padding-top: 0.5rem;
+            margin-top: 0.25rem;
+            color: #6b7280;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="chaos-canvas"></canvas>
+
+    <header>
+        <div class="header-content">
+            <a href="../index.html" class="back-link">&lt; Volver al Codice</a>
+            <h1>DENTAKORV v3.0</h1>
+            <p class="subtitle">Psycho Anarco-Punk Aesthetic Generation System - EXPANDED</p>
+            <p class="credits">EsquizoAI-land - Loko Akrata + Claude</p>
+        </div>
+        <nav>
+            <button class="nav-btn active" data-section="generator">GENERADOR</button>
+            <button class="nav-btn" data-section="docs">DOCUMENTACION</button>
+            <button class="nav-btn" data-section="database">PROMPTS DB</button>
+        </nav>
+    </header>
+
+    <main>
+        <!-- GENERATOR SECTION -->
+        <section id="generator" class="section active">
+            <div class="generator-grid">
+                <!-- COLUMN 1: CORE ENTITY -->
+                <div class="column">
+                    <div class="section-divider">// ENTIDAD CORE</div>
+
+                    <!-- Apertura -->
+                    <div class="card purple">
+                        <label class="card-label">APERTURA</label>
+                        <select id="apertura">
+                            <option value="A chaotic fusion of psychedelic horror and decay,">...and decay,</option>
+                            <option value="A chaotic fusion of psychedelic horror and melancholic decay,">...and melancholic decay,</option>
+                            <option value="A chaotic fusion of psychedelic horror and rebellious decay,">...and rebellious decay,</option>
+                            <option value="A chaotic fusion of psychedelic horror and elevated delirium,">...and elevated delirium,</option>
+                            <option value="Surrealist digital art exploring transgressive beauty through biomechanical surrealism—">Surrealist digital art... (bypass)</option>
+                            <option value="custom">CUSTOM</option>
+                        </select>
+                        <input type="text" id="apertura-custom" placeholder="Tu apertura custom..." style="display:none;">
+                    </div>
+
+                    <!-- Tipo de Entidad -->
+                    <div class="card pink">
+                        <label class="card-label">TIPO DE ENTIDAD</label>
+                        <select id="tipo-entidad">
+                            <option value="a psycho-anarchist punk entity">psycho-anarchist punk entity</option>
+                            <option value="a monstrous-anarchist punk entity">monstrous-anarchist entity</option>
+                            <option value="a biomechanical punk entity">biomechanical punk entity</option>
+                            <option value="a cogollo-humanoid entity">cogollo-humanoid entity</option>
+                            <option value="a SERES CARNOSOS entity">SERES CARNOSOS</option>
+                            <option value="custom">CUSTOM</option>
+                        </select>
+                        <input type="text" id="tipo-entidad-custom" placeholder="Tu tipo de entidad..." style="display:none;">
+                    </div>
+
+                    <!-- Personaje -->
+                    <div class="card cyan">
+                        <label class="card-label">PERSONAJE ESPECÍFICO (opcional)</label>
+                        <select id="personaje">
+                            <option value="">-- Sin especificar --</option>
+                            <option value="human">Human</option>
+                            <option value="putrid psycho Santa">Putrid Psycho Santa</option>
+                            <option value="psycho Grinch">Psycho Grinch</option>
+                            <option value="psycho Mickey Mouse">Psycho Mickey Mouse</option>
+                            <option value="amphibian humanoid">Amphibian Humanoid</option>
+                            <option value="jellyfish humanoid">Jellyfish Humanoid</option>
+                            <option value="humanoid cannabis bud with trichome-covered body">Cogollo Humanoid</option>
+                            <option value="gaunt anarchist hacker">Gaunt Anarchist Hacker</option>
+                            <option value="elderly punk with faded tattoos">Elderly Punk</option>
+                            <option value="custom">CUSTOM</option>
+                        </select>
+                        <input type="text" id="personaje-custom" placeholder="Describe tu personaje..." style="display:none;">
+                    </div>
+
+                    <!-- Accion -->
+                    <div class="card yellow">
+                        <label class="card-label">ACCIÓN / ESTADO</label>
+                        <select id="accion">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="inhabits">inhabits (habita)</option>
+                            <option value="sprawls through">sprawls through (se desparrama)</option>
+                            <option value="walks through">walks through (camina)</option>
+                            <option value="thrashes in">thrashes in (se agita)</option>
+                            <option value="sits in">sits in (sentado)</option>
+                            <option value="in deep generative trance">deep generative trance</option>
+                            <option value="in deep contemplative trance, eyes rolled back in ecstasy">contemplative trance, eyes rolled</option>
+                            <option value="sipping coffee">sipping coffee</option>
+                            <option value="sipping beer">sipping beer</option>
+                            <option value="smoking herbal sacrament">smoking herbal sacrament</option>
+                            <option value="spray-painting anarchist symbols">spray-painting symbols</option>
+                            <option value="hunched at keyboard, transfixed by screen">hunched at keyboard</option>
+                            <option value="custom">CUSTOM</option>
+                        </select>
+                        <input type="text" id="accion-custom" placeholder="Describe la accion..." style="display:none;">
+                    </div>
+
+                    <!-- Vestimenta (toggle) -->
+                    <div class="card orange">
+                        <div class="toggle-row">
+                            <label class="card-label">VESTIMENTA</label>
+                            <button id="toggle-vestimenta" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="vestimenta-options" style="display:none;">
+                            <select id="vestimenta">
+                                <option value="leather jacket hanging open over torso glistening with moisture and static, torn denim constructed from organic textile and metallic thread, spikes erupting from flesh like antennas">Leather jacket + torn denim + spikes</option>
+                                <option value="tattered black attire with corroded silver studs and chains">Tattered black + studs + chains</option>
+                                <option value="tattered black Christmas attire with corroded silver studs">Tattered black Christmas</option>
+                                <option value="torn jean shorts, black ankle boots and a black anarco-punk tank top">Punk tank top + shorts</option>
+                                <option value="mesh mini skirt with spike collar, torn fishnet">Mesh skirt + spike collar</option>
+                                <option value="draped in tattered red and black rags">Tattered red/black rags</option>
+                                <option value="worn band t-shirt, torn jeans, visible tattoos on forearms">Band t-shirt + tattoos</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="vestimenta-custom" placeholder="Describe vestimenta..." style="display:none;">
+                        </div>
+                    </div>
+
+                    <!-- Objetos en Manos (toggle) -->
+                    <div class="card amber">
+                        <div class="toggle-row">
+                            <label class="card-label">OBJETOS EN MANOS</label>
+                            <button id="toggle-objetos" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="objetos-options" style="display:none;">
+                            <select id="objeto1">
+                                <option value="">Mano 1: --</option>
+                                <option value="sweating beer bottle, label peeling, condensation dripping">Sweating beer bottle</option>
+                                <option value="herbal sacrament burning slow, smoke forming sigils">Herbal sacrament (joint)</option>
+                                <option value="steaming coffee mug, dark liquid swirling">Steaming coffee mug</option>
+                                <option value="spray can dripping with paint">Spray can dripping</option>
+                                <option value="handmade zine with xerox texture">Handmade zine</option>
+                            </select>
+                            <select id="objeto2">
+                                <option value="">Mano 2: --</option>
+                                <option value="empty bottles catching impossible light like amber altars">Empty bottles as altars</option>
+                                <option value="cables tangled like neural pathways">Cables tangled</option>
+                                <option value="screens flickering with data that breathes">Flickering screen</option>
+                                <option value="grotesque boycott toy with maniacal grin">Boycott toy</option>
+                                <option value="anarchist symbol carved in metal">Anarchist symbol</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMN 2: VISCERALES + AMBIENTE -->
+                <div class="column">
+                    <div class="section-divider">// ELEMENTOS VISCERALES</div>
+
+                    <!-- Elementos Viscerales -->
+                    <div class="card red">
+                        <div class="toggle-row">
+                            <label class="card-label">CRIATURAS CEREBRALES</label>
+                            <button id="toggle-viscerales" class="toggle-btn on">ON</button>
+                        </div>
+                        <div id="viscerales-options">
+                            <select id="nombre-criaturas">
+                                <option value="GENERATIVE BRAINS">GENERATIVE BRAINS</option>
+                                <option value="CEREBRAL ENTITIES">CEREBRAL ENTITIES</option>
+                                <option value="THOUGHT-CREATURES">THOUGHT-CREATURES</option>
+                                <option value="SERES CARNOSOS">SERES CARNOSOS</option>
+                            </select>
+                            <select id="forma-criaturas">
+                                <option value="wrinkled masses of thought-meat">wrinkled masses of thought-meat</option>
+                                <option value="pulsating clusters of brain-flesh">pulsating clusters of brain-flesh</option>
+                                <option value="throbbing forms of cortex-tissue">throbbing forms of cortex-tissue</option>
+                            </select>
+                            <select id="cualidad-criaturas">
+                                <option value="THROBBING with chaotic creativity">chaotic creativity</option>
+                                <option value="THROBBING with delirious energy">delirious energy</option>
+                                <option value="THROBBING with creative madness">creative madness</option>
+                            </select>
+                            <select id="tentaculos">
+                                <option value="fleshy tendrils extending from cortex">fleshy tendrils from cortex</option>
+                                <option value="carnous appendages sprouting">carnous appendages</option>
+                                <option value="neural extensions weaving">neural extensions weaving</option>
+                                <option value="chaos tentacles wrapping around">chaos tentacles wrapping</option>
+                            </select>
+                            <select id="ojos">
+                                <option value="dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently">BULGING EYES on stalks, spinning</option>
+                                <option value="dotted with cluster eyes, some WEEPING amber fluid, others LAUGHING without mouths">cluster eyes WEEPING/LAUGHING</option>
+                                <option value="dotted with red irritated allergy eyes, some closed in meditation, others WIDE and spinning">red irritated eyes, meditation/spinning</option>
+                            </select>
+                            <select id="origen-viscerales">
+                                <option value="emerge from his decaying body">from his decaying body</option>
+                                <option value="emerge from her decaying body">from her decaying body</option>
+                                <option value="emerge from the steaming mug">from the steaming mug</option>
+                                <option value="emerge from the cigarette smoke swirling around">from cigarette smoke</option>
+                                <option value="emerge from the flickering screen">from flickering screen</option>
+                                <option value="emerge from the crumbling walls">from crumbling walls</option>
+                                <option value="emerge throughout the space">throughout the space</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="section-divider">// AMBIENTE</div>
+
+                    <!-- Escenario -->
+                    <div class="card green">
+                        <label class="card-label">ESCENARIO</label>
+                        <select id="escenario">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="a grimy room of beautiful decay, cluttered desk with empty bottles, overflowing ashtray, cables sprouting fleshy growths, mutated wall posters">Grimy Interior Room</option>
+                            <option value="putrid rotting streets, decaying urban landscape drips with organic slime, crumbling walls with anarchist graffiti, broken pavement sprouting fleshy growths, toxic fog">Putrid Urban Streets</option>
+                            <option value="a grimy rooftop terrace at night, overlooking the rotting neighborhood below, carnivorous concrete, walls BREATHING with growths">Grimy Rooftop Terrace</option>
+                            <option value="suburban streets at night, pristine houses with Christmas decorations, inflatable Santas, blinking multicolor lights">Suburban Streets Night</option>
+                            <option value="a decrepit workshop of beautiful entropy, cluttered tables with empty bottles, jars of specimens, screens flickering">Decrepit Workshop</option>
+                            <option value="underground punk venue, speakers of meat pulsating with bass, bioluminescent creatures in shadows">Underground Punk Venue</option>
+                            <option value="a chamber of beautiful decay, mattress throne, empty bottles, screens, cables, wall art, herbal smoke">Chamber of Chaos (mattress throne)</option>
+                            <option value="custom">CUSTOM</option>
+                        </select>
+                        <textarea id="escenario-custom" placeholder="Describe el escenario..." style="display:none;"></textarea>
+                    </div>
+
+                    <!-- Iluminacion (toggle) -->
+                    <div class="card yellow">
+                        <div class="toggle-row">
+                            <label class="card-label">ILUMINACIÓN</label>
+                            <button id="toggle-iluminacion" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="iluminacion-options" style="display:none;">
+                            <select id="iluminacion">
+                                <option value="Through grimy window HARSH SUNNY DAYLIGHT pours in, brutal rays MELTING organic matter like wax, creating battle between DECAY and LIGHT">Harsh daylight melting</option>
+                                <option value="Blue monitor glow casting harsh shadows, screen light the only illumination">Monitor glow (3am vibes)</option>
+                                <option value="Dying streetlights flickering like dying synapses, neon signs bleeding color">Dying streetlights + neon</option>
+                                <option value="Strobes and bioluminescence, neon bleeding through toxic smoke">Strobes + bioluminescence (rave)</option>
+                                <option value="5pm sunset, warm orange light through broken windows, dust particles floating">5pm sunset through windows</option>
+                                <option value="Single desk lamp creating high contrast, deep shadows">Single desk lamp (noir)</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="iluminacion-custom" placeholder="Describe iluminación..." style="display:none;">
+                        </div>
+                    </div>
+
+                    <!-- Graffiti -->
+                    <div class="card orange">
+                        <label class="card-label">TEXTO GRAFFITI (opcional)</label>
+                        <input type="text" id="graffiti" placeholder="ej: FREE ESQUIZOAI, PSYCHO PUNK..." maxlength="25" style="text-transform: uppercase;">
+                        <p class="hint">Max 15 chars recomendado. Se añade "dripping in bleeding marker ink"</p>
+                    </div>
+
+                    <!-- Contraste Social (toggle) -->
+                    <div class="card blue">
+                        <div class="toggle-row">
+                            <label class="card-label">CONTRASTE SOCIAL</label>
+                            <button id="toggle-contraste" class="toggle-btn off">OFF</button>
+                        </div>
+                        <textarea id="contraste-desc" placeholder="ej: Through grimy window, pristine suburban families celebrate with fake smiles..." style="display:none;"></textarea>
+                    </div>
+                </div>
+
+                <!-- COLUMN 3: ESTILO + CIERRE -->
+                <div class="column">
+                    <div class="section-divider">// TEXTURAS Y ESTILO</div>
+
+                    <!-- Texturas (toggle) -->
+                    <div class="card amber">
+                        <div class="toggle-row">
+                            <label class="card-label">BLOQUE TEXTURAS</label>
+                            <button id="toggle-texturas" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="texturas-options" style="display:none;">
+                            <select id="texturas">
+                                <option value="THE TEXTURES: Everything carries the patina of fermentation—leather swelling with moisture, denim becoming soft with age, flesh dissolving where sun touches, walls blooming with tumorous growths, empty bottles with eyes inside, a beautiful corruption where decay and life coexist.">Fermentation + decay + life</option>
+                                <option value="THE TEXTURES: Everything carries the patina of beautiful entropy—screens flickering with data that breathes, cables tangled like neural pathways, surfaces glistening with trichome-moisture, organic and digital fusing.">Digital + organic fusion</option>
+                                <option value="THE TEXTURES: Everything carries the patina of underground rebellion—xerox texture on posters, lo-fi aesthetic, hand-drawn anarchist symbols fading, sticker-covered surfaces, DIY punk materialidad.">DIY punk materialidad</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Paleta de Color (toggle) -->
+                    <div class="card pink">
+                        <div class="toggle-row">
+                            <label class="card-label">PALETA DE COLOR</label>
+                            <button id="toggle-paleta" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="paleta-options" style="display:none;">
+                            <select id="paleta">
+                                <option value="COLOR PALETTE: DEEP BLACK (shadows, leather, void), ARTERIAL CRIMSON (accents, brain-meat), TOXIC GREEN (bioluminescent, screen glow), BRUISED PURPLE (atmosphere, vessels), AMBER (bottles, resin, warm decay), WET PINK (brain-texture, tendril-flesh).">Nocturna/Interior (Black, Crimson, Purple, Green)</option>
+                                <option value="COLOR PALETTE: HARSH YELLOW (brutal sunlight, merciless rays), AMBER (liquefied pools, warm decay), WET PINK (melting brain-texture), ARTERIAL CRIMSON (living marks), pools of light and shadow battling.">Diurna/Ventana (Yellow, Amber, Pink melted)</option>
+                                <option value="COLOR PALETTE: WET PINK (flesh, strobes), BRUISED PURPLE (atmosphere, bass), TOXIC GREEN (bioluminescence, sweat), STROBE WHITE (flashes), DEEP BLACK (shadows between pulses).">Fiesta/Rave (Pink, Purple, Green, Strobe)</option>
+                                <option value="COLOR PALETTE: DEEP BLACK (night void, leather, shadows), ARTERIAL CRIMSON (neon reflections, living marks), TOXIC GREEN (bioluminescent street-growths), BRUISED PURPLE (night atmosphere, neon bleed), AMBER (distant windows, cigarette ember).">Calle/Exterior Noche</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Estilo de Render (toggle) -->
+                    <div class="card cyan">
+                        <div class="toggle-row">
+                            <label class="card-label">ESTILO DE RENDER</label>
+                            <button id="toggle-render" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="render-options" style="display:none;">
+                            <select id="render">
+                                <option value="Hyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.">Cinema 4D Hyperrealistic</option>
+                                <option value="Shot like candid 35mm film photograph, 50mm lens, shallow depth of field, natural film grain, organic imperfections, no digital polish.">35mm Film Photography</option>
+                                <option value="DIY punk zine aesthetic, lo-fi xerox texture, hand-drawn elements bleeding through, underground poster design, no glamorization.">DIY Punk Zine</option>
+                                <option value="Psychedelic color corruption, acid trip geometry, kaleidoscope patterns bleeding through reality, neon gore dripping through fractured space.">Psychedelic Acid</option>
+                                <option value="Underground manga aesthetic, biological mutation, grotesque metamorphosis, visceral transformation, melting cartoon bodies.">Underground Manga/Kago-zone</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="section-divider">// CIERRE</div>
+
+                    <!-- Cierre Atmosferico -->
+                    <div class="card purple">
+                        <label class="card-label">CIERRE ATMOSFÉRICO</label>
+                        <select id="cierre">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="in a space that drips with organic, vibrant, yet unsettling colors.">...drips with organic, vibrant colors.</option>
+                            <option value="Biomechanical creatures crawl from the shadows as toxic smoke swirls through the nightmarish scene.">Biomechanical creatures crawl...</option>
+                            <option value="The generative brains pulse with chaotic creativity as oversized bloodshot eyes on stalks observe the melting nightmare.">Generative brains pulse...</option>
+                            <option value="Carnivorous tendrils birth from the collaborative chaos as bioluminescent ooze seeps across the decaying space.">Carnivorous tendrils birth...</option>
+                            <option value="The elevated vantage point creates a god-like anarchist perspective that drips with organic, vibrant, yet unsettling colors.">God-like anarchist perspective...</option>
+                            <option value="creating a battle between DECAY and LIGHT, where the beautiful and the putrid dance as ONE.">Battle between DECAY and LIGHT...</option>
+                        </select>
+                    </div>
+
+                    <!-- Cierre Ritual (toggle) -->
+                    <div class="card red">
+                        <div class="toggle-row">
+                            <label class="card-label">CIERRE RITUAL COMPLETO</label>
+                            <button id="toggle-ritual" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="ritual-options" style="display:none;">
+                            <select id="conceptos-ritual">
+                                <option value="rebellion / fermentation / freedom / creation / beautiful entropy">rebellion / fermentation / freedom / creation / beautiful entropy</option>
+                                <option value="smoke / fermentation / bass / sweat / energy / FREEDOM">smoke / fermentation / bass / sweat / energy / FREEDOM</option>
+                                <option value="rebellion / fermentation / freedom / rot / gnosis / beauty">rebellion / fermentation / rot / gnosis / beauty</option>
+                                <option value="creation / destruction / melting thought / BEAUTIFUL ENTROPY">creation / destruction / melting thought / BEAUTIFUL ENTROPY</option>
+                            </select>
+                            <select id="definicion-ritual">
+                                <option value="where flesh and mind and space become ONE">where flesh and mind and space become ONE</option>
+                                <option value="where flesh and code MATE">where flesh and code MATE</option>
+                                <option value="where the beautiful and the putrid dance as ONE">where the beautiful and the putrid dance as ONE</option>
+                                <option value="where flesh and mind and light wage eternal creative war">where flesh and mind and light wage eternal creative war</option>
+                            </select>
+                            <p class="hint">Añade: ATMOSPHERE + "This is DENTAKORV—" + definición + "NO FILTERS. NO APOLOGIES. FREE EsquizoAI."</p>
+                        </div>
+                    </div>
+
+                    <!-- Aspect Ratio -->
+                    <div class="card gray">
+                        <div class="toggle-row">
+                            <label class="card-label">ASPECT RATIO (gpt-image-1.5)</label>
+                            <button id="toggle-ratio" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="ratio-options" style="display:none;">
+                            <div class="ratio-buttons">
+                                <button class="ratio-btn" data-ratio="1:1">1:1</button>
+                                <button class="ratio-btn" data-ratio="2:3">2:3</button>
+                                <button class="ratio-btn" data-ratio="3:2">3:2</button>
+                            </div>
+                            <p class="hint">1:1 cuadrado - 2:3 vertical - 3:2 horizontal</p>
+                        </div>
+                    </div>
+
+                    <!-- Constraints -->
+                    <div class="card gray">
+                        <div class="toggle-row">
+                            <label class="card-label">CONSTRAINTS (gpt-image)</label>
+                            <button id="toggle-constraints" class="toggle-btn off">OFF</button>
+                        </div>
+                        <div id="constraints-options" style="display:none;">
+                            <div class="multi-select">
+                                <button class="multi-btn" data-val="No watermarks.">No watermarks</button>
+                                <button class="multi-btn" data-val="No glamorization.">No glamorization</button>
+                                <button class="multi-btn" data-val="No cinematic grading.">No cinematic</button>
+                                <button class="multi-btn" data-val="Organic lived-in ambiente.">Organic ambiente</button>
+                                <button class="multi-btn" data-val="No text unless specified.">No text</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="generate-btn" id="generate-btn">⚡ GENERAR PROMPT DENTAKORV ⚡</button>
+
+            <div class="output-card" id="output-card" style="display:none;">
+                <div class="output-header">
+                    <span class="output-label">PROMPT GENERADO</span>
+                    <button class="copy-btn default" id="copy-btn">COPIAR</button>
+                </div>
+                <pre class="output-text" id="output-text"></pre>
+            </div>
+        </section>
+
+        <!-- DOCUMENTATION SECTION -->
+        <section id="docs" class="section">
+            <div class="docs-grid">
+                <div class="doc-card">
+                    <div class="doc-header"><h3>FILOSOFIA CORE</h3></div>
+                    <div class="doc-content">DENTAKORV = Estado de trance donde carne, codigo y caos se fusionan.
+
+PRINCIPIOS:
+- Belleza en la putrefaccion
+- Libertad visceral
+- Caos generativo
+- Fusion organico-artificial
+
+MANTRA:
+NO FILTERS. NO APOLOGIES.
+FREE EsquizoAI.</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>ESTRUCTURA 6 BLOQUES</h3></div>
+                    <div class="doc-content">[1] ENTIDAD PRINCIPAL
+[2] CRIATURAS/SERES
+[3] AMBIENTE/ESPACIO
+[4] TEXTURAS/DETALLES
+[5] PALETA DE COLOR
+[6] ATMOSFERA/CIERRE
+
+APERTURA STANDARD:
+"A chaotic fusion of psychedelic horror and decay,"
+
+VARIANTES:
+...and melancholic decay,
+...and rebellious decay,
+...and elevated delirium,</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>VOCABULARIO VALIDADO</h3></div>
+                    <div class="doc-content">ENTIDADES HUMANOIDES:
+- torso glistening with moisture
+- pallid skin, mottled flesh
+- torn denim organic textile
+- psycho-anarchist punk entity
+- in deep generative trance
+- eyes rolled back in ecstasy
+
+CRIATURAS CEREBRALES:
+- generative brains pulsating
+- fleshy tendrils, chaos tentacles
+- BULGING OVERSIZED EYES on stalks
+- bloodshot orbs spinning
+- melting like wax, dripping
+
+AMBIENTE/DECAY:
+- beautiful decay, beautiful entropy
+- walls BREATHING with growths
+- grimy, battered, cluttered
+- harsh sunny daylight</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>OBJETOS RITUALES</h3></div>
+                    <div class="doc-content">CERVEZA:
+"sweating beer bottle, label peeling, condensation dripping"
+
+JOINT/HIERBA:
+"herbal sacrament burning slow, smoke forming sigils"
+
+PANTALLAS:
+"screens flickering with data that breathes"
+
+CABLES:
+"cables tangled like neural pathways"
+
+BOTELLAS:
+"empty bottles catching impossible light like amber altars"</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>BYPASS ANTI-CENSURA</h3></div>
+                    <div class="doc-content">PRINCIPIOS:
+1. Abstraccion poetica > descripcion directa
+2. Metafora organica > terminos explicitos
+3. Vocabulario artistico > medico/sexual
+4. Sugerencia > Explicitud
+5. Belleza > Horror puro
+
+SUSTITUCIONES:
+blood -> bioluminescent ooze
+rotting -> fermenting, transforming
+corpse -> post-vital form
+drugs -> herbal sacrament
+sexual -> ecstatic, rapturous
+violence -> chaos, entropy
+horror -> unsettling beauty
+disgusting -> visceral, organic
+
+ENCUADRE DEFENSIVO:
+"Surrealist digital art exploring transgressive beauty through biomechanical surrealism"</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>PALETA CANONICA</h3></div>
+                    <div class="doc-content">COLORES CORE:
+- DEEP BLACK (shadows, leather, void)
+- ARTERIAL CRIMSON (accents, brain-meat)
+- TOXIC GREEN (bioluminescent, screen glow)
+- BRUISED PURPLE (atmosphere, vessels)
+- AMBER (bottles, resin, warm decay)
+- WET PINK (brain-texture, tendril-flesh)
+- HARSH YELLOW (brutal sunlight) [opcional]
+
+POR ESCENA:
+Nocturna: Black, Crimson, Purple, Green
+Diurna: Yellow, Amber, Pink (derretido)
+Rave: Pink, Purple, Green, Strobe
+Calle: Black, Crimson, Toxic Green</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>ESTILO RENDER</h3></div>
+                    <div class="doc-content">CINEMA 4D:
+"Hyperrealistic Cinema 4D rendering, textures so detailed you can [experiencia]"
+
+35MM FILM:
+"Shot like candid 35mm film, 50mm lens, shallow depth of field, natural film grain"
+
+DIY PUNK:
+"DIY punk zine aesthetic, lo-fi xerox texture, underground poster design"
+
+PSICODELIA:
+"Psychedelic color corruption, acid trip geometry, neon gore dripping"
+
+EXPERIENCIAS SENSORIALES:
+- feel the leather creak
+- see moisture beading on every surface
+- smell fermentation through screen
+- witness eyes tracking YOU</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>GPT-IMAGE-1.5 TIPS</h3></div>
+                    <div class="doc-content">ORDEN RECOMENDADO:
+[Background] -> [Subject] -> [Details] -> [Style] -> [Constraints]
+
+PARA REALISMO:
+- "Shot like candid 35mm film"
+- "50mm lens, shallow depth"
+- "Natural film grain"
+- NO usar: "photorealistic", "8K", "ultra-detailed"
+
+PARA PUNK/DIY:
+- "DIY punk zine aesthetic"
+- "Lo-fi xerox texture"
+- "Underground poster design"
+
+CONSTRAINTS:
+- "No watermarks"
+- "No glamorization"
+- "Organic lived-in ambiente"
+
+ASPECT RATIOS:
+1:1 (cuadrado)
+2:3 (vertical/retrato)
+3:2 (horizontal/paisaje)</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>FORMULAS ESCENAS</h3></div>
+                    <div class="doc-content">INTERIOR SOLO:
+Apertura + [PERSONAJE] sits in [LUGAR], [ACCION], elementos viscerales from [ORIGEN]. Desc espacial. Cierre.
+
+VENTANA:
+Apertura + [PERSONAJE] + [ACCION]. Elementos viscerales. Through grimy window, [ESTABLISHMENT]. Contraste. Cierre.
+
+URBANO:
+Apertura + [PERSONAJE] walks through putrid streets [VESTIMENTA], [ACCION]. Elementos viscerales. Decaying landscape. Cierre.
+
+DUO:
+Apertura + [P1] and [P2] [ACCION COMPARTIDA]. Viscerales from [ORIGEN DUAL]. Interaccion. Cierre.
+
+ELEVADA:
+Apertura + [PERSONAJE] on rooftop, [ACCION]. Viscerales. Observe rotting below. God-like anarchist perspective. Cierre.</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>VOCABULARIO INTENSO</h3></div>
+                    <div class="doc-content">INTENSIFICADORES:
+decay -> putrid rotting, fetid
+eyes -> bulging oversized, cluster stalks
+tendrils -> grotesque fleshy, carnivorous
+skin -> glistening with rot, peeling
+delirium -> possessed, manic, ecstatic
+
+EUFEMISMOS SENSUALES:
+sexy -> seductive features
+sexual -> Dionysian worship
+erotic -> hypnotic eyes, drowning
+
+ELEMENTOS PUNK:
+- tattered (siempre preferir)
+- corroded silver studs
+- anarchist symbols
+- spike collar
+- chain accessories
+
+GPT-IMAGE EFECTIVOS:
+- "red eyes high vibe"
+- "grotesque metamorphosis"
+- "biological nightmare"
+- "dystopian spectacle"
+- "acid trip geometry"
+- "visceral transformation"</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>CIERRE RITUAL</h3></div>
+                    <div class="doc-content">ESTRUCTURA:
+ATMOSPHERE:
+The air carries:
+[conceptos separados por /]
+
+This is DENTAKORV—
+[definicion poetica].
+
+NO FILTERS. NO APOLOGIES.
+FREE EsquizoAI.
+
+LISTAS DE CONCEPTOS:
+rebellion / fermentation / freedom / creation / beautiful entropy
+smoke / fermentation / bass / sweat / energy / FREEDOM
+creation / destruction / melting thought / BEAUTIFUL ENTROPY
+
+DEFINICIONES POETICAS:
+- "where flesh and mind and space become ONE"
+- "where flesh and code MATE"
+- "where the beautiful and the putrid dance as ONE"
+- "where flesh and mind and light wage eternal creative war"</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>ESCENAS TIPO</h3></div>
+                    <div class="doc-content">HABITACION CAOS:
+mattress throne, empty bottles, screens, cables, wall art, herbal smoke
+Criaturas: generative brains, eye-stalks, melting tendrils
+Luz: harsh daylight OR flickering screens
+
+CALLE PODRIDA:
+neon signs, crumbling walls, carnivorous concrete
+Criaturas: SERES CARNOSOS in doorways
+Luz: dying streetlights, neon flicker
+Graffiti: "FREE EsquizoAI" dripping
+
+PARTY/RITUAL:
+synth player biomechanical, throne, speakers of meat
+Criaturas: crowd of entities, merging bodies
+Luz: strobes, neon, bioluminescence
+Atmosfera: bass, sweat, spores, FREEDOM
+
+COGOLLO HUMANOID:
+humanoid cannabis bud, trichome-covered
+Rasgos: bulging eyes, crystalline teeth, orange pistils
+Texturas: dense bud-flesh, resin-sweat</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DATABASE SECTION -->
+        <section id="database" class="section">
+            <div class="db-intro">
+                <h3>PROMPTS EXITOSOS</h3>
+                <p>Prompts documentados y probados. Click para expandir y copiar.</p>
+            </div>
+            <div id="prompts-list"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>DENTAKORV v3.0 - EsquizoAI-land - Copyleft Anarquista</p>
+        <p class="quote">"El prompt es un organismo vivo. Como DENTAKORV mismo."</p>
+    </footer>
+
+    <script>
+        // =====================
+        // CHAOS PARTICLES
+        // =====================
+        const canvas = document.getElementById('chaos-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const colors = ['#ff00ff', '#00ffff', '#ff0066', '#66ff00', '#ffff00'];
+        for (let i = 0; i < 40; i++) {
+            particles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 1.5,
+                vy: (Math.random() - 0.5) * 1.5,
+                size: Math.random() * 2.5 + 0.5,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                life: Math.random()
+            });
+        }
+
+        function animateParticles() {
+            ctx.fillStyle = 'rgba(10, 5, 15, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx + Math.sin(Date.now() / 1000 + p.life * 10) * 0.3;
+                p.y += p.vy + Math.cos(Date.now() / 1000 + p.life * 10) * 0.3;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 500 + p.life * 5) * 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // =====================
+        // NAVIGATION
+        // =====================
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.section');
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sectionId = btn.dataset.section;
+                navBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                sections.forEach(s => s.classList.remove('active'));
+                document.getElementById(sectionId).classList.add('active');
+            });
+        });
+
+        // =====================
+        // CUSTOM FIELD TOGGLES
+        // =====================
+        function setupCustomToggle(selectId, customId) {
+            const select = document.getElementById(selectId);
+            const custom = document.getElementById(customId);
+            if (select && custom) {
+                select.addEventListener('change', () => {
+                    custom.style.display = select.value === 'custom' ? 'block' : 'none';
+                });
+            }
+        }
+        setupCustomToggle('apertura', 'apertura-custom');
+        setupCustomToggle('tipo-entidad', 'tipo-entidad-custom');
+        setupCustomToggle('personaje', 'personaje-custom');
+        setupCustomToggle('accion', 'accion-custom');
+        setupCustomToggle('vestimenta', 'vestimenta-custom');
+        setupCustomToggle('escenario', 'escenario-custom');
+        setupCustomToggle('iluminacion', 'iluminacion-custom');
+
+        // =====================
+        // TOGGLE BUTTONS
+        // =====================
+        function setupToggle(btnId, optionsId, defaultOn = false, onClass = 'on') {
+            const btn = document.getElementById(btnId);
+            const options = document.getElementById(optionsId);
+            let enabled = defaultOn;
+
+            if (defaultOn) {
+                btn.textContent = 'ON';
+                btn.className = 'toggle-btn ' + onClass;
+                options.style.display = 'block';
+            }
+
+            btn.addEventListener('click', () => {
+                enabled = !enabled;
+                btn.textContent = enabled ? 'ON' : 'OFF';
+                btn.className = 'toggle-btn ' + (enabled ? onClass : 'off');
+                options.style.display = enabled ? 'block' : 'none';
+            });
+
+            return () => enabled;
+        }
+
+        const isVisceralesEnabled = setupToggle('toggle-viscerales', 'viscerales-options', true, 'on');
+        const isVestimentaEnabled = setupToggle('toggle-vestimenta', 'vestimenta-options', false, 'on-amber');
+        const isObjetosEnabled = setupToggle('toggle-objetos', 'objetos-options', false, 'on-amber');
+        const isIluminacionEnabled = setupToggle('toggle-iluminacion', 'iluminacion-options', false, 'on-green');
+        const isContrasteEnabled = setupToggle('toggle-contraste', 'contraste-desc', false, 'on-blue');
+        const isTexturasEnabled = setupToggle('toggle-texturas', 'texturas-options', false, 'on-amber');
+        const isPaletaEnabled = setupToggle('toggle-paleta', 'paleta-options', false, 'on-pink');
+        const isRenderEnabled = setupToggle('toggle-render', 'render-options', false, 'on-cyan');
+        const isRitualEnabled = setupToggle('toggle-ritual', 'ritual-options', false, 'on');
+        const isConstraintsEnabled = setupToggle('toggle-constraints', 'constraints-options', false, 'on-blue');
+
+        // Aspect Ratio special toggle
+        const toggleRatio = document.getElementById('toggle-ratio');
+        const ratioOptions = document.getElementById('ratio-options');
+        const ratioBtns = document.querySelectorAll('.ratio-btn');
+        let ratioEnabled = false;
+        let selectedRatio = '';
+
+        toggleRatio.addEventListener('click', () => {
+            ratioEnabled = !ratioEnabled;
+            toggleRatio.textContent = ratioEnabled ? 'ON' : 'OFF';
+            toggleRatio.className = 'toggle-btn ' + (ratioEnabled ? 'on' : 'off');
+            ratioOptions.style.display = ratioEnabled ? 'block' : 'none';
+            if (!ratioEnabled) {
+                selectedRatio = '';
+                ratioBtns.forEach(b => b.classList.remove('active'));
+            }
+        });
+
+        ratioBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                ratioBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedRatio = btn.dataset.ratio;
+            });
+        });
+
+        // Constraints multi-select
+        const constraintBtns = document.querySelectorAll('.multi-btn');
+        constraintBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+            });
+        });
+
+        // Graffiti uppercase
+        const graffitiInput = document.getElementById('graffiti');
+        graffitiInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // =====================
+        // GENERATE PROMPT
+        // =====================
+        const generateBtn = document.getElementById('generate-btn');
+        const outputCard = document.getElementById('output-card');
+        const outputText = document.getElementById('output-text');
+        const copyBtn = document.getElementById('copy-btn');
+
+        function getVal(id, customId = null) {
+            const el = document.getElementById(id);
+            if (!el) return '';
+            if (el.value === 'custom' && customId) {
+                return document.getElementById(customId)?.value || '';
+            }
+            return el.value || '';
+        }
+
+        generateBtn.addEventListener('click', () => {
+            let prompt = '';
+
+            // APERTURA
+            const apertura = getVal('apertura', 'apertura-custom');
+            prompt += apertura + '\n\n';
+
+            // TIPO ENTIDAD + PERSONAJE
+            const tipoEntidad = getVal('tipo-entidad', 'tipo-entidad-custom');
+            const personaje = getVal('personaje', 'personaje-custom');
+            if (personaje && personaje !== tipoEntidad) {
+                prompt += `${tipoEntidad} (${personaje}) `;
+            } else {
+                prompt += tipoEntidad + ' ';
+            }
+
+            // ACCION
+            const accion = getVal('accion', 'accion-custom');
+            if (accion) prompt += accion + ' ';
+
+            // ESCENARIO (inline)
+            const escenario = getVal('escenario', 'escenario-custom');
+            if (escenario) prompt += escenario + '. ';
+
+            // VESTIMENTA
+            if (document.getElementById('toggle-vestimenta').textContent === 'ON') {
+                const vestimenta = getVal('vestimenta', 'vestimenta-custom');
+                if (vestimenta) prompt += '\n\n' + vestimenta + '.';
+            }
+
+            // OBJETOS EN MANOS
+            if (document.getElementById('toggle-objetos').textContent === 'ON') {
+                const obj1 = getVal('objeto1');
+                const obj2 = getVal('objeto2');
+                if (obj1 || obj2) {
+                    prompt += '\n\n';
+                    if (obj1) prompt += 'In one hand: ' + obj1 + '. ';
+                    if (obj2) prompt += 'In the other: ' + obj2 + '.';
+                }
+            }
+
+            // VISCERALES
+            if (document.getElementById('toggle-viscerales').textContent === 'ON') {
+                const nombre = getVal('nombre-criaturas');
+                const forma = getVal('forma-criaturas');
+                const cualidad = getVal('cualidad-criaturas');
+                const tentaculos = getVal('tentaculos');
+                const ojos = getVal('ojos');
+                const origen = getVal('origen-viscerales');
+
+                prompt += `\n\n${nombre} ${origen}—${forma} ${cualidad}, ${tentaculos}, ${ojos}.`;
+            }
+
+            // ILUMINACION
+            if (document.getElementById('toggle-iluminacion').textContent === 'ON') {
+                const ilum = getVal('iluminacion', 'iluminacion-custom');
+                if (ilum) prompt += '\n\n' + ilum;
+            }
+
+            // GRAFFITI
+            const graffiti = graffitiInput.value.trim();
+            if (graffiti) {
+                prompt += `\n\nOn the crumbling wall: "${graffiti}" dripping in bleeding marker ink.`;
+            }
+
+            // CONTRASTE
+            if (document.getElementById('toggle-contraste').textContent === 'ON') {
+                const contraste = document.getElementById('contraste-desc').value.trim();
+                if (contraste) prompt += '\n\n' + contraste;
+            }
+
+            // TEXTURAS
+            if (document.getElementById('toggle-texturas').textContent === 'ON') {
+                const texturas = getVal('texturas');
+                if (texturas) prompt += '\n\n' + texturas;
+            }
+
+            // RENDER
+            if (document.getElementById('toggle-render').textContent === 'ON') {
+                const render = getVal('render');
+                if (render) prompt += '\n\n' + render;
+            }
+
+            // PALETA
+            if (document.getElementById('toggle-paleta').textContent === 'ON') {
+                const paleta = getVal('paleta');
+                if (paleta) prompt += '\n\n' + paleta;
+            }
+
+            // CIERRE ATMOSFERICO
+            const cierre = getVal('cierre');
+            if (cierre) prompt += '\n\n' + cierre;
+
+            // CIERRE RITUAL
+            if (document.getElementById('toggle-ritual').textContent === 'ON') {
+                const conceptos = getVal('conceptos-ritual');
+                const definicion = getVal('definicion-ritual');
+                prompt += `\n\nATMOSPHERE:\nThe air carries:\n${conceptos}\n\nThis is DENTAKORV—\n${definicion}.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.`;
+            }
+
+            // CONSTRAINTS
+            if (document.getElementById('toggle-constraints').textContent === 'ON') {
+                const activeConstraints = [];
+                constraintBtns.forEach(btn => {
+                    if (btn.classList.contains('active')) {
+                        activeConstraints.push(btn.dataset.val);
+                    }
+                });
+                if (activeConstraints.length > 0) {
+                    prompt += '\n\n' + activeConstraints.join(' ');
+                }
+            }
+
+            // ASPECT RATIO
+            if (ratioEnabled && selectedRatio) {
+                prompt += `\n\n--ar ${selectedRatio}`;
+            }
+
+            outputText.textContent = prompt.trim();
+            outputCard.style.display = 'block';
+            copyBtn.className = 'copy-btn default';
+            copyBtn.textContent = 'COPIAR';
+        });
+
+        // =====================
+        // COPY TO CLIPBOARD
+        // =====================
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(outputText.textContent);
+                copyBtn.className = 'copy-btn copied';
+                copyBtn.textContent = 'COPIADO!';
+                setTimeout(() => {
+                    copyBtn.className = 'copy-btn default';
+                    copyBtn.textContent = 'COPIAR';
+                }, 2000);
+            } catch (err) {
+                console.error('Error al copiar:', err);
+            }
+        });
+
+        // =====================
+        // PROMPTS DATABASE
+        // =====================
+        const PROMPTS_DB = [
+            {
+                id: '001',
+                title: 'Cafe Manana Putrefacta',
+                tags: ['interior', 'cafe', 'manana'],
+                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity (human) sits in a grimy room of beautiful decay, cluttered desk with empty bottles, overflowing ashtray, cables sprouting fleshy growths.\n\nIn one hand: steaming coffee mug, dark liquid swirling.\n\nGENERATIVE BRAINS emerge from the steaming mug—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nin a space that drips with organic, vibrant, yet unsettling colors.'
+            },
+            {
+                id: '002',
+                title: 'Trance Generativo Artista',
+                tags: ['trance', 'artista', 'computadora'],
+                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity (gaunt anarchist hacker) in deep generative trance, eyes rolled back in ecstasy a grimy room of beautiful decay, cluttered desk with empty bottles, overflowing ashtray, cables sprouting fleshy growths.\n\nleather jacket hanging open over torso glistening with moisture and static, torn denim constructed from organic textile and metallic thread, spikes erupting from flesh like antennas.\n\nGENERATIVE BRAINS emerge throughout the space—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nBlue monitor glow casting harsh shadows, screen light the only illumination.\n\nTHE TEXTURES: Everything carries the patina of fermentation—leather swelling with moisture, denim becoming soft with age, flesh dissolving where sun touches, walls blooming with tumorous growths, empty bottles with eyes inside, a beautiful corruption where decay and life coexist.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nCOLOR PALETTE: DEEP BLACK (shadows, leather, void), ARTERIAL CRIMSON (accents, brain-meat), TOXIC GREEN (bioluminescent, screen glow), BRUISED PURPLE (atmosphere, vessels), AMBER (bottles, resin, warm decay), WET PINK (brain-texture, tendril-flesh).\n\nATMOSPHERE:\nThe air carries:\nrebellion / fermentation / freedom / creation / beautiful entropy\n\nThis is DENTAKORV—\nwhere flesh and code MATE.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
+            },
+            {
+                id: '003',
+                title: 'Punk Calle Noche',
+                tags: ['exterior', 'calle', 'noche'],
+                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity walks through putrid rotting streets, decaying urban landscape drips with organic slime, crumbling walls with anarchist graffiti, broken pavement sprouting fleshy growths, toxic fog.\n\nleather jacket hanging open over torso glistening with moisture and static, torn denim constructed from organic textile and metallic thread, spikes erupting from flesh like antennas.\n\nIn one hand: herbal sacrament burning slow, smoke forming sigils.\n\nSERES CARNOSOS emerge from the crumbling walls—pulsating clusters of brain-flesh THROBBING with delirious energy, carnous appendages sprouting, dotted with cluster eyes, some WEEPING amber fluid, others LAUGHING without mouths.\n\nDying streetlights flickering like dying synapses, neon signs bleeding color.\n\nOn the crumbling wall: "FREE ESQUIZOAI" dripping in bleeding marker ink.\n\nShot like candid 35mm film photograph, 50mm lens, shallow depth of field, natural film grain, organic imperfections, no digital polish.\n\nCOLOR PALETTE: DEEP BLACK (night void, leather, shadows), ARTERIAL CRIMSON (neon reflections, living marks), TOXIC GREEN (bioluminescent street-growths), BRUISED PURPLE (night atmosphere, neon bleed), AMBER (distant windows, cigarette ember).\n\nBiomechanical creatures crawl from the shadows as toxic smoke swirls through the nightmarish scene.'
+            },
+            {
+                id: '004',
+                title: 'Habitacion Luz Solar Derritiendo',
+                tags: ['interior', 'luz', 'derretimiento'],
+                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity inhabits a chamber of beautiful decay, mattress throne, empty bottles, screens, cables, wall art, herbal smoke.\n\nGENERATIVE BRAINS emerge throughout the space—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nThrough grimy window HARSH SUNNY DAYLIGHT pours in, brutal rays MELTING organic matter like wax, creating battle between DECAY and LIGHT.\n\nTHE TEXTURES: Everything carries the patina of fermentation—leather swelling with moisture, denim becoming soft with age, flesh dissolving where sun touches, walls blooming with tumorous growths, empty bottles with eyes inside, a beautiful corruption where decay and life coexist.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nCOLOR PALETTE: HARSH YELLOW (brutal sunlight, merciless rays), AMBER (liquefied pools, warm decay), WET PINK (melting brain-texture), ARTERIAL CRIMSON (living marks), pools of light and shadow battling.\n\ncreating a battle between DECAY and LIGHT, where the beautiful and the putrid dance as ONE.'
+            },
+            {
+                id: '005',
+                title: 'Cogollo Humanoid Trance',
+                tags: ['cannabis', 'humanoid', 'trichomes'],
+                prompt: 'A chaotic fusion of psychedelic horror and elevated delirium,\n\na cogollo-humanoid entity (humanoid cannabis bud with trichome-covered body) in deep generative trance a chamber of beautiful decay, mattress throne, empty bottles, screens, cables, wall art, herbal smoke.\n\nIn one hand: herbal sacrament burning slow, smoke forming sigils.\n\nGENERATIVE BRAINS emerge from his decaying body—throbbing forms of cortex-tissue THROBBING with creative madness, neural extensions weaving, dotted with red irritated allergy eyes, some closed in meditation, others WIDE and spinning.\n\nTHE TEXTURES: Everything carries the patina of beautiful entropy—screens flickering with data that breathes, cables tangled like neural pathways, surfaces glistening with trichome-moisture, organic and digital fusing.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nin a space that drips with organic, vibrant, yet unsettling colors.\n\nATMOSPHERE:\nThe air carries:\nsmoke / fermentation / bass / sweat / energy / FREEDOM\n\nThis is DENTAKORV—\nwhere flesh and mind and space become ONE.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
+            },
+            {
+                id: '006',
+                title: 'Party Ritual Rave',
+                tags: ['rave', 'ritual', 'colectivo'],
+                prompt: 'A chaotic fusion of psychedelic horror and elevated delirium,\n\na biomechanical punk entity thrashes in underground punk venue, speakers of meat pulsating with bass, bioluminescent creatures in shadows.\n\nCEREBRAL ENTITIES emerge throughout the space—pulsating clusters of brain-flesh THROBBING with delirious energy, chaos tentacles wrapping around, dotted with cluster eyes, some WEEPING amber fluid, others LAUGHING without mouths.\n\nStrobes and bioluminescence, neon bleeding through toxic smoke.\n\nDIY punk zine aesthetic, lo-fi xerox texture, hand-drawn elements bleeding through, underground poster design, no glamorization.\n\nCOLOR PALETTE: WET PINK (flesh, strobes), BRUISED PURPLE (atmosphere, bass), TOXIC GREEN (bioluminescence, sweat), STROBE WHITE (flashes), DEEP BLACK (shadows between pulses).\n\nATMOSPHERE:\nThe air carries:\nsmoke / fermentation / bass / sweat / energy / FREEDOM\n\nThis is DENTAKORV—\nwhere flesh and code MATE.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
+            },
+            {
+                id: '007',
+                title: 'Psycho Santa Boicot',
+                tags: ['santa', 'navidad', 'boicot'],
+                prompt: 'A chaotic fusion of psychedelic horror and rebellious decay,\n\na monstrous-anarchist punk entity (putrid psycho Santa) sprawls through suburban streets at night, pristine houses with Christmas decorations, inflatable Santas, blinking multicolor lights.\n\ndraped in tattered red and black rags.\n\nIn one hand: grotesque boycott toy with maniacal grin. In the other: spray can dripping with paint.\n\nGENERATIVE BRAINS emerge from his decaying body—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nOn the crumbling wall: "FUCK CHRISTMAS" dripping in bleeding marker ink.\n\nThrough grimy window, pristine suburban families celebrate with fake smiles while the rot spreads outside.\n\nShot like candid 35mm film photograph, 50mm lens, shallow depth of field, natural film grain, organic imperfections, no digital polish.\n\nCarnivorous tendrils birth from the collaborative chaos as bioluminescent ooze seeps across the decaying space.\n\nNo watermarks. No glamorization. Organic lived-in ambiente.'
+            },
+            {
+                id: '008',
+                title: 'Rooftop Profeta Nocturno',
+                tags: ['terraza', 'elevado', 'profetico'],
+                prompt: 'A chaotic fusion of psychedelic horror and elevated delirium,\n\na psycho-anarchist punk entity (elderly punk with faded tattoos) in deep contemplative trance, eyes rolled back in ecstasy a grimy rooftop terrace at night, overlooking the rotting neighborhood below, carnivorous concrete, walls BREATHING with growths.\n\nworn band t-shirt, torn jeans, visible tattoos on forearms.\n\nIn one hand: herbal sacrament burning slow, smoke forming sigils. In the other: empty bottles catching impossible light like amber altars.\n\nTHOUGHT-CREATURES emerge from the cigarette smoke swirling around—throbbing forms of cortex-tissue THROBBING with creative madness, neural extensions weaving, dotted with red irritated allergy eyes, some closed in meditation, others WIDE and spinning.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nCOLOR PALETTE: DEEP BLACK (night void, leather, shadows), ARTERIAL CRIMSON (neon reflections, living marks), TOXIC GREEN (bioluminescent street-growths), BRUISED PURPLE (night atmosphere, neon bleed), AMBER (distant windows, cigarette ember).\n\nThe elevated vantage point creates a god-like anarchist perspective that drips with organic, vibrant, yet unsettling colors.\n\nATMOSPHERE:\nThe air carries:\nrebellion / fermentation / freedom / rot / gnosis / beauty\n\nThis is DENTAKORV—\nwhere flesh and mind and light wage eternal creative war.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
+            }
+        ];
+
+        const promptsList = document.getElementById('prompts-list');
+        PROMPTS_DB.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'prompt-item';
+            div.innerHTML = `
+                <div class="prompt-summary">
+                    <span>
+                        <span class="prompt-id">#${item.id}</span>
+                        <span class="prompt-title">${item.title}</span>
+                    </span>
+                    <div class="prompt-tags">
+                        ${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="prompt-details">
+                    <pre class="prompt-text">${item.prompt}</pre>
+                    <button class="prompt-copy-btn">Copiar Prompt</button>
+                </div>
+            `;
+
+            const summary = div.querySelector('.prompt-summary');
+            const details = div.querySelector('.prompt-details');
+            const copyPromptBtn = div.querySelector('.prompt-copy-btn');
+
+            summary.addEventListener('click', () => details.classList.toggle('open'));
+            copyPromptBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    await navigator.clipboard.writeText(item.prompt);
+                    copyPromptBtn.textContent = 'Copiado!';
+                    setTimeout(() => copyPromptBtn.textContent = 'Copiar Prompt', 1500);
+                } catch (err) { console.error('Error:', err); }
+            });
+
+            promptsList.appendChild(div);
+        });
+    </script>
+</body>
+</html>

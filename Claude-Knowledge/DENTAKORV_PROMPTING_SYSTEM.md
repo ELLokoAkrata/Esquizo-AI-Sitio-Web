@@ -423,6 +423,160 @@ El sistema está diseñado para CRECER. Cada sesión exitosa añade:
 
 ---
 
+## 13. ANIMACIÓN IMAGEN-A-VIDEO (GROK IMAGINE)
+
+### Modelo Target
+
+Grok Imagine (xAI) — genera video + audio simultáneo desde imagen estática.
+Duración típica: 3-5 segundos.
+
+### Fórmula Base
+
+```
+Static camera. [ELEMENTO 1] + [VERBO]. [ELEMENTO 2] + [VERBO]. [ELEMENTO N] + [VERBO]. [ILUMINACIÓN].
+
+AUDIO: [GÉNERO], [ELEMENTOS SONOROS], [TEXTURAS].
+```
+
+### Principios Fundamentales
+
+1. **Cámara primero** — declara `Static camera.` o el tipo de movimiento al inicio
+2. **Inventario visual** — lista cada elemento animable que YA existe en la imagen
+3. **Un verbo por elemento** — twitches, rolls, pulses, shifts, rises, flickers
+4. **Verbos en presente simple** — "moves" no "is moving"
+5. **Audio separado** — después de salto de línea, etiquetado con `AUDIO:`
+6. **Sin adjetivos innecesarios** — "smoke rises" no "mysterious eerie smoke rises slowly"
+
+### Banco de Verbos
+
+#### ORGÁNICO
+| Verbo | Uso |
+|-------|-----|
+| twitches | espasmos, movimientos nerviosos |
+| pulses | latidos, palpitaciones |
+| breathes | respiración sutil |
+| writhes | retorcerse (tentáculos, gusanos) |
+| oozes | líquidos viscosos saliendo |
+| drips | goteo |
+| blinks | parpadeo |
+| swallows | tragar |
+| crawls | arrastrarse |
+| squirms | removerse incómodo |
+
+#### MECÁNICO
+| Verbo | Uso |
+|-------|-----|
+| rattles | vibración metálica |
+| creaks | crujido madera/metal |
+| swings | balanceo pendular |
+| spins | rotación |
+| clicks | chasquidos |
+| buzzes | zumbido eléctrico |
+| sputters | chisporroteo |
+| grinds | fricción pesada |
+
+#### ATMOSFÉRICO
+| Verbo | Uso |
+|-------|-----|
+| flickers | luz intermitente |
+| drifts | movimiento lento aire/humo |
+| swirls | remolino |
+| settles | asentarse (polvo, niebla) |
+| fades | desvanecerse |
+| glows | brillar suave |
+| rises | elevarse (humo, vapor) |
+| sways | mecerse suave |
+
+### Paletas de Audio
+
+#### Crust Punk / Grindcore
+```
+AUDIO: Raw crust punk, blast beats, distorted bass, guttural screams, vinyl crackle.
+```
+
+#### Horror Ambiental
+```
+AUDIO: Dark ambient drone, distant metallic scraping, reversed whispers, subsonic hum.
+```
+
+#### Circo Siniestro
+```
+AUDIO: Broken circus calliope, distorted children laughter, static hum, metallic creaking.
+```
+
+#### Industrial
+```
+AUDIO: Industrial machinery, hydraulic hiss, chain rattling, distorted alarm, power hum.
+```
+
+#### Lo-Fi Decadente
+```
+AUDIO: Vinyl crackle, tape warble, muffled radio, room tone hiss, distant TV static.
+```
+
+### Ejemplos Completos
+
+#### Psycho Santa (grotesque horror)
+```
+Static camera. Santa smokes, green smoke rises. Hand twitches. Eyeballs roll. Tentacles move. Rat shifts. Brain pulses. Candles flicker.
+
+AUDIO: Crust punk blast beats, screaming vocals, distorted bass, static noise.
+```
+
+#### Laboratorio Abandonado
+```
+Static camera. Scientist corpse slumps in chair. Monitor static flickers. Liquid in tubes bubbles. Cables spark. Overhead light swings. Dust drifts through beam.
+
+AUDIO: Electrical hum, dripping liquid, distant alarm beeping, ventilation rattle.
+```
+
+#### Habitación Poseída
+```
+Static camera. Figure in bed breathes shallow. Shadows crawl on wall. Curtains sway without wind. Crucifix on wall tilts slowly. Candle flame stretches unnaturally.
+
+AUDIO: Dark ambient drone, wood creaking, muffled heartbeat, distant whispers.
+```
+
+### Proceso de Uso
+
+1. **Observa la imagen** — identifica todos los elementos que PODRÍAN moverse
+2. **Prioriza 4-6 elementos** — no todo necesita animarse
+3. **Asigna UN verbo** a cada elemento
+4. **Define atmósfera lumínica** — flicker, glow, etc.
+5. **Selecciona paleta de audio** — género + 3-4 elementos sonoros
+6. **Ensambla** siguiendo la fórmula
+
+### Anti-Patrones (Qué NO Hacer)
+
+❌ `The mysterious haunted zombie slowly and creepily moves his terrifying hand`
+✅ `Hand twitches.`
+
+❌ `Camera zooms in dramatically while panning left and tilting up`
+✅ `Static camera.`
+
+❌ `Scary horror music plays`
+✅ `Dark ambient drone, distant scraping, reversed whispers.`
+
+### Notas Técnicas
+
+- **Duración típica**: 3-5 segundos (limitación del modelo)
+- **Evitar**: movimientos de cámara complejos, transformaciones, elementos que no existen en la imagen original
+- **Funciona mejor**: sutileza > drama, loops naturales, coherencia imagen-audio
+
+### Integración con DENTAKORV
+
+**Flujo de trabajo recomendado:**
+
+1. Genera imagen con DENTAKORV (generador principal)
+2. Analiza imagen generada — identifica elementos animables
+3. Usa generador de animación — lista elementos + verbos + audio
+4. Genera prompt de animación optimizado
+5. Usa Grok Imagine para convertir imagen → video + audio
+
+**SUTILEZA > DRAMA. El horror está en el detalle que se mueve, no en el movimiento dramático.**
+
+---
+
 *Documentación creada por El Loko Akrata + Claude*
 *Proyecto EsquizoAI-land*
-*Diciembre 2025*
+*Diciembre 2024*

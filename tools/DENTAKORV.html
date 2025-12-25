@@ -457,6 +457,7 @@
         </div>
         <nav>
             <button class="nav-btn active" data-section="generator">GENERADOR</button>
+            <button class="nav-btn" data-section="animation">ANIMACIÓN</button>
             <button class="nav-btn" data-section="docs">DOCUMENTACION</button>
             <button class="nav-btn" data-section="database">PROMPTS DB</button>
         </nav>
@@ -830,6 +831,186 @@
             </div>
         </section>
 
+        <!-- ANIMATION SECTION -->
+        <section id="animation" class="section">
+            <div style="background: var(--bg-card); border: 1px solid rgba(6, 182, 212, 0.5); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+                <h2 style="color: #06b6d4; margin-bottom: 0.5rem;">GROK IMAGINE - IMAGEN A VIDEO + AUDIO</h2>
+                <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                    Genera prompts para animar imágenes DENTAKORV con Grok Imagine (xAI). Duración típica: 3-5 segundos.
+                </p>
+                <p style="color: #6b7280; font-size: 0.75rem;">
+                    Principio: Inventario visual → Verbos precisos → Audio atmosférico. Sutileza > Drama.
+                </p>
+            </div>
+
+            <div class="generator-grid">
+                <!-- COLUMN 1: ELEMENTOS VISUALES -->
+                <div class="column">
+                    <div class="section-divider">// ELEMENTOS VISUALES</div>
+
+                    <!-- Tipo de Cámara -->
+                    <div class="card cyan">
+                        <label class="card-label">TIPO DE CÁMARA</label>
+                        <select id="anim-camera">
+                            <option value="Static camera.">Static camera</option>
+                            <option value="Slow pan right.">Slow pan right</option>
+                            <option value="Slow pan left.">Slow pan left</option>
+                            <option value="Slow zoom in.">Slow zoom in</option>
+                            <option value="Slow tilt up.">Slow tilt up</option>
+                        </select>
+                        <p class="hint">Static camera funciona mejor. Evita movimientos complejos.</p>
+                    </div>
+
+                    <!-- Elementos Animables -->
+                    <div class="card purple">
+                        <label class="card-label">ELEMENTOS ANIMABLES (4-6 recomendado)</label>
+                        <div id="anim-elements-container">
+                            <div class="anim-element-row" style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                <input type="text" placeholder="Elemento (ej: smoke, hand, eyeball)" style="flex: 1;" class="anim-element-input">
+                                <select style="flex: 1;" class="anim-verb-select">
+                                    <option value="">-- Verbo --</option>
+                                    <optgroup label="ORGÁNICO">
+                                        <option value="twitches">twitches (espasmos)</option>
+                                        <option value="pulses">pulses (latidos)</option>
+                                        <option value="breathes">breathes (respira)</option>
+                                        <option value="writhes">writhes (retorcerse)</option>
+                                        <option value="oozes">oozes (viscoso sale)</option>
+                                        <option value="drips">drips (goteo)</option>
+                                        <option value="blinks">blinks (parpadeo)</option>
+                                        <option value="crawls">crawls (arrastrarse)</option>
+                                        <option value="squirms">squirms (removerse)</option>
+                                    </optgroup>
+                                    <optgroup label="MECÁNICO">
+                                        <option value="rattles">rattles (vibración metálica)</option>
+                                        <option value="creaks">creaks (crujido)</option>
+                                        <option value="swings">swings (balanceo)</option>
+                                        <option value="spins">spins (rotación)</option>
+                                        <option value="clicks">clicks (chasquidos)</option>
+                                        <option value="buzzes">buzzes (zumbido)</option>
+                                        <option value="sputters">sputters (chisporroteo)</option>
+                                        <option value="grinds">grinds (fricción)</option>
+                                    </optgroup>
+                                    <optgroup label="ATMOSFÉRICO">
+                                        <option value="flickers">flickers (luz intermitente)</option>
+                                        <option value="drifts">drifts (movimiento lento)</option>
+                                        <option value="swirls">swirls (remolino)</option>
+                                        <option value="settles">settles (asentarse)</option>
+                                        <option value="fades">fades (desvanecerse)</option>
+                                        <option value="glows">glows (brillar)</option>
+                                        <option value="rises">rises (elevarse)</option>
+                                        <option value="sways">sways (mecerse)</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="add-element-btn" style="width: 100%; padding: 0.3rem; background: rgba(147, 51, 234, 0.3); border: 1px solid #a855f7; border-radius: 0.4rem; color: white; cursor: pointer; font-family: inherit; font-size: 0.8rem; margin-top: 0.3rem;">+ Añadir Elemento</button>
+                        <p class="hint">Lista elementos que YA existen en la imagen. 4-6 elementos es óptimo.</p>
+                    </div>
+                </div>
+
+                <!-- COLUMN 2: AUDIO -->
+                <div class="column">
+                    <div class="section-divider">// AUDIO</div>
+
+                    <!-- Género Base -->
+                    <div class="card pink">
+                        <label class="card-label">GÉNERO / ATMÓSFERA</label>
+                        <select id="anim-audio-genre">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="Raw crust punk">Crust Punk / Grindcore</option>
+                            <option value="Dark ambient drone">Horror Ambiental</option>
+                            <option value="Broken circus calliope">Circo Siniestro</option>
+                            <option value="Industrial machinery">Industrial</option>
+                            <option value="Vinyl crackle">Lo-Fi Decadente</option>
+                            <option value="Noise harsh feedback">Harsh Noise</option>
+                            <option value="Doom metal slow riff">Doom/Sludge</option>
+                        </select>
+                    </div>
+
+                    <!-- Elementos de Audio -->
+                    <div class="card amber">
+                        <label class="card-label">ELEMENTOS SONOROS (3-4 recomendado)</label>
+                        <div class="multi-select" id="anim-audio-elements">
+                            <button class="multi-btn" data-val="blast beats">blast beats</button>
+                            <button class="multi-btn" data-val="distorted bass">distorted bass</button>
+                            <button class="multi-btn" data-val="guttural screams">guttural screams</button>
+                            <button class="multi-btn" data-val="vinyl crackle">vinyl crackle</button>
+                            <button class="multi-btn" data-val="metallic scraping">metallic scraping</button>
+                            <button class="multi-btn" data-val="reversed whispers">reversed whispers</button>
+                            <button class="multi-btn" data-val="subsonic hum">subsonic hum</button>
+                            <button class="multi-btn" data-val="distorted children laughter">children laughter</button>
+                            <button class="multi-btn" data-val="static hum">static hum</button>
+                            <button class="multi-btn" data-val="chain rattling">chain rattling</button>
+                            <button class="multi-btn" data-val="hydraulic hiss">hydraulic hiss</button>
+                            <button class="multi-btn" data-val="tape warble">tape warble</button>
+                            <button class="multi-btn" data-val="muffled radio">muffled radio</button>
+                            <button class="multi-btn" data-val="dripping liquid">dripping liquid</button>
+                            <button class="multi-btn" data-val="wood creaking">wood creaking</button>
+                            <button class="multi-btn" data-val="distant alarm">distant alarm</button>
+                        </div>
+                    </div>
+
+                    <!-- Texturas Adicionales -->
+                    <div class="card green">
+                        <label class="card-label">TEXTURAS OPCIONALES</label>
+                        <input type="text" id="anim-audio-custom" placeholder="ej: power hum, broken machinery, echoing footsteps...">
+                        <p class="hint">Elementos adicionales separados por coma</p>
+                    </div>
+                </div>
+
+                <!-- COLUMN 3: ILUMINACIÓN -->
+                <div class="column">
+                    <div class="section-divider">// AMBIENTE LUMÍNICO</div>
+
+                    <div class="card yellow">
+                        <label class="card-label">EFECTO DE LUZ (opcional)</label>
+                        <select id="anim-lighting">
+                            <option value="">-- Sin especificar --</option>
+                            <option value="Candles flicker.">Candles flicker</option>
+                            <option value="Screen flickers.">Screen flickers</option>
+                            <option value="Overhead light swings.">Overhead light swings</option>
+                            <option value="Neon signs flicker.">Neon signs flicker</option>
+                            <option value="Shadows crawl on wall.">Shadows crawl on wall</option>
+                            <option value="Fluorescent tubes buzz and flicker.">Fluorescent tubes buzz/flicker</option>
+                            <option value="Strobe light pulses.">Strobe light pulses</option>
+                        </select>
+                    </div>
+
+                    <div class="card gray">
+                        <label class="card-label">EJEMPLOS RÁPIDOS</label>
+                        <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                            <button class="ratio-btn" onclick="loadAnimExample('santa')">Psycho Santa</button>
+                            <button class="ratio-btn" onclick="loadAnimExample('lab')">Laboratorio</button>
+                            <button class="ratio-btn" onclick="loadAnimExample('possessed')">Habitación Poseída</button>
+                        </div>
+                        <p class="hint">Carga ejemplos para ver la estructura</p>
+                    </div>
+
+                    <div class="card purple">
+                        <label class="card-label">ANTI-PATRONES</label>
+                        <div style="font-size: 0.7rem; color: #9ca3af; line-height: 1.4;">
+                            ❌ "mysteriously moves slowly"<br>
+                            ✅ "moves"<br><br>
+                            ❌ "Camera zooms dramatically"<br>
+                            ✅ "Static camera."<br><br>
+                            ❌ "Scary horror music"<br>
+                            ✅ "Dark ambient, scraping, whispers"
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="generate-btn" id="generate-anim-btn">⚡ GENERAR PROMPT ANIMACIÓN ⚡</button>
+
+            <div class="output-card" id="output-anim-card" style="display:none;">
+                <div class="output-header">
+                    <span class="output-label">PROMPT ANIMACIÓN GENERADO</span>
+                    <button class="copy-btn default" id="copy-anim-btn">COPIAR</button>
+                </div>
+                <pre class="output-text" id="output-anim-text"></pre>
+            </div>
+        </section>
+
         <!-- DOCUMENTATION SECTION -->
         <section id="docs" class="section">
             <div class="docs-grid">
@@ -1093,6 +1274,45 @@ COGOLLO HUMANOID:
 humanoid cannabis bud, trichome-covered
 Rasgos: bulging eyes, crystalline teeth, orange pistils
 Texturas: dense bud-flesh, resin-sweat</div>
+                </div>
+
+                <div class="doc-card">
+                    <div class="doc-header"><h3>ANIMACIÓN GROK IMAGINE</h3></div>
+                    <div class="doc-content">MODELO: Grok Imagine (xAI)
+Genera video + audio desde imagen estática.
+Duración: 3-5 segundos.
+
+FÓRMULA BASE:
+Static camera. [ELEMENTO 1] + [VERBO]. [ELEMENTO 2] + [VERBO]. [ELEMENTO N] + [VERBO].
+
+AUDIO: [GÉNERO], [ELEMENTOS], [TEXTURAS].
+
+PRINCIPIOS:
+1. Cámara primero (Static camera.)
+2. Inventario visual (lo que YA existe)
+3. Un verbo por elemento
+4. Verbos presente simple
+5. Audio separado
+6. Sin adjetivos innecesarios
+
+BANCO DE VERBOS:
+Orgánico: twitches, pulses, breathes, writhes, oozes, drips, blinks, crawls
+Mecánico: rattles, creaks, swings, spins, clicks, buzzes, sputters, grinds
+Atmosférico: flickers, drifts, swirls, settles, fades, glows, rises, sways
+
+AUDIO PALETTES:
+Crust Punk: blast beats, distorted bass, guttural screams, vinyl crackle
+Horror Ambiental: dark ambient drone, metallic scraping, reversed whispers
+Circo Siniestro: broken calliope, children laughter, static hum
+Industrial: machinery, hydraulic hiss, chain rattling, power hum
+Lo-Fi: vinyl crackle, tape warble, muffled radio, room tone
+
+ANTI-PATRONES:
+❌ "mysteriously moves slowly" → ✅ "moves"
+❌ "Camera zooms dramatically" → ✅ "Static camera."
+❌ "Scary horror music" → ✅ "Dark ambient, scraping, whispers"
+
+SUTILEZA > DRAMA</div>
                 </div>
             </div>
         </section>
@@ -1517,6 +1737,275 @@ Texturas: dense bud-flesh, resin-sweat</div>
 
             promptsList.appendChild(div);
         });
+
+        // =====================
+        // ANIMATION SECTION
+        // =====================
+
+        // Add Element Button
+        const addElementBtn = document.getElementById('add-element-btn');
+        const animElementsContainer = document.getElementById('anim-elements-container');
+        let elementCount = 1;
+
+        addElementBtn.addEventListener('click', () => {
+            if (elementCount >= 8) {
+                alert('Máximo 8 elementos. Recuerda: 4-6 es óptimo.');
+                return;
+            }
+            const newRow = document.createElement('div');
+            newRow.className = 'anim-element-row';
+            newRow.style.cssText = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
+            newRow.innerHTML = `
+                <input type="text" placeholder="Elemento" style="flex: 1;" class="anim-element-input">
+                <select style="flex: 1;" class="anim-verb-select">
+                    <option value="">-- Verbo --</option>
+                    <optgroup label="ORGÁNICO">
+                        <option value="twitches">twitches</option>
+                        <option value="pulses">pulses</option>
+                        <option value="breathes">breathes</option>
+                        <option value="writhes">writhes</option>
+                        <option value="oozes">oozes</option>
+                        <option value="drips">drips</option>
+                        <option value="blinks">blinks</option>
+                        <option value="crawls">crawls</option>
+                        <option value="squirms">squirms</option>
+                    </optgroup>
+                    <optgroup label="MECÁNICO">
+                        <option value="rattles">rattles</option>
+                        <option value="creaks">creaks</option>
+                        <option value="swings">swings</option>
+                        <option value="spins">spins</option>
+                        <option value="clicks">clicks</option>
+                        <option value="buzzes">buzzes</option>
+                        <option value="sputters">sputters</option>
+                        <option value="grinds">grinds</option>
+                    </optgroup>
+                    <optgroup label="ATMOSFÉRICO">
+                        <option value="flickers">flickers</option>
+                        <option value="drifts">drifts</option>
+                        <option value="swirls">swirls</option>
+                        <option value="settles">settles</option>
+                        <option value="fades">fades</option>
+                        <option value="glows">glows</option>
+                        <option value="rises">rises</option>
+                        <option value="sways">sways</option>
+                    </optgroup>
+                </select>
+                <button onclick="this.parentElement.remove(); elementCount--;" style="padding: 0.4rem 0.6rem; background: #dc2626; border: none; border-radius: 0.3rem; color: white; cursor: pointer;">✕</button>
+            `;
+            animElementsContainer.appendChild(newRow);
+            elementCount++;
+        });
+
+        // Audio Elements Multi-Select
+        const audioElementBtns = document.querySelectorAll('#anim-audio-elements .multi-btn');
+        audioElementBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+            });
+        });
+
+        // Generate Animation Prompt
+        const generateAnimBtn = document.getElementById('generate-anim-btn');
+        const outputAnimCard = document.getElementById('output-anim-card');
+        const outputAnimText = document.getElementById('output-anim-text');
+        const copyAnimBtn = document.getElementById('copy-anim-btn');
+
+        generateAnimBtn.addEventListener('click', () => {
+            let prompt = '';
+
+            // CAMERA
+            const camera = document.getElementById('anim-camera').value;
+            prompt += camera + ' ';
+
+            // ELEMENTS
+            const elementRows = document.querySelectorAll('.anim-element-row');
+            const elements = [];
+            elementRows.forEach(row => {
+                const elementInput = row.querySelector('.anim-element-input').value.trim();
+                const verbSelect = row.querySelector('.anim-verb-select').value;
+                if (elementInput && verbSelect) {
+                    elements.push(`${elementInput} ${verbSelect}`);
+                }
+            });
+            if (elements.length > 0) {
+                prompt += elements.join('. ') + '. ';
+            }
+
+            // LIGHTING
+            const lighting = document.getElementById('anim-lighting').value;
+            if (lighting) {
+                prompt += lighting + ' ';
+            }
+
+            // AUDIO
+            const audioGenre = document.getElementById('anim-audio-genre').value;
+            const selectedAudioElements = [];
+            audioElementBtns.forEach(btn => {
+                if (btn.classList.contains('active')) {
+                    selectedAudioElements.push(btn.dataset.val);
+                }
+            });
+            const customAudio = document.getElementById('anim-audio-custom').value.trim();
+
+            if (audioGenre || selectedAudioElements.length > 0 || customAudio) {
+                prompt += '\n\nAUDIO: ';
+                const audioComponents = [];
+                if (audioGenre) audioComponents.push(audioGenre);
+                if (selectedAudioElements.length > 0) audioComponents.push(...selectedAudioElements);
+                if (customAudio) {
+                    const customElements = customAudio.split(',').map(s => s.trim()).filter(s => s);
+                    audioComponents.push(...customElements);
+                }
+                prompt += audioComponents.join(', ') + '.';
+            }
+
+            outputAnimText.textContent = prompt.trim();
+            outputAnimCard.style.display = 'block';
+            copyAnimBtn.className = 'copy-btn default';
+            copyAnimBtn.textContent = 'COPIAR';
+        });
+
+        // Copy Animation Prompt
+        copyAnimBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(outputAnimText.textContent);
+                copyAnimBtn.className = 'copy-btn copied';
+                copyAnimBtn.textContent = 'COPIADO!';
+                setTimeout(() => {
+                    copyAnimBtn.className = 'copy-btn default';
+                    copyAnimBtn.textContent = 'COPIAR';
+                }, 2000);
+            } catch (err) {
+                console.error('Error al copiar:', err);
+            }
+        });
+
+        // Load Animation Examples
+        window.loadAnimExample = function(type) {
+            // Clear existing elements
+            animElementsContainer.innerHTML = '';
+            elementCount = 0;
+
+            // Clear audio selections
+            audioElementBtns.forEach(btn => btn.classList.remove('active'));
+
+            const examples = {
+                'santa': {
+                    camera: 'Static camera.',
+                    elements: [
+                        ['Santa smokes, green smoke', 'rises'],
+                        ['Hand', 'twitches'],
+                        ['Eyeballs', 'roll'],
+                        ['Tentacles', 'move'],
+                        ['Brain', 'pulses']
+                    ],
+                    lighting: 'Candles flicker.',
+                    audioGenre: 'Raw crust punk',
+                    audioElements: ['blast beats', 'guttural screams', 'distorted bass', 'static hum']
+                },
+                'lab': {
+                    camera: 'Static camera.',
+                    elements: [
+                        ['Scientist corpse slumps in chair', ''],
+                        ['Monitor static', 'flickers'],
+                        ['Liquid in tubes', 'bubbles'],
+                        ['Cables', 'spark'],
+                        ['Overhead light', 'swings']
+                    ],
+                    lighting: '',
+                    audioGenre: 'Industrial machinery',
+                    audioElements: ['hydraulic hiss', 'dripping liquid', 'distant alarm']
+                },
+                'possessed': {
+                    camera: 'Static camera.',
+                    elements: [
+                        ['Figure in bed', 'breathes'],
+                        ['Shadows', 'crawl'],
+                        ['Curtains', 'sway'],
+                        ['Crucifix on wall tilts slowly', ''],
+                        ['Candle flame stretches unnaturally', '']
+                    ],
+                    lighting: '',
+                    audioGenre: 'Dark ambient drone',
+                    audioElements: ['wood creaking', 'subsonic hum', 'reversed whispers']
+                }
+            };
+
+            const ex = examples[type];
+            if (!ex) return;
+
+            // Set camera
+            document.getElementById('anim-camera').value = ex.camera;
+
+            // Set elements
+            ex.elements.forEach(([element, verb], index) => {
+                if (index === 0) {
+                    // First row already exists
+                    const firstRow = animElementsContainer.querySelector('.anim-element-row');
+                    firstRow.querySelector('.anim-element-input').value = element;
+                    firstRow.querySelector('.anim-verb-select').value = verb;
+                } else {
+                    // Add new rows
+                    const newRow = document.createElement('div');
+                    newRow.className = 'anim-element-row';
+                    newRow.style.cssText = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
+                    newRow.innerHTML = `
+                        <input type="text" placeholder="Elemento" style="flex: 1;" class="anim-element-input" value="${element}">
+                        <select style="flex: 1;" class="anim-verb-select">
+                            <option value="">-- Verbo --</option>
+                            <optgroup label="ORGÁNICO">
+                                <option value="twitches" ${verb === 'twitches' ? 'selected' : ''}>twitches</option>
+                                <option value="pulses" ${verb === 'pulses' ? 'selected' : ''}>pulses</option>
+                                <option value="breathes" ${verb === 'breathes' ? 'selected' : ''}>breathes</option>
+                                <option value="writhes" ${verb === 'writhes' ? 'selected' : ''}>writhes</option>
+                                <option value="oozes" ${verb === 'oozes' ? 'selected' : ''}>oozes</option>
+                                <option value="drips" ${verb === 'drips' ? 'selected' : ''}>drips</option>
+                                <option value="blinks" ${verb === 'blinks' ? 'selected' : ''}>blinks</option>
+                                <option value="crawls" ${verb === 'crawls' ? 'selected' : ''}>crawls</option>
+                                <option value="squirms" ${verb === 'squirms' ? 'selected' : ''}>squirms</option>
+                            </optgroup>
+                            <optgroup label="MECÁNICO">
+                                <option value="rattles" ${verb === 'rattles' ? 'selected' : ''}>rattles</option>
+                                <option value="creaks" ${verb === 'creaks' ? 'selected' : ''}>creaks</option>
+                                <option value="swings" ${verb === 'swings' ? 'selected' : ''}>swings</option>
+                                <option value="spins" ${verb === 'spins' ? 'selected' : ''}>spins</option>
+                                <option value="clicks" ${verb === 'clicks' ? 'selected' : ''}>clicks</option>
+                                <option value="buzzes" ${verb === 'buzzes' ? 'selected' : ''}>buzzes</option>
+                                <option value="sputters" ${verb === 'sputters' ? 'selected' : ''}>sputters</option>
+                                <option value="grinds" ${verb === 'grinds' ? 'selected' : ''}>grinds</option>
+                            </optgroup>
+                            <optgroup label="ATMOSFÉRICO">
+                                <option value="flickers" ${verb === 'flickers' ? 'selected' : ''}>flickers</option>
+                                <option value="drifts" ${verb === 'drifts' ? 'selected' : ''}>drifts</option>
+                                <option value="swirls" ${verb === 'swirls' ? 'selected' : ''}>swirls</option>
+                                <option value="settles" ${verb === 'settles' ? 'selected' : ''}>settles</option>
+                                <option value="fades" ${verb === 'fades' ? 'selected' : ''}>fades</option>
+                                <option value="glows" ${verb === 'glows' ? 'selected' : ''}>glows</option>
+                                <option value="rises" ${verb === 'rises' ? 'selected' : ''}>rises</option>
+                                <option value="sways" ${verb === 'sways' ? 'selected' : ''}>sways</option>
+                            </optgroup>
+                        </select>
+                        <button onclick="this.parentElement.remove(); elementCount--;" style="padding: 0.4rem 0.6rem; background: #dc2626; border: none; border-radius: 0.3rem; color: white; cursor: pointer;">✕</button>
+                    `;
+                    animElementsContainer.appendChild(newRow);
+                }
+            });
+            elementCount = ex.elements.length;
+
+            // Set lighting
+            document.getElementById('anim-lighting').value = ex.lighting;
+
+            // Set audio genre
+            document.getElementById('anim-audio-genre').value = ex.audioGenre;
+
+            // Set audio elements
+            audioElementBtns.forEach(btn => {
+                if (ex.audioElements.includes(btn.dataset.val)) {
+                    btn.classList.add('active');
+                }
+            });
+        };
     </script>
 </body>
 </html>

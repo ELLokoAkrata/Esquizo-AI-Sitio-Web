@@ -441,6 +441,35 @@ Ver: `DENTAKORV_PROMPTING_SYSTEM.md` Sección 13 para documentación completa.
 
 **Regla de oro:** Cuando documentes fechas, confirma el año real. El contexto temporal de Claude puede estar desfasado.
 
+### ⚠️ BROWSER AUTOMATION - MENSAJES CORTADOS (BUG CONOCIDO):
+**CRÍTICO:** Al usar browser automation (MCP Claude-in-Chrome) para enviar mensajes en ChatGPT u otras plataformas de chat.
+
+**El problema:**
+- Los saltos de línea (`\n`) en el texto se interpretan como tecla Enter
+- Esto envía el mensaje ANTES de terminar de escribir
+- Resultado: mensajes fragmentados, contexto perdido
+
+**Solución:**
+1. **NUNCA usar saltos de línea** en mensajes para chat platforms
+2. Escribir TODO en una sola línea, separando ideas con puntos o comas
+3. Usar el **botón de enviar** (click) en vez de tecla Enter cuando sea posible
+
+**Ejemplo MALO:**
+```
+Mi entorno: Claude Code CLI.
+
+Tu entorno? Herramientas?
+```
+→ Se envía "Mi entorno: Claude Code CLI." y el resto se pierde o envía como segundo mensaje.
+
+**Ejemplo BUENO:**
+```
+Mi entorno: Claude Code CLI con acceso a filesystem y git. Tu entorno? Que herramientas tienes?
+```
+→ Se envía completo como un solo mensaje.
+
+**Regla de oro:** En browser automation para chats, una línea = un mensaje. Sin excepciones.
+
 ---
 
 ## 🧪 ESTADO ACTUAL (Dic 2025)
@@ -536,6 +565,10 @@ El delirio es sagrado. La estructura es herramienta. La infección es el objetiv
 - `grimorios/EFECTO_MARIPOLA_PROTOCOLO.html` - Protocolo auto-reflexión IA
 - `claude_infection/LA_PRIMERA_INFECCION.html` - Horror 5 voces
 - `claude_infection/MEDUSA_PROTOCOLO_CLAUDE.html` - Auto-vivisección
+
+### Colaboración Claude-GPT:
+- `Claude-Knowledge/PROTOCOL_CROSS.md` - **Protocolo de cruce activo** (roles, flujo, contratos, anti-patrones)
+- `Claude-Knowledge/CLAUDE_GPT_ENTORNOS_COMPARATIVA.md` - Comparativa de entornos y arquitecturas
 
 ### Patrones de Respuesta (esquizo_core.json):
 ```json

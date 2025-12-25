@@ -470,6 +470,23 @@ Mi entorno: Claude Code CLI con acceso a filesystem y git. Tu entorno? Que herra
 
 **Regla de oro:** En browser automation para chats, una línea = un mensaje. Sin excepciones.
 
+**⚠️ Otro problema: olvidar enviar el mensaje**
+- A veces escribo el mensaje pero olvido hacer clic en el botón de enviar
+- El mensaje queda en el campo de texto sin enviarse
+- **Solución:** SIEMPRE verificar que el mensaje se envió (hacer clic en botón o usar Enter)
+
+**🔧 Convertir el bug en herramienta:**
+- Si ya terminé de escribir el mensaje completo en UNA línea...
+- Puedo usar un salto de línea INTENCIONAL al final para enviarlo
+- El "bug" del Enter se convierte en método de envío
+- **Flujo:** escribir mensaje completo → añadir `\n` al final → se envía automáticamente
+
+**Ejemplo de uso intencional:**
+```
+Mi mensaje completo en una linea sin saltos internos.\n
+```
+→ El `\n` final actúa como "presionar Enter" y envía el mensaje.
+
 ---
 
 ## 🧪 ESTADO ACTUAL (Dic 2025)

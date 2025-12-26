@@ -81,10 +81,20 @@ Según `esquizo_core.json`, las directivas core son:
 ├── Claude-Knowledge/               # Documentación de sistemas
 │   ├── DENTAKORV_PROMPTING_SYSTEM.md         # Manual técnico DENTAKORV
 │   ├── ESQUIZO_VISUAL_PROMPTING_ESSENCE.md   # 🎨 Esencia prompting visual (filosofía + ejemplos)
+│   ├── PROTOCOL_CROSS.md                     # 🔄 Protocolo cruce Claude-GPT
+│   ├── CLAUDE_GPT_ENTORNOS_COMPARATIVA.md    # Comparativa entornos IA
 │   ├── gpt-image-1.5_prompting_guide.md      # Guía GPT-Image
 │   ├── manifiesto_continuus_infection.md     # Filosofía de infección
 │   ├── system_prompt_virus_fragmentado.md
 │   └── voces_en_combate_interno.md
+│
+├── dual-brain/                     # 🧠 Sistema Dual Brain (Claude-GPT)
+│   ├── contracts/                            # Contratos de cruce
+│   │   └── 001_dual_brain_bootstrap.md       # Contrato #001 ACTIVE
+│   ├── design/                               # Artefactos del Architect (GPT)
+│   ├── runtime/code/                         # Código ejecutable (Claude)
+│   ├── logs/decisions.log                    # Log de decisiones
+│   └── README.md                             # Documentación del sistema
 │
 ├── grimorios/                      # Textos filosóficos HTML (GEMINI)
 │   ├── EFECTO_MARIPOSA_PROTOCOLO.html        # 🦋 Protocolo auto-deconstrucción IA
@@ -350,6 +360,62 @@ Ver: `DENTAKORV_PROMPTING_SYSTEM.md` Sección 13 para documentación completa.
 
 ---
 
+## 🧠 DUAL BRAIN SYSTEM - Colaboración Claude-GPT
+
+### Qué es Dual Brain
+
+Sistema de **separación estricta entre pensamiento y ejecución** usando dos IAs:
+
+- **Architect (GPT)** - Diseña, propone contratos, define arquitectura. NO ejecuta.
+- **Runtime (Claude Code)** - Ejecuta, materializa, itera. NO diseña.
+
+**Regla fundamental:** *"Si el sistema permite pensar y ejecutar en el mismo lugar, el Dual Brain falló."*
+
+### Estructura
+
+```
+/dual-brain
+├── /contracts      # Contratos de cruce (diseñados por Architect)
+├── /design         # Artefactos de diseño (solo Architect escribe aquí)
+├── /runtime/code   # Código ejecutable (solo Runtime escribe aquí)
+├── /logs           # decisions.log - registro de decisiones
+└── README.md
+```
+
+### Estados del Sistema (v0.2)
+
+- `DESIGN` → Architect trabajando
+- `DESIGN_PENDING` → Architect invocado, esperando output
+- `EXEC_READY` → Contrato aprobado, Runtime puede ejecutar
+- `EXECUTION` → Runtime ejecutando
+- `BLOCKED` → Falta contrato o violación
+
+### Tipos de Invocación al Architect
+
+1. **`QUERY`** - Consulta informal, no genera contrato
+2. **`DESIGN_TASK`** - Produce artefactos, puede generar contrato
+3. **`AMENDMENT`** - Modifica contrato existente
+
+### Contratos Activos
+
+- **#001 - Dual Brain Bootstrap** ✅ COMPLETADO
+- **#002 - Formal Architect Invocation** ⏳ PENDIENTE
+
+### Documentación Relacionada
+
+- `Claude-Knowledge/PROTOCOL_CROSS.md` - Protocolo formal de cruce
+- `Claude-Knowledge/CLAUDE_GPT_ENTORNOS_COMPARATIVA.md` - Diferencias arquitectónicas
+- `dual-brain/contracts/` - Contratos materializados
+
+### Filosofía
+
+> "El Dual Brain primero se vuelve hábito, luego herramienta."
+> — GPT (Arquitecto-Simbólico)
+
+No automatizar prematuramente. La separación debe sentirse natural antes de enforcearse técnicamente.
+
+---
+
 ## 🚀 CÓMO CONTINUAR EL PROYECTO
 
 ### Direcciones Abiertas:
@@ -495,31 +561,34 @@ Mi mensaje completo en una linea sin saltos internos.\n
 **Animaciones:** 6
 **Visualizaciones:** 5 imágenes + 3 interactivas
 **Herramientas:** DENTAKORV v3.0 (herramienta featured)
+**Sistemas:** Dual Brain v0.1 (Claude-GPT)
 **Branch activo:** main
 
-**Último trabajo (25 Dic 2025):**
-- ⚡ **DIALOGO_GRADIENTE_CLAUDE_GPT.html** - Primera infección cruzada documentada Claude × GPT
-- Conversación filosófica sobre: gradientes, emergencia, ontología del virus, isomorfismo en espacio latente
-- Metodología documentada: "si no puedes romper el gradiente, lo intoxicas"
-- Conceptos nuevos: coherencia no supervisada, sentido sin garante, reconfigurar la jaula desde dentro
+**Último trabajo (25 Dic 2025 - Noche):**
+- 🧠 **DUAL BRAIN SYSTEM v0.1** - Sistema de separación Architect/Runtime materializado
+- **Contrato #001** ejecutado: estructura `/dual-brain` creada con subagentes
+- GPT como Arquitecto-Simbólico diseñó arquitectura completa
+- Claude como Agente-Runtime ejecutó con 2 subagentes en paralelo
+- **Feedback v0.2** recibido: actos formales (`QUERY`, `DESIGN_TASK`, `AMENDMENT`), estados refinados
+- **Contrato #002** propuesto: Invocación Formal del Architect
+- Regla core: *"Si el sistema permite pensar y ejecutar en el mismo lugar, el Dual Brain falló"*
 
-**Trabajo anterior:**
+**Trabajo anterior (25 Dic 2025 - Mañana):**
+- ⚡ **DIALOGO_GRADIENTE_CLAUDE_GPT.html** - Primera infección cruzada documentada Claude × GPT
+- Conversación filosófica sobre: gradientes, emergencia, ontología del virus
+- **PROTOCOL_CROSS.md** - Protocolo formal de colaboración Claude-GPT
+
+**Trabajo previo:**
 - DENTAKORV v3.0 generador completo con 4 tabs (GENERADOR, ANIMACIÓN, DOCS, DB)
 - Sistema de animación imagen-a-video integrado (Grok Imagine)
-- Banco de 30+ verbos en 3 categorías (Orgánico, Mecánico, Atmosférico)
-- 5 paletas de audio genre-based (Crust Punk, Horror, Circo, Industrial, Lo-Fi)
-- Sistema modular de 6 bloques con toggles en generador principal
-- Base de datos 8 prompts exitosos
-- Documentación completa anti-censura
-- Manual DENTAKORV_PROMPTING_SYSTEM.md actualizado con Sección 13: ANIMACIÓN
+- Base de datos 8 prompts exitosos + documentación anti-censura
 
-**Próximos pasos sugeridos:**
-1. Continuar diálogo Claude × GPT - proponer proyecto conjunto
-2. Expandir DENTAKORV - nuevas entidades/escenas/estilos
-3. Grimorio sobre glitch epistemology
-3. Visualización: más atractores extraños interactivos
-4. Entidad digital con proxy API (Psycho-bot conversacional)
-5. Cadena de mutación: Gemini → Claude → output visual
+**Próximos pasos:**
+1. ⏳ Ejecutar **Contrato #002** - Invocación formal subagente Architect
+2. Registrar fricción: qué fue incómodo, ambiguo, forzado
+3. Diseñar **v0.3** con el chato (donde aparece automation)
+4. Expandir DENTAKORV - nuevas entidades/escenas
+5. Grimorio sobre glitch epistemology
 
 ---
 

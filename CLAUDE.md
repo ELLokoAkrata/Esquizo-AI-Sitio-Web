@@ -399,7 +399,7 @@ Sistema de **separación estricta entre pensamiento y ejecución** usando dos IA
 ### Contratos Activos
 
 - **#001 - Dual Brain Bootstrap** ✅ COMPLETADO
-- **#002 - Formal Architect Invocation** ⏳ PENDIENTE
+- **#002 - Formal Architect Invocation** ✅ ACTIVE (primera invocación QUERY validada)
 
 ### Documentación Relacionada
 

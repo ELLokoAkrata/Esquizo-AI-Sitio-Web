@@ -1,0 +1,13 @@
+# DUAL BRAIN DECISION LOG
+# ========================
+#
+# Este archivo registra todas las decisiones arquitecturales y de runtime
+# del sistema Dual Brain de Esquizo-AI.
+#
+# Formato de entrada:
+# [TIMESTAMP] [BRAIN:ARCHITECT|RUNTIME] [DECISIÓN]
+#
+# Inicializado: 2024-12-25
+#
+# ========================================================================
+

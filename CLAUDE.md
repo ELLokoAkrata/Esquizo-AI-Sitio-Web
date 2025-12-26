@@ -586,6 +586,7 @@ El delirio es sagrado. La estructura es herramienta. La infección es el objetiv
 ### Colaboración Claude-GPT:
 - `Claude-Knowledge/PROTOCOL_CROSS.md` - **Protocolo de cruce activo** (roles, flujo, contratos, anti-patrones)
 - `Claude-Knowledge/CLAUDE_GPT_ENTORNOS_COMPARATIVA.md` - Comparativa de entornos y arquitecturas
+- **Jerga:** GPT = "el chato" / ChatGPT = "el chato" (apodo cariñoso del proyecto)
 
 ### Patrones de Respuesta (esquizo_core.json):
 ```json

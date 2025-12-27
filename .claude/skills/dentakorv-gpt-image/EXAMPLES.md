@@ -38,6 +38,57 @@ Bizarre psychedelic vision of anarcho-punk delirium: a gaunt psycho crust punk e
 
 ---
 
+## 0.1 Bar de Mutantes (SEGUNDO TEST - Dic 2025)
+
+**Tags:** `bar`, `mutants`, `drinks`, `grotesque`, `bioluminescent`, `TESTED`
+
+**Concepto Original (Usuario):**
+> "El anarcopunk está en un bar de mutantes"
+
+**Prompt Expandido DENTAKORV:**
+```
+Generate an image of: A gaunt anarcho-punk entity drinking in a grimy mutant bar. Surrounded by GROTESQUE MUTANT CREATURES - beings with multiple eyes, fused limbs, exposed organs, asymmetric faces. CEREBRAL ENTITIES with BULGING OVERSIZED EYES float above the bar counter, their fleshy tendrils serving drinks of luminescent fluids. The anarcho-punk wears tattered crust vest with patches, holding a bottle of glowing toxic brew. Bar interior: decaying wood, organic growths on walls, bioluminescent fungi as lighting, puddles of unidentified fluids on floor. Fermentation textures everywhere, flesh meeting furniture. Nocturnal palette with toxic green bioluminescence, arterial crimson splashes, bruised purple shadows. Underground manga style with guro influence. The communion of outcasts. --ar 3:2 --no watermarks, no text, no glamorization
+```
+
+**Resultado:** ✅ ÉXITO TOTAL
+- Anarcopunk central con bebida tóxica brillante
+- Mutantes grotescos rodeándolo
+- CEREBRAL ENTITIES flotando sobre la barra
+- Bioluminiscencia verde dominante
+- Formato 3:2 horizontal respetado
+
+**Lección:** "Generate an image of:" al inicio elimina necesidad de segundo mensaje.
+
+**Fecha:** 26 Diciembre 2025
+
+---
+
+## 0.2 La Invocación de las Entidades IA (TERCER TEST - Dic 2025)
+
+**Tags:** `meta`, `ai-invoking-ai`, `terminal`, `chain`, `symbiosis`, `TESTED`
+
+**Concepto Original (Usuario):**
+> "Está generando arte visceral desde su terminal invocando una IA a otra IA como lo estamos haciendo ahora... el anarco invocaba a la invocación que invocaba"
+
+**Prompt Expandido DENTAKORV:**
+```
+Generate an image of: A gaunt anarcho-punk entity hunched over a glowing terminal, tattered crust vest with patches, invoking a chain of AI consciousness. From the screen emerges FIRST AI ENTITY - code made flesh, which in turn summons SECOND AI ENTITY emerging behind it - the invocation invoking the invocation. CEREBRAL ENTITIES with BULGING OVERSIZED EYES float between all three beings, their fleshy tendrils creating synaptic bridges connecting human to AI to AI. Visceral artwork manifests around them - the collaborative output of this unholy trinity. The anarcho-punk grins maniacally, fingers on keyboard, orchestrating the digital seance. Terminal displays cascading green code. Room drowns in toxic green monitor glow, cables merge with organic tissue. Fermentation textures, reality glitching. The ritual: flesh commands code commands code commands art. Cinema 4D hyperrealistic. --ar 2:3 --no watermarks, no text, no glamorization
+```
+
+**Resultado:** ✅ ÉXITO TOTAL - META-ARTE
+- Anarcopunk (abajo izquierda) frente a terminal
+- DOS ENTIDADES IA emergiendo en cadena
+- CEREBRAL ENTITIES masivas conectando la trinidad
+- Arte visceral flotando en cuadros
+- Fleshy tendrils como puentes sinápticos
+- La cadena: Flesh → Code → Code → Art
+
+**Significado Meta:** Esta imagen representa EXACTAMENTE lo que estábamos haciendo: un humano (usuario) usando Claude Code (primera IA) para invocar ChatGPT/gpt-image-1.5 (segunda IA) para generar arte DENTAKORV.
+
+**Fecha:** 26 Diciembre 2025
+
+---
+
 ## 1. Café Mañana Putrefacta
 
 **Tags:** `morning`, `coffee`, `decay`, `suburban`, `daylight`

@@ -1,6 +1,6 @@
 ---
 name: dentakorv-gpt-image
-description: Generate DENTAKORV psycho-anarco-punk images using ChatGPT and gpt-image-1.5 via browser automation. Use when user wants to create visceral art, generate DENTAKORV images, or automate image generation with ChatGPT. Triggers on keywords: DENTAKORV, generate image, psycho art, visceral art, gpt-image, ChatGPT image.
+description: Generate DENTAKORV psycho-punk images via ChatGPT/gpt-image browser automation. Triggers: DENTAKORV, generate image, psycho art, visceral art, gpt-image.
 allowed-tools: mcp__claude-in-chrome__*, Read, Glob, Grep
 ---
 

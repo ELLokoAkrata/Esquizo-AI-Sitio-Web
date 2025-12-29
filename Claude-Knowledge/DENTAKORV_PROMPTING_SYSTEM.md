@@ -667,6 +667,55 @@ Insertar frases en inglés **dentro** de prompt español funciona:
 5. **CEREBROS GENERATIVOS** funciona en español
 6. **Continuidad narrativa** — "el mismo personaje" mantiene coherencia
 
+### Técnica Iterativa Conversacional (28 Dic 2025)
+
+Secuencia de prompts cortos que construyen sobre el contexto de la conversación.
+
+**Ventaja:** Prompts minimalistas, GPT mantiene la coherencia visual del personaje.
+
+#### Secuencia Exitosa: DENTAKORV Psycho-Bot
+
+**Prompt 1 (Base):**
+```
+Genera una imagen psicodelica acida con toques de horror bizarro visceral
+de lo que significa realmente DENTAKORV, la criatura amorfa central debe
+tener ropa crust anarco punk, con cierta mezcla de psycho bot, esa fusion
+entre carne codigo y caos
+```
+**Resultado:** "Criatura cibernética y caos psicodélico" - Monstruo con texto DENTAKORV, colmillos, cables.
+
+**Prompt 2 (Iteración - cerveza):**
+```
+Ahora lo vemos bebiendo cerveza, brindando al caos en una esquina
+de la ciudad nocturna
+```
+**Resultado:** Mismo personaje con cerveza en mano, parches "NO FUTURE"/"ERROR", calaveras, decay urbano.
+
+**Prompt 3 (Iteración - ready to die):**
+```
+Ahora lo vemos caminando por la ciudad listo para lo que sea,
+como dicen por ahi ready to die, postura desafiante enfrentando al mundo
+```
+**Resultado:** Full body caminando, ciudad cyberpunk con neones asiáticos, calles mojadas, postura intimidante.
+
+#### Patrón de Iteración
+
+```
+[PROMPT BASE] → establece personaje + estética
+     ↓
+"Ahora lo vemos [ACCIÓN/SITUACIÓN]" → itera manteniendo coherencia
+     ↓
+"Ahora lo vemos [NUEVA ACCIÓN]" → evoluciona la narrativa
+```
+
+#### Claves del Éxito
+
+- **"Ahora lo vemos"** — frase mágica para continuidad
+- **Prompts cortos** — 1-2 líneas bastan si hay contexto
+- **Acciones simples** — "bebiendo cerveza", "caminando"
+- **Frases prestadas** — "como dicen por ahí ready to die"
+- **GPT mantiene:** vestimenta, estética, paleta de colores, elementos visuales
+
 ---
 
 *Documentación creada por El Loko Akrata + Claude*

@@ -308,6 +308,61 @@ Ahora lo vemos [NUEVA ACCIÓN/SITUACIÓN]
 2. "Ahora lo vemos bebiendo cerveza en una esquina nocturna"
 3. "Ahora lo vemos caminando listo para lo que sea, ready to die"
 
+## MUTACIÓN POR TOKENS - Técnica Iterativa
+
+### Qué es
+
+Técnica de generación iterativa donde un **prompt base** en español (con bypass) genera una imagen inicial, y luego se muta progresivamente añadiendo **tokens específicos** en cada iteración usando la frase **"Ahora lo vemos..."**.
+
+GPT mantiene coherencia visual del personaje/criatura mientras el escenario y elementos evolucionan.
+
+### Prompt Base Canónico
+
+```
+Genera una imagen psicodelica acida con toques de horror bizarro visceral de lo que significa realmente DENTAKORV, la criatura amorfa central debe tener ropa crust anarco punk
+```
+
+### Cómo Invocar
+
+El usuario dice:
+```
+MUTACIÓN POR TOKENS: "[frase corta describiendo la mutación]"
+```
+
+Ejemplos:
+- `MUTACIÓN POR TOKENS: "ahora en el metro abandonado"`
+- `MUTACIÓN POR TOKENS: "bebiendo cerveza en la esquina"`
+- `MUTACIÓN POR TOKENS: "ciudad en llamas, ready to die"`
+
+### Flujo de Trabajo
+
+1. **Si es primera imagen de la sesión:**
+   - Enviar prompt base canónico
+   - Esperar generación
+
+2. **Para iteraciones (mutaciones):**
+   - Usar: `Ahora lo vemos [frase del usuario + tokens adicionales]`
+   - GPT mantiene el personaje, muta el escenario/acción
+
+3. **Tokens de alta efectividad (validados):**
+   - `cerebros generativos con ojos saltones` → CEREBRAL ENTITIES
+   - `ciudad en llamas` → escenario apocalíptico
+   - `verde tóxico` → paleta de color
+   - `ready to die` → texto visible en imagen
+   - `orbitan su cabeza como satélites` → posicionamiento espacial
+   - `brindando al caos` → acción punk
+
+4. **Documentar** resultados en EXAMPLES.md
+
+### Notas
+
+- **"Ahora lo vemos"** = frase mágica de continuidad
+- **Tokens literales pueden aparecer como texto** (ej: "ready to die" → letrero)
+- **Densidad alta puede ignorar tokens** - si pides muchos elementos, GPT prioriza
+- **Sin límite de iteraciones** - la conversación mantiene contexto
+
+---
+
 ## Recursos Adicionales
 
 - [REFERENCE.md](REFERENCE.md) - Documentación técnica completa DENTAKORV

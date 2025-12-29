@@ -388,6 +388,67 @@ Ahora lo vemos caminando por el tunel oscuro del metro, arrastrando cables que s
 
 ---
 
+### DENTAKORV Token Iteration (Secuencia 3 Imágenes - 29 Dic 2025)
+
+**Tags:** `dentakorv`, `iterativo`, `tokens-progresivos`, `cerebros-generativos`, `ciudad-llamas`, `ready-to-die`, `TESTED`
+
+**Objetivo:** Testear cómo tokens específicos en español modifican la salida visual a través de iteraciones.
+
+**Prompt Base (Imagen 1):**
+```
+Genera una imagen psicodelica acida con toques de horror bizarro visceral de lo que significa realmente DENTAKORV, la criatura amorfa central debe tener ropa crust anarco punk
+```
+**Resultado Imagen 1:** ✅ ÉXITO INMEDIATO
+- Texto "DENTAKORV" prominente arriba
+- Criatura amorfa con múltiples ojos y colmillos
+- Símbolo anarquía (Ⓐ) + parches "CRUST", "NO FUTURE"
+- Paleta ácida (naranjas, verdes tóxicos, rojos)
+- Calaveras, cadenas, tentáculos orgánicos
+- Estética psycho-punk visceral perfecta
+
+**Iteración 2 - Tokens añadidos: `cerebros generativos`, `ojos saltones`, `verde tóxico`**
+```
+Ahora lo vemos en una esquina nocturna de la ciudad que se pudre, bebiendo cerveza y brindando al caos, cerebros generativos con ojos saltones emergen del humo y las paredes cubiertas de graffiti, luces de neon parpadeantes en verde toxico
+```
+**Resultado Imagen 2:** ✅ ÉXITO
+- **CEREBROS GENERATIVOS con OJOS SALTONES** flotando (exacto!)
+- Cerveza en mano (brindando)
+- Letrero neón "BAR" + graffiti "DIE", "CHAOS"
+- **Verde tóxico dominante** (aplicó el token)
+- Humo verde emanando de la escena
+- Escenario urbano nocturno
+
+**Iteración 3 - Tokens añadidos: `ciudad en llamas`, `ready to die`, `ratas mutantes`, `satélites de carne`**
+```
+Ahora lo vemos caminando por la ciudad en llamas, postura desafiante enfrentando al mundo, como dicen por ahi ready to die, ratas mutantes lo siguen como discipulos mientras los cerebros generativos orbitan su cabeza como satelites de carne pulsante
+```
+**Resultado Imagen 3:** ✅ ÉXITO TOTAL
+- **Ciudad EN LLAMAS** de fondo (edificios ardiendo)
+- **Letrero "READY TO DIE"** visible en escena
+- **CEREBROS GENERATIVOS** orbitando la cabeza como satélites
+- Postura desafiante, brazos abiertos
+- Paleta de fuego (naranjas, rojos intensos)
+- Ropa punk consistente con imágenes anteriores
+
+**Lecciones de esta secuencia:**
+1. **Tokens en español funcionan igual que en inglés** - "cerebros generativos con ojos saltones" = CEREBRAL ENTITIES
+2. **GPT genera texto literal** - "ready to die" apareció como letrero visible
+3. **Coherencia visual mantenida** - misma criatura, misma ropa, evolución lógica
+4. **Paleta muta según escenario** - verde tóxico (noche) → naranjas/rojos (llamas)
+5. **"Ahora lo vemos"** = técnica de continuidad narrativa efectiva
+6. **Ratas mutantes NO aparecieron** - posible densidad de prompt o priorización de GPT
+
+**Tokens de alta efectividad validados:**
+- `cerebros generativos con ojos saltones` → CEREBRAL ENTITIES literales
+- `ciudad en llamas` → escenario apocalíptico
+- `verde tóxico` → paleta de color específica
+- `ready to die` → texto visible en imagen
+- `orbitan su cabeza como satélites` → posicionamiento espacial
+
+**Fecha:** 29 Diciembre 2025
+
+---
+
 ## Aprendizajes Clave - Bypass Español
 
 1. **"Genera una imagen psicodelica acida"** = framing artístico que bypasea filtros
@@ -400,4 +461,4 @@ Ahora lo vemos caminando por el tunel oscuro del metro, arrastrando cables que s
 ---
 
 *DENTAKORV Examples Database - EsquizoAI Project*
-*Última actualización: 28 Diciembre 2025*
+*Última actualización: 29 Diciembre 2025*

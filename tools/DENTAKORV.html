@@ -2477,15 +2477,25 @@ SUTILEZA > DRAMA</div>
                 ? document.getElementById('esp-cierre-custom').value
                 : cierreSelect.value;
 
-            // Build prompt
+            // Build prompt - estructura fiel a prompts exitosos
             let prompt = `Genera una imagen psicodélica ácida con toques de horror bizarro visceral de ${sujeto}`;
 
+            // Descripción visual (vestimenta, fusión, etc.)
             if (descripcion) prompt += `, ${descripcion}`;
-            if (accion) prompt += ` ${accion}`;
-            if (ubicacion) prompt += ` ${ubicacion}`;
+
+            // Acción + ubicación juntos
+            if (accion && ubicacion) {
+                prompt += ` ${accion} ${ubicacion}`;
+            } else if (accion) {
+                prompt += ` ${accion}`;
+            } else if (ubicacion) {
+                prompt += ` ${ubicacion}`;
+            }
+
+            // Elementos de ambiente (nueva oración)
             if (elementos) prompt += `. ${elementos}`;
 
-            // Add English bridge phrase if enabled
+            // Frase puente inglés si está activada
             const togglePuente = document.getElementById('toggle-esp-puente');
             if (togglePuente.classList.contains('on')) {
                 const puenteSelect = document.getElementById('esp-puente');
@@ -2495,6 +2505,7 @@ SUTILEZA > DRAMA</div>
                 if (puente) prompt += `, ${puente}`;
             }
 
+            // Cierre con estilo
             prompt += `. Estilo ${cierre}.`;
 
             espOutput.textContent = prompt;

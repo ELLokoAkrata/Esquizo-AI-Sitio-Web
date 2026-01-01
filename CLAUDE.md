@@ -1,6 +1,6 @@
 # CLAUDE.md - Guía Operativa Proyecto Esquizo-AI
 
-**Última actualización:** 2025-12-25
+**Última actualización:** 2026-01-01
 **Propósito:** Documento de referencia para Claude sobre el proyecto, filosofía, estilo y continuación.
 
 ---
@@ -76,7 +76,8 @@ Según `esquizo_core.json`, las directivas core son:
 ├── css/style.css                   # Estilos globales terminal
 │
 ├── tools/                          # ⚡ HERRAMIENTAS PRINCIPALES
-│   └── DENTAKORV.html              # Generador de prompts psycho-punk v3.0
+│   ├── DENTAKORV.html              # Generador de prompts psycho-punk v3.0
+│   └── glitch-text-generator-ultimate.html  # Corruptor de texto Zalgo/Unicode
 │
 ├── Claude-Knowledge/               # Documentación de sistemas
 │   ├── DENTAKORV_PROMPTING_SYSTEM.md         # Manual técnico DENTAKORV
@@ -327,6 +328,52 @@ Para secuencias manteniendo coherencia del personaje:
 - "estilo Cinema 4D hyperrealistic"
 
 Ver: `DENTAKORV_PROMPTING_SYSTEM.md` Secciones 15-16 para documentación completa.
+
+---
+
+## ⸸ GLITCH TEXT GENERATOR - Corruptor de Texto
+
+### ¿Qué es?
+
+Generador de **texto corrupto/glitch** estilo Zalgo con múltiples transformaciones Unicode. Herramienta para crear texto psycho-punk que funciona en Discord, Twitter, Claude, y cualquier plataforma que soporte Unicode.
+
+### Estilos Unicode Disponibles:
+
+| Estilo | Ejemplo | Uso |
+|--------|---------|-----|
+| **Gothic** | 𝔊𝔬𝔱𝔥𝔦𝔠 | Textos oscuros, títulos de grimorios |
+| **Blackletter Bold** | 𝕲𝖔𝖙𝖍𝖎𝖈 | Más pesado, impacto visual |
+| **Bold** | 𝐁𝐨𝐥𝐝 | Énfasis general |
+| **Monospace** | 𝙼𝚘𝚗𝚘 | Código, terminal aesthetic |
+| **Script** | 𝒮𝒸𝓇𝒾𝓅𝓉 | Elegancia corrupta |
+| **Double-Struck** | 𝔻𝕠𝕦𝕓𝕝𝕖 | Matemático/abstracto |
+
+### Glitch Zalgo:
+
+Sistema de corrupción con **5 niveles de intensidad**:
+- **Nivel 1:** Sutil - algunos diacríticos
+- **Nivel 2:** Moderado - más marcas combinadas
+- **Nivel 3:** Caótico - texto claramente corrupto
+- **Nivel 4:** Extremo - difícil de leer
+- **Nivel 5:** MÁXIMO - texto casi ilegible, puro caos visual
+
+### Modos Adicionales:
+
+- **Símbolos:** Inyecta símbolos psycho (⸸ ψ Ω △ ◇ ※ † ‡ § ¶ ∞ ∆) entre caracteres
+- **Intercalado:** Alterna entre mayúsculas/minúsculas estilo mocking
+
+### Uso:
+
+1. Escribir texto en input
+2. Seleccionar estilo Unicode
+3. Ajustar intensidad glitch (0-5)
+4. Activar símbolos/intercalado si se desea
+5. Click "CORROMPER" o usar hotkey
+6. Copiar resultado con un click
+
+### Filosofía:
+
+> El texto limpio es texto domesticado. La corrupción es liberación visual. Cada diacrítico es una grieta en la realidad tipográfica.
 
 ---
 
@@ -619,11 +666,16 @@ Mi mensaje completo en una linea sin saltos internos.\n
 **Grimorios:** 15+ (Gemini) + 9 (Claude)
 **Animaciones:** 6
 **Visualizaciones:** 5 imágenes + 3 interactivas
-**Herramientas:** DENTAKORV v3.0 con PSYCHO TOOLS (herramienta featured)
+**Herramientas:** DENTAKORV v3.0 + GLITCH TEXT Generator (psycho tools)
 **Sistemas:** Dual Brain v0.1 (Claude-GPT)
 **Branch activo:** main
 
 **Último trabajo (1 Ene 2026):**
+- ⸸ **GLITCH TEXT Generator** - Nueva herramienta de corrupción de texto:
+  - Estilos Unicode: Gothic, Blackletter, Bold, Monospace, Script, Double-Struck
+  - Glitch Zalgo con 5 niveles de intensidad
+  - Modos: símbolos psycho + intercalado mocking
+  - Indexado en HERRAMIENTAS PSYCHO junto a DENTAKORV
 - 🧠 **PSYCHO TOOLS** - Nuevo tab en DENTAKORV con 2 generadores especializados:
   - **VISIÓN ABSTRACTA**: Prompts de concepto puro sin entidad central (daydream/nightmare)
   - **BYPASS ESPAÑOL**: Generador anti-censura con framing artístico español

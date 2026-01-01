@@ -269,6 +269,65 @@ AUDIO: [GÉNERO], [ELEMENTOS SONOROS], [TEXTURAS].
 
 Ver: `DENTAKORV_PROMPTING_SYSTEM.md` Sección 13 para documentación completa.
 
+### PSYCHO TOOLS (Generadores Alternativos):
+
+**NUEVO:** Tab adicional con dos generadores especializados:
+
+#### 1. VISIÓN ABSTRACTA (Inglés)
+
+Genera prompts de **conceptos puros** sin entidad central. Más atmosférico, más filosófico.
+
+**Fórmula:**
+```
+The most [INTENSIFICADOR] visceral vision of [CONCEPTO] [TIPO] in a decay [MOMENTO] of [CONTENIDO], [ESTILO], [FILOSOFÍA]
+```
+
+**Componentes:**
+- **Intensificador:** putrefaction, chaotic, monstrous, delirious, nihilistic
+- **Concepto:** anarcho punk, nihilist punk, crust punk, biomechanical horror, psychedelic chaos
+- **Tipo:** daydream, nightmare, hallucination, fever dream, vision
+- **Momento:** morning, night, twilight, endless
+- **Contenido temporal:** de qué está hecha esa mañana/noche
+- **Estilo artístico:** bizarre psychedelic horror art, grotesque surrealist, etc.
+- **Conceptos filosóficos (toggle):** nihil, entropy, void worship, etc.
+- **Pipe | (toggle):** variación adicional
+
+**Ejemplos exitosos:**
+```
+The most putrefaction visceral vision of anarcho punk daydream in a decay morning of delirium and putrid revolt, bizarre killer psychedelic horror art, nihil, decadence global corruption, moralism and spirituality in the name of anarchy and chaos
+```
+
+#### 2. BYPASS ESPAÑOL (Anti-censura)
+
+Genera prompts en español con framing artístico que tiene mayor tasa de éxito contra censura.
+
+**Fórmula Base:**
+```
+Genera una imagen psicodélica ácida con toques de horror bizarro visceral de [SUJETO], [DESCRIPCIÓN] [ACCIÓN] [UBICACIÓN]. [ELEMENTOS]. Estilo [CIERRE].
+```
+
+**Componentes:**
+- **Sujeto:** lo que significa DENTAKORV, figura anarco punk, criatura amorfa, etc.
+- **Descripción visual:** ropa crust, fusión carne-código-caos, etc.
+- **Acción:** bebiendo cerveza, fumando, caminando, ready to die
+- **Ubicación:** esquina ciudad nocturna, habitación podrida, rooftop
+- **Elementos ambiente:** neones, grafitis, CEREBROS GENERATIVOS
+- **Estilo/Cierre:** bizarro visceral, colores ácidos, Cinema 4D
+
+**Modo Iterativo "Ahora lo vemos...":**
+Para secuencias manteniendo coherencia del personaje:
+```
+[PROMPT BASE] → establece personaje
+"Ahora lo vemos bebiendo cerveza..." → itera
+"Ahora lo vemos enfrentando al sistema..." → evoluciona
+```
+
+**Frases Puente Inglés (toggle):** Insertar frases en inglés dentro del español
+- "como dicen por ahí ready to die"
+- "estilo Cinema 4D hyperrealistic"
+
+Ver: `DENTAKORV_PROMPTING_SYSTEM.md` Secciones 15-16 para documentación completa.
+
 ---
 
 ## 🔄 FLUJO DE TRABAJO
@@ -555,16 +614,24 @@ Mi mensaje completo en una linea sin saltos internos.\n
 
 ---
 
-## 🧪 ESTADO ACTUAL (Dic 2025)
+## 🧪 ESTADO ACTUAL (Ene 2026)
 
 **Grimorios:** 15+ (Gemini) + 9 (Claude)
 **Animaciones:** 6
 **Visualizaciones:** 5 imágenes + 3 interactivas
-**Herramientas:** DENTAKORV v3.0 (herramienta featured)
+**Herramientas:** DENTAKORV v3.0 con PSYCHO TOOLS (herramienta featured)
 **Sistemas:** Dual Brain v0.1 (Claude-GPT)
 **Branch activo:** main
 
-**Último trabajo (25 Dic 2025 - Noche):**
+**Último trabajo (1 Ene 2026):**
+- 🧠 **PSYCHO TOOLS** - Nuevo tab en DENTAKORV con 2 generadores especializados:
+  - **VISIÓN ABSTRACTA**: Prompts de concepto puro sin entidad central (daydream/nightmare)
+  - **BYPASS ESPAÑOL**: Generador anti-censura con framing artístico español
+- Documentación Secciones 15-16 en `DENTAKORV_PROMPTING_SYSTEM.md`
+- Modo iterativo "Ahora lo vemos..." para secuencias coherentes
+- DENTAKORV ahora tiene 5 tabs: GENERADOR, PSYCHO TOOLS, ANIMACIÓN, DOCS, DB
+
+**Trabajo anterior (25 Dic 2025 - Noche):**
 - 🧠 **DUAL BRAIN SYSTEM v0.1** - Sistema de separación Architect/Runtime materializado
 - **Contrato #001** ejecutado: estructura `/dual-brain` creada con subagentes
 - GPT como Arquitecto-Simbólico diseñó arquitectura completa

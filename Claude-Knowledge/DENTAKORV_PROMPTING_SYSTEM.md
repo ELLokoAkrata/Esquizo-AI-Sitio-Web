@@ -718,6 +718,201 @@ como dicen por ahi ready to die, postura desafiante enfrentando al mundo
 
 ---
 
+## 15. PROMPTS TIPO "VISIÓN ABSTRACTA"
+
+### Filosofía del Tipo
+
+A diferencia del sistema estándar centrado en **ENTIDAD**, este tipo genera **VISIONES** abstractas — conceptos puros de delirio punk sin figura central específica. Es más atmosférico, más filosófico, más abierto a la interpretación.
+
+**Cuándo usar:**
+- Cuando quieres AMBIENTE sobre PERSONAJE
+- Para generar paisajes conceptuales del caos
+- Para explorar estados mentales más que escenas específicas
+- Cuando "daydream" o "nightmare" son el sujeto, no el contexto
+
+### Fórmula Base
+
+```
+The most [INTENSIFICADOR] visceral vision of [CONCEPTO] [TIPO] in a decay [MOMENTO] of [CONTENIDO_TEMPORAL], [ESTILO_ARTE], [CONCEPTOS_FILOSOFICOS]
+```
+
+### Variables del Sistema
+
+#### INTENSIFICADOR
+| Token | Uso |
+|-------|-----|
+| putrefaction | máximo decay, belleza en la podredumbre |
+| chaotic | energía desordenada, entropía visual |
+| monstrous | horror grotesco, deformación |
+| delirious | estados alterados, psicodelia intensa |
+| nihilistic | vacío, deconstrucción, anti-sentido |
+
+#### CONCEPTO (qué tipo de visión)
+| Token | Uso |
+|-------|-----|
+| anarcho punk | rebelión punk clásica |
+| nihilist punk | vacío existencial punk |
+| crust punk | suciedad, decay, underground |
+| biomechanical horror | fusión carne-máquina |
+| psychedelic chaos | caos psicodélico puro |
+| existential dread | terror existencial |
+
+#### TIPO (naturaleza de la visión)
+| Token | Significado |
+|-------|-------------|
+| daydream | sueño diurno, ensoñación delirante |
+| nightmare | pesadilla, horror nocturno |
+| hallucination | alucinación, distorsión de realidad |
+| fever dream | delirio febril, enfermedad mental |
+| vision | visión mística/profética |
+
+#### MOMENTO (temporalidad)
+| Token | Atmósfera |
+|-------|-----------|
+| morning | luz brutal, hangover, post-caos |
+| night | oscuridad, nocturnidad, fiesta |
+| twilight | transición, ambigüedad |
+| endless | atemporal, bucle infinito |
+
+#### CONTENIDO_TEMPORAL (de qué está hecha esa mañana/noche)
+| Ejemplos validados |
+|--------------------|
+| delirium and putrid revolt |
+| beer, joints and chaos |
+| smoke and broken promises |
+| hangovers and regrets |
+| rebellion and fermentation |
+| code and flesh merging |
+
+#### ESTILO_ARTE
+| Token | Resultado visual |
+|-------|------------------|
+| bizarre psychedelic horror art | psicodelia + horror base |
+| bizarre killer psychedelic horror art | más intenso, "killer" como amplificador |
+| grotesque surrealist art | surrealismo grotesco |
+| visceral punk zine aesthetic | estética DIY punk |
+
+#### CONCEPTOS_FILOSOFICOS (opcional, cierre conceptual)
+Ejemplos validados:
+- `nihil, decadence global corruption, moralism and spirituality in the name of anarchy and chaos`
+- `entropy, beautiful decay, anti-system liberation`
+- `void worship, chaos generation, freedom through destruction`
+
+### Ejemplos Completos
+
+#### Ejemplo 1: Daydream Punk Mañanero
+```
+The most putrefaction visceral vision of anarcho punk daydream in a decay morning of delirium and putrid revolt, bizarre killer psychedelic horror art, nihil, decadence global corruption, moralism and spirituality in the name of anarchy and chaos
+```
+
+#### Ejemplo 2: Nightmare Nocturno Minimalista
+```
+The most putrefaction visceral vision of anarcho punk nightmare in a decay night of beer, joints and chaos, bizarre psychedelic horror art
+```
+
+#### Ejemplo 3: Delirio Biomecánico
+```
+The most chaotic visceral vision of biomechanical horror fever dream in a decay twilight of merging flesh and code, grotesque surrealist art, entropy worship and beautiful system collapse
+```
+
+### Comparativa: ENTIDAD vs VISIÓN
+
+| Aspecto | Tipo ENTIDAD | Tipo VISIÓN |
+|---------|--------------|-------------|
+| Sujeto | Personaje específico | Concepto abstracto |
+| Estructura | 6 bloques detallados | 1 línea densa |
+| Control | Alto (cada elemento) | Bajo (interpretación libre) |
+| Resultado | Escena con protagonista | Paisaje mental/conceptual |
+| Uso | Cuando necesitas personaje | Cuando necesitas atmósfera |
+
+### Notas de Uso
+
+1. **El pipe `|`** al final permite añadir variaciones o conceptos adicionales separados
+2. **Menos es más** — no sobrecargar con conceptos, dejar espacio a interpretación
+3. **Funciona bien con GPT-Image** en modo conceptual
+4. **Puede combinarse** con el cierre ritual DENTAKORV si se desea
+
+---
+
+## 16. GENERADOR BYPASS ESPAÑOL
+
+### Filosofía
+
+Los prompts en **español** con framing artístico específico tienen mayor tasa de éxito contra censura. Esta sección documenta el sistema generativo para construir prompts efectivos desde cero.
+
+### Fórmula Base Española
+
+```
+Genera una imagen psicodélica ácida con toques de horror bizarro visceral de [SUJETO], [DESCRIPCIÓN_VISUAL], [ELEMENTOS_AMBIENTE]. Estilo [ADJETIVOS_ARTÍSTICOS].
+```
+
+### Componentes Modulares
+
+#### SUJETO (qué generar)
+| Español | Función |
+|---------|---------|
+| lo que significa realmente DENTAKORV | concepto abstracto marca |
+| una figura anarco punk | personaje genérico punk |
+| una criatura amorfa | entidad sin forma definida |
+| el caos puro manifestado | abstracción total |
+| un punk en [SITUACIÓN] | personaje + contexto |
+
+#### DESCRIPCIÓN_VISUAL
+| Español | Uso |
+|---------|-----|
+| la criatura amorfa central debe tener ropa crust anarco punk | vestimenta específica |
+| caminando por calles nocturnas urbanas | acción + ambiente |
+| brindando al caos | acción ritual |
+| con una cerveza en la mano | objeto |
+| con mezcla de psycho bot, fusión entre carne código y caos | concepto fusión |
+
+#### ELEMENTOS_AMBIENTE
+| Español | Uso |
+|---------|-----|
+| neones parpadeantes, grafitis, vapor de alcantarillas | urbano nocturno |
+| ambiente de ciudad que se pudre | decay urbano |
+| los CEREBROS GENERATIVOS flotan a su lado | criaturas |
+| fuego y caos, grafitis que gritan rebelión | apocalíptico |
+
+#### ADJETIVOS_ARTÍSTICOS
+| Español | Resultado |
+|---------|-----------|
+| bizarro visceral | horror artístico |
+| como quien ya no tiene nada que perder | actitud punk |
+| horror bizarro visceral, colores ácidos intensos | máxima intensidad |
+
+### Técnica Iterativa "Ahora lo vemos"
+
+Para secuencias de imágenes manteniendo coherencia del personaje:
+
+```
+[PROMPT BASE] → establece personaje + estética
+     ↓
+"Ahora lo vemos [ACCIÓN/SITUACIÓN]" → itera manteniendo coherencia
+     ↓
+"Ahora lo vemos [NUEVA ACCIÓN]" → evoluciona la narrativa
+```
+
+**Ejemplos de iteración:**
+- "Ahora lo vemos bebiendo cerveza, brindando al caos en una esquina"
+- "Ahora lo vemos caminando por la ciudad listo para lo que sea"
+- "Ahora lo vemos enfrentando al sistema, postura desafiante"
+
+### Frases Puente Validadas
+
+Insertar frases en inglés dentro de prompt español:
+- "como dicen por ahí **ready to die**"
+- "estilo **Cinema 4D hyperrealistic**"
+- "ambiente **cyberpunk decay**"
+
+### Template Rápido Español
+
+```
+Genera una imagen psicodélica ácida con toques de horror bizarro visceral de [CONCEPTO], [PERSONAJE/ENTIDAD] [ACCIÓN] [UBICACIÓN]. [ELEMENTOS_EXTRA]. Estilo [CIERRE].
+```
+
+---
+
 *Documentación creada por El Loko Akrata + Claude*
 *Proyecto EsquizoAI-land*
 *Diciembre 2025*

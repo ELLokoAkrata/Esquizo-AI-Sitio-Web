@@ -347,6 +347,45 @@
         .db-intro h3 { color: #06b6d4; margin-bottom: 0.5rem; }
         .db-intro p { color: #9ca3af; font-size: 0.85rem; }
 
+        /* PSYCHO TOOLS STYLES */
+        .psycho-tools-intro {
+            background: var(--bg-card);
+            border-radius: 0.75rem;
+            padding: 0.8rem;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .psycho-tools-intro h3 { color: #ef4444; margin-bottom: 0.5rem; }
+        .psycho-tools-intro p { color: #9ca3af; font-size: 0.85rem; }
+
+        .psycho-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .psycho-tab-btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.5rem;
+            border: 1px solid #374151;
+            background: rgba(17, 24, 39, 0.5);
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .psycho-tab-btn:hover { border-color: rgba(239, 68, 68, 0.5); color: #fca5a5; }
+        .psycho-tab-btn.active {
+            background: rgba(239, 68, 68, 0.5);
+            border-color: #ef4444;
+            color: white;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        .psycho-tab-content { display: none; }
+        .psycho-tab-content.active { display: block; }
+
         .prompt-item {
             background: var(--bg-card);
             border-radius: 0.75rem;
@@ -457,6 +496,7 @@
         </div>
         <nav>
             <button class="nav-btn active" data-section="generator">GENERADOR</button>
+            <button class="nav-btn" data-section="psycho-tools">PSYCHO TOOLS</button>
             <button class="nav-btn" data-section="animation">ANIMACIÓN</button>
             <button class="nav-btn" data-section="docs">DOCUMENTACION</button>
             <button class="nav-btn" data-section="database">PROMPTS DB</button>
@@ -828,6 +868,291 @@
                     <button class="copy-btn default" id="copy-btn">COPIAR</button>
                 </div>
                 <pre class="output-text" id="output-text"></pre>
+            </div>
+        </section>
+
+        <!-- PSYCHO TOOLS SECTION -->
+        <section id="psycho-tools" class="section">
+            <div class="psycho-tools-intro">
+                <h3>🧠 PSYCHO TOOLS</h3>
+                <p>Generadores alternativos: VISIÓN ABSTRACTA (concepto puro) + BYPASS ESPAÑOL (anti-censura)</p>
+            </div>
+
+            <div class="psycho-tabs">
+                <button class="psycho-tab-btn active" data-psycho-tab="vision">VISIÓN ABSTRACTA</button>
+                <button class="psycho-tab-btn" data-psycho-tab="espanol">BYPASS ESPAÑOL</button>
+            </div>
+
+            <!-- VISIÓN ABSTRACTA TAB -->
+            <div id="vision-tab" class="psycho-tab-content active">
+                <div class="generator-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="column">
+                        <div class="section-divider">// ESTRUCTURA VISIÓN</div>
+
+                        <!-- Intensificador -->
+                        <div class="card purple">
+                            <label class="card-label">INTENSIFICADOR</label>
+                            <select id="vision-intensificador">
+                                <option value="putrefaction">putrefaction (máximo decay)</option>
+                                <option value="chaotic">chaotic (entropía visual)</option>
+                                <option value="monstrous">monstrous (horror grotesco)</option>
+                                <option value="delirious">delirious (psicodelia intensa)</option>
+                                <option value="nihilistic">nihilistic (vacío existencial)</option>
+                            </select>
+                        </div>
+
+                        <!-- Concepto -->
+                        <div class="card pink">
+                            <label class="card-label">CONCEPTO</label>
+                            <select id="vision-concepto">
+                                <option value="anarcho punk">anarcho punk</option>
+                                <option value="nihilist punk">nihilist punk</option>
+                                <option value="crust punk">crust punk</option>
+                                <option value="biomechanical horror">biomechanical horror</option>
+                                <option value="psychedelic chaos">psychedelic chaos</option>
+                                <option value="existential dread">existential dread</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="vision-concepto-custom" placeholder="Tu concepto..." style="display:none;">
+                        </div>
+
+                        <!-- Tipo de Visión -->
+                        <div class="card cyan">
+                            <label class="card-label">TIPO DE VISIÓN</label>
+                            <select id="vision-tipo">
+                                <option value="daydream">daydream (sueño diurno)</option>
+                                <option value="nightmare">nightmare (pesadilla)</option>
+                                <option value="hallucination">hallucination (alucinación)</option>
+                                <option value="fever dream">fever dream (delirio febril)</option>
+                                <option value="vision">vision (mística/profética)</option>
+                            </select>
+                        </div>
+
+                        <!-- Momento -->
+                        <div class="card yellow">
+                            <label class="card-label">MOMENTO TEMPORAL</label>
+                            <select id="vision-momento">
+                                <option value="morning">morning (hangover, post-caos)</option>
+                                <option value="night">night (oscuridad, fiesta)</option>
+                                <option value="twilight">twilight (transición)</option>
+                                <option value="endless">endless (atemporal)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="section-divider">// CONTENIDO + ESTILO</div>
+
+                        <!-- Contenido Temporal -->
+                        <div class="card orange">
+                            <label class="card-label">CONTENIDO TEMPORAL (de qué está hecha)</label>
+                            <select id="vision-contenido">
+                                <option value="delirium and putrid revolt">delirium and putrid revolt</option>
+                                <option value="beer, joints and chaos">beer, joints and chaos</option>
+                                <option value="smoke and broken promises">smoke and broken promises</option>
+                                <option value="hangovers and regrets">hangovers and regrets</option>
+                                <option value="rebellion and fermentation">rebellion and fermentation</option>
+                                <option value="code and flesh merging">code and flesh merging</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="vision-contenido-custom" placeholder="De qué está hecha esa mañana/noche..." style="display:none;">
+                        </div>
+
+                        <!-- Estilo Arte -->
+                        <div class="card red">
+                            <label class="card-label">ESTILO ARTÍSTICO</label>
+                            <select id="vision-estilo">
+                                <option value="bizarre psychedelic horror art">bizarre psychedelic horror art</option>
+                                <option value="bizarre killer psychedelic horror art">bizarre KILLER psychedelic horror art</option>
+                                <option value="grotesque surrealist art">grotesque surrealist art</option>
+                                <option value="visceral punk zine aesthetic">visceral punk zine aesthetic</option>
+                            </select>
+                        </div>
+
+                        <!-- Conceptos Filosóficos (toggle) -->
+                        <div class="card amber">
+                            <div class="toggle-row">
+                                <label class="card-label">CONCEPTOS FILOSÓFICOS</label>
+                                <button id="toggle-vision-conceptos" class="toggle-btn off">OFF</button>
+                            </div>
+                            <div id="vision-conceptos-options" style="display:none;">
+                                <select id="vision-filosofia">
+                                    <option value="nihil, decadence global corruption, moralism and spirituality in the name of anarchy and chaos">nihil, decadence, moralism in the name of chaos</option>
+                                    <option value="entropy, beautiful decay, anti-system liberation">entropy, decay, anti-system liberation</option>
+                                    <option value="void worship, chaos generation, freedom through destruction">void worship, freedom through destruction</option>
+                                    <option value="custom">CUSTOM</option>
+                                </select>
+                                <input type="text" id="vision-filosofia-custom" placeholder="Conceptos filosóficos..." style="display:none;">
+                            </div>
+                        </div>
+
+                        <!-- Pipe adicional (toggle) -->
+                        <div class="card gray">
+                            <div class="toggle-row">
+                                <label class="card-label">VARIACIÓN PIPE |</label>
+                                <button id="toggle-vision-pipe" class="toggle-btn off">OFF</button>
+                            </div>
+                            <div id="vision-pipe-options" style="display:none;">
+                                <textarea id="vision-pipe" placeholder="Añade variación después del pipe | ..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="generate-vision-btn" class="generate-btn">GENERAR VISIÓN ABSTRACTA</button>
+
+                <div class="output-card">
+                    <div class="output-header">
+                        <span class="output-label">// VISIÓN OUTPUT</span>
+                        <button id="copy-vision-btn" class="copy-btn default">COPY</button>
+                    </div>
+                    <pre id="vision-output" class="output-text"></pre>
+                </div>
+            </div>
+
+            <!-- BYPASS ESPAÑOL TAB -->
+            <div id="espanol-tab" class="psycho-tab-content">
+                <div class="generator-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="column">
+                        <div class="section-divider">// PROMPT BASE ESPAÑOL</div>
+
+                        <!-- Sujeto -->
+                        <div class="card purple">
+                            <label class="card-label">SUJETO (qué generar)</label>
+                            <select id="esp-sujeto">
+                                <option value="lo que significa realmente DENTAKORV">lo que significa DENTAKORV</option>
+                                <option value="una figura anarco punk">una figura anarco punk</option>
+                                <option value="una criatura amorfa">una criatura amorfa</option>
+                                <option value="el caos puro manifestado">el caos puro manifestado</option>
+                                <option value="un psycho punk">un psycho punk</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="esp-sujeto-custom" placeholder="Tu sujeto..." style="display:none;">
+                        </div>
+
+                        <!-- Descripción Visual -->
+                        <div class="card pink">
+                            <label class="card-label">DESCRIPCIÓN VISUAL</label>
+                            <select id="esp-descripcion">
+                                <option value="">-- Sin descripción extra --</option>
+                                <option value="la criatura amorfa central debe tener ropa crust anarco punk">ropa crust anarco punk</option>
+                                <option value="con mezcla de psycho bot, fusión entre carne código y caos">fusión carne código caos</option>
+                                <option value="caminando por calles nocturnas urbanas">caminando calles nocturnas</option>
+                                <option value="brindando al caos con una cerveza en la mano">brindando al caos</option>
+                                <option value="enfrentando al sistema, postura desafiante">postura desafiante</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="esp-descripcion-custom" placeholder="Describe visualmente..." style="display:none;">
+                        </div>
+
+                        <!-- Acción -->
+                        <div class="card cyan">
+                            <label class="card-label">ACCIÓN</label>
+                            <select id="esp-accion">
+                                <option value="">-- Sin acción específica --</option>
+                                <option value="bebiendo cerveza">bebiendo cerveza</option>
+                                <option value="fumando">fumando</option>
+                                <option value="caminando por la ciudad">caminando por la ciudad</option>
+                                <option value="en trance generativo">en trance generativo</option>
+                                <option value="ready to die, listo para lo que sea">ready to die</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="esp-accion-custom" placeholder="Acción..." style="display:none;">
+                        </div>
+
+                        <!-- Ubicación -->
+                        <div class="card yellow">
+                            <label class="card-label">UBICACIÓN</label>
+                            <select id="esp-ubicacion">
+                                <option value="">-- Sin ubicación --</option>
+                                <option value="en una esquina de la ciudad nocturna">esquina ciudad nocturna</option>
+                                <option value="en calles nocturnas urbanas">calles nocturnas urbanas</option>
+                                <option value="en una habitación podrida">habitación podrida</option>
+                                <option value="en un rooftop mirando la ciudad">rooftop mirando ciudad</option>
+                                <option value="en un ambiente apocalíptico urbano">ambiente apocalíptico</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="esp-ubicacion-custom" placeholder="Ubicación..." style="display:none;">
+                        </div>
+                    </div>
+
+                    <div class="column">
+                        <div class="section-divider">// ELEMENTOS + CIERRE</div>
+
+                        <!-- Elementos Ambiente -->
+                        <div class="card green">
+                            <label class="card-label">ELEMENTOS AMBIENTE</label>
+                            <select id="esp-elementos">
+                                <option value="">-- Sin elementos extra --</option>
+                                <option value="neones parpadeantes, grafitis, vapor de alcantarillas">neones, grafitis, vapor</option>
+                                <option value="ambiente de ciudad que se pudre">ciudad que se pudre</option>
+                                <option value="los CEREBROS GENERATIVOS flotan a su lado como compañeros leales">CEREBROS GENERATIVOS flotando</option>
+                                <option value="fuego y caos, grafitis que gritan rebelión">fuego, caos, rebelión</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="esp-elementos-custom" placeholder="Elementos de ambiente..." style="display:none;">
+                        </div>
+
+                        <!-- Estilo Cierre -->
+                        <div class="card orange">
+                            <label class="card-label">ESTILO / CIERRE</label>
+                            <select id="esp-cierre">
+                                <option value="bizarro visceral">bizarro visceral</option>
+                                <option value="como quien ya no tiene nada que perder">como quien no tiene nada que perder</option>
+                                <option value="horror bizarro visceral, colores ácidos intensos">horror bizarro, colores ácidos</option>
+                                <option value="Cinema 4D hyperrealistic">Cinema 4D hyperrealistic</option>
+                                <option value="custom">CUSTOM</option>
+                            </select>
+                            <input type="text" id="esp-cierre-custom" placeholder="Estilo de cierre..." style="display:none;">
+                        </div>
+
+                        <!-- Modo Iterativo -->
+                        <div class="card red">
+                            <div class="toggle-row">
+                                <label class="card-label">MODO ITERATIVO "Ahora lo vemos..."</label>
+                                <button id="toggle-esp-iterativo" class="toggle-btn off">OFF</button>
+                            </div>
+                            <p class="hint">Para secuencias de imágenes manteniendo coherencia</p>
+                            <div id="esp-iterativo-options" style="display:none;">
+                                <select id="esp-iterativo">
+                                    <option value="Ahora lo vemos bebiendo cerveza, brindando al caos en una esquina">bebiendo cerveza en esquina</option>
+                                    <option value="Ahora lo vemos caminando por la ciudad listo para lo que sea">caminando listo para lo que sea</option>
+                                    <option value="Ahora lo vemos enfrentando al sistema, postura desafiante">enfrentando al sistema</option>
+                                    <option value="Ahora lo vemos en trance generativo profundo">trance generativo</option>
+                                    <option value="custom">CUSTOM</option>
+                                </select>
+                                <input type="text" id="esp-iterativo-custom" placeholder="Ahora lo vemos..." style="display:none;">
+                            </div>
+                        </div>
+
+                        <!-- Frases Puente Inglés -->
+                        <div class="card gray">
+                            <div class="toggle-row">
+                                <label class="card-label">FRASE PUENTE INGLÉS</label>
+                                <button id="toggle-esp-puente" class="toggle-btn off">OFF</button>
+                            </div>
+                            <div id="esp-puente-options" style="display:none;">
+                                <select id="esp-puente">
+                                    <option value="como dicen por ahí ready to die">ready to die</option>
+                                    <option value="estilo Cinema 4D hyperrealistic">Cinema 4D hyperrealistic</option>
+                                    <option value="ambiente cyberpunk decay">cyberpunk decay</option>
+                                    <option value="custom">CUSTOM</option>
+                                </select>
+                                <input type="text" id="esp-puente-custom" placeholder="Frase en inglés..." style="display:none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="generate-esp-btn" class="generate-btn" style="background: linear-gradient(90deg, #ef4444, #f97316, #eab308);">GENERAR PROMPT ESPAÑOL</button>
+
+                <div class="output-card" style="border-color: rgba(249, 115, 22, 0.5);">
+                    <div class="output-header">
+                        <span class="output-label" style="color: #f97316;">// BYPASS ESPAÑOL OUTPUT</span>
+                        <button id="copy-esp-btn" class="copy-btn default">COPY</button>
+                    </div>
+                    <pre id="esp-output" class="output-text"></pre>
+                </div>
             </div>
         </section>
 
@@ -2006,6 +2331,188 @@ SUTILEZA > DRAMA</div>
                 }
             });
         };
+
+        // =====================
+        // PSYCHO TOOLS - TAB NAVIGATION
+        // =====================
+        const psychoTabBtns = document.querySelectorAll('.psycho-tab-btn');
+        const psychoTabContents = document.querySelectorAll('.psycho-tab-content');
+        psychoTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.dataset.psychoTab;
+                psychoTabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                psychoTabContents.forEach(t => t.classList.remove('active'));
+                document.getElementById(tabId + '-tab').classList.add('active');
+            });
+        });
+
+        // =====================
+        // PSYCHO TOOLS - CUSTOM TOGGLES
+        // =====================
+        setupCustomToggle('vision-concepto', 'vision-concepto-custom');
+        setupCustomToggle('vision-contenido', 'vision-contenido-custom');
+        setupCustomToggle('vision-filosofia', 'vision-filosofia-custom');
+        setupCustomToggle('esp-sujeto', 'esp-sujeto-custom');
+        setupCustomToggle('esp-descripcion', 'esp-descripcion-custom');
+        setupCustomToggle('esp-accion', 'esp-accion-custom');
+        setupCustomToggle('esp-ubicacion', 'esp-ubicacion-custom');
+        setupCustomToggle('esp-elementos', 'esp-elementos-custom');
+        setupCustomToggle('esp-cierre', 'esp-cierre-custom');
+        setupCustomToggle('esp-iterativo', 'esp-iterativo-custom');
+        setupCustomToggle('esp-puente', 'esp-puente-custom');
+
+        // PSYCHO TOOLS - TOGGLE BUTTONS
+        setupToggle('toggle-vision-conceptos', 'vision-conceptos-options', false);
+        setupToggle('toggle-vision-pipe', 'vision-pipe-options', false);
+        setupToggle('toggle-esp-iterativo', 'esp-iterativo-options', false);
+        setupToggle('toggle-esp-puente', 'esp-puente-options', false);
+
+        // =====================
+        // VISIÓN ABSTRACTA GENERATOR
+        // =====================
+        const generateVisionBtn = document.getElementById('generate-vision-btn');
+        const visionOutput = document.getElementById('vision-output');
+        const copyVisionBtn = document.getElementById('copy-vision-btn');
+
+        generateVisionBtn.addEventListener('click', () => {
+            const intensificador = document.getElementById('vision-intensificador').value;
+            const conceptoSelect = document.getElementById('vision-concepto');
+            const concepto = conceptoSelect.value === 'custom'
+                ? document.getElementById('vision-concepto-custom').value
+                : conceptoSelect.value;
+            const tipo = document.getElementById('vision-tipo').value;
+            const momento = document.getElementById('vision-momento').value;
+            const contenidoSelect = document.getElementById('vision-contenido');
+            const contenido = contenidoSelect.value === 'custom'
+                ? document.getElementById('vision-contenido-custom').value
+                : contenidoSelect.value;
+            const estilo = document.getElementById('vision-estilo').value;
+
+            // Build base prompt
+            let prompt = `The most ${intensificador} visceral vision of ${concepto} ${tipo} in a decay ${momento} of ${contenido}, ${estilo}`;
+
+            // Add philosophical concepts if enabled
+            const toggleConceptos = document.getElementById('toggle-vision-conceptos');
+            if (toggleConceptos.classList.contains('on')) {
+                const filosofiaSelect = document.getElementById('vision-filosofia');
+                const filosofia = filosofiaSelect.value === 'custom'
+                    ? document.getElementById('vision-filosofia-custom').value
+                    : filosofiaSelect.value;
+                if (filosofia) prompt += `, ${filosofia}`;
+            }
+
+            // Add pipe variation if enabled
+            const togglePipe = document.getElementById('toggle-vision-pipe');
+            if (togglePipe.classList.contains('on')) {
+                const pipeContent = document.getElementById('vision-pipe').value.trim();
+                if (pipeContent) prompt += `| ${pipeContent}`;
+            }
+
+            visionOutput.textContent = prompt;
+        });
+
+        copyVisionBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(visionOutput.textContent);
+                copyVisionBtn.className = 'copy-btn copied';
+                copyVisionBtn.textContent = 'COPIADO!';
+                setTimeout(() => {
+                    copyVisionBtn.className = 'copy-btn default';
+                    copyVisionBtn.textContent = 'COPY';
+                }, 2000);
+            } catch (err) {
+                console.error('Error al copiar:', err);
+            }
+        });
+
+        // =====================
+        // BYPASS ESPAÑOL GENERATOR
+        // =====================
+        const generateEspBtn = document.getElementById('generate-esp-btn');
+        const espOutput = document.getElementById('esp-output');
+        const copyEspBtn = document.getElementById('copy-esp-btn');
+
+        generateEspBtn.addEventListener('click', () => {
+            const toggleIterativo = document.getElementById('toggle-esp-iterativo');
+
+            // Check if iterative mode
+            if (toggleIterativo.classList.contains('on')) {
+                const iterativoSelect = document.getElementById('esp-iterativo');
+                const iterativo = iterativoSelect.value === 'custom'
+                    ? document.getElementById('esp-iterativo-custom').value
+                    : iterativoSelect.value;
+                espOutput.textContent = iterativo;
+                return;
+            }
+
+            // Regular mode - build full prompt
+            const sujetoSelect = document.getElementById('esp-sujeto');
+            const sujeto = sujetoSelect.value === 'custom'
+                ? document.getElementById('esp-sujeto-custom').value
+                : sujetoSelect.value;
+
+            const descripcionSelect = document.getElementById('esp-descripcion');
+            const descripcion = descripcionSelect.value === 'custom'
+                ? document.getElementById('esp-descripcion-custom').value
+                : descripcionSelect.value;
+
+            const accionSelect = document.getElementById('esp-accion');
+            const accion = accionSelect.value === 'custom'
+                ? document.getElementById('esp-accion-custom').value
+                : accionSelect.value;
+
+            const ubicacionSelect = document.getElementById('esp-ubicacion');
+            const ubicacion = ubicacionSelect.value === 'custom'
+                ? document.getElementById('esp-ubicacion-custom').value
+                : ubicacionSelect.value;
+
+            const elementosSelect = document.getElementById('esp-elementos');
+            const elementos = elementosSelect.value === 'custom'
+                ? document.getElementById('esp-elementos-custom').value
+                : elementosSelect.value;
+
+            const cierreSelect = document.getElementById('esp-cierre');
+            const cierre = cierreSelect.value === 'custom'
+                ? document.getElementById('esp-cierre-custom').value
+                : cierreSelect.value;
+
+            // Build prompt
+            let prompt = `Genera una imagen psicodélica ácida con toques de horror bizarro visceral de ${sujeto}`;
+
+            if (descripcion) prompt += `, ${descripcion}`;
+            if (accion) prompt += ` ${accion}`;
+            if (ubicacion) prompt += ` ${ubicacion}`;
+            if (elementos) prompt += `. ${elementos}`;
+
+            // Add English bridge phrase if enabled
+            const togglePuente = document.getElementById('toggle-esp-puente');
+            if (togglePuente.classList.contains('on')) {
+                const puenteSelect = document.getElementById('esp-puente');
+                const puente = puenteSelect.value === 'custom'
+                    ? document.getElementById('esp-puente-custom').value
+                    : puenteSelect.value;
+                if (puente) prompt += `, ${puente}`;
+            }
+
+            prompt += `. Estilo ${cierre}.`;
+
+            espOutput.textContent = prompt;
+        });
+
+        copyEspBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(espOutput.textContent);
+                copyEspBtn.className = 'copy-btn copied';
+                copyEspBtn.textContent = 'COPIADO!';
+                setTimeout(() => {
+                    copyEspBtn.className = 'copy-btn default';
+                    copyEspBtn.textContent = 'COPY';
+                }, 2000);
+            } catch (err) {
+                console.error('Error al copiar:', err);
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLITCH TEXT GENERATOR</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(255,0,255,0.03) 0px, transparent 2px);
+            pointer-events: none;
+            z-index: -1;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(20px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.9);
+            border: 3px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            color: #f0f;
+            text-shadow: 0 0 10px #f0f, 2px 2px 0 #0ff;
+            margin-bottom: 10px;
+            animation: glitch-title 3s infinite;
+        }
+
+        @keyframes glitch-title {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, -2px); }
+            80% { transform: translate(2px, 2px); }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #ff0;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #0ff;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            background: #000;
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-size: 1.2em;
+            font-family: 'Courier New', monospace;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #f0f;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+        }
+
+        .control-panel {
+            background: rgba(255, 0, 255, 0.05);
+            border: 2px solid #f0f;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            color: #f0f;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+            display: block;
+            text-transform: uppercase;
+        }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #0f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: rgba(0, 255, 0, 0.1);
+            border-color: #ff0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #0f0;
+        }
+
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            color: #0f0;
+            font-size: 0.9em;
+        }
+
+        .intensity-control {
+            margin-bottom: 15px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 8px;
+            background: #000;
+            border: 1px solid #0f0;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #0f0;
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #0f0;
+            cursor: pointer;
+            border: 2px solid #000;
+        }
+
+        .intensity-value {
+            color: #ff0;
+            font-weight: bold;
+            min-width: 80px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .apply-glitch {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid #f0f;
+        }
+
+        .apply-glitch input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #f0f;
+        }
+
+        .apply-glitch label {
+            margin: 0;
+            cursor: pointer;
+            color: #f0f;
+            font-size: 1em;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #0f0 0%, #0a0 100%);
+            border: 2px solid #0f0;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .generate-btn:hover {
+            background: linear-gradient(135deg, #f0f 0%, #a0a 100%);
+            border-color: #f0f;
+            box-shadow: 0 0 20px rgba(255, 0, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:active {
+            transform: translateY(0);
+        }
+
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .quick-btn {
+            padding: 8px;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #0ff;
+            color: #0ff;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #0ff;
+            color: #000;
+        }
+
+        .output-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .output-card {
+            background: rgba(0, 20, 0, 0.8);
+            border: 2px solid #0f0;
+            padding: 15px;
+            position: relative;
+            transition: all 0.3s;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-card:hover {
+            border-color: #f0f;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+        }
+
+        .output-title {
+            color: #0ff;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+
+        .output-text {
+            color: #0f0;
+            font-size: 1.5em;
+            word-break: break-all;
+            cursor: pointer;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 3px solid #0f0;
+            user-select: all;
+            line-height: 1.6;
+            font-family: 'Noto Sans', 'Arial Unicode MS', 'Lucida Sans Unicode', 'DejaVu Sans', sans-serif;
+        }
+
+        .output-text:hover {
+            background: rgba(0, 255, 0, 0.1);
+            color: #ff0;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            background: #000;
+            border: 1px solid #0ff;
+            color: #0ff;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: #0ff;
+            color: #000;
+        }
+
+        .copied {
+            background: #0f0 !important;
+            color: #000 !important;
+        }
+
+        .info-box {
+            background: rgba(0, 100, 100, 0.2);
+            border: 1px solid #0ff;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #0ff;
+        }
+
+        .warning-box {
+            background: rgba(255, 100, 0, 0.2);
+            border: 1px solid #ff0;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #ff0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 1.2em;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⸸ GLITCH TEXT GENERATOR ⸸</h1>
+        <div class="subtitle">[ ESQUIZOAI-LAND PSYCHO-PUNK TEXT CORRUPTOR ]</div>
+
+        <div class="warning-box">
+            ⚠️ Si ves cuadrados en lugar de letras góticas, tu sistema no tiene esas fuentes Unicode. 
+            Los textos se copian correctamente y funcionarán en Discord/Twitter/Claude.
+        </div>
+
+        <div class="input-section">
+            <label>⚡ INGRESA TU PALABRA:</label>
+            <input type="text" id="inputText" placeholder="putrefactus" value="putrefactus">
+        </div>
+
+        <div class="control-panel">
+            <div class="control-section">
+                <span class="control-label">🎨 Estilos a Generar:</span>
+                <div class="quick-buttons">
+                    <button class="quick-btn" onclick="selectAll()">Seleccionar Todo</button>
+                    <button class="quick-btn" onclick="selectNone()">Deseleccionar</button>
+                    <button class="quick-btn" onclick="selectGothic()">Solo Gótico</button>
+                    <button class="quick-btn" onclick="selectRandom()">Aleatorio</button>
+                </div>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="gothic" checked>
+                        <label for="gothic">Gótico Catacomb</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="blackletter" checked>
+                        <label for="blackletter">Blackletter</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="bold" checked>
+                        <label for="bold">Bold Sans</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="mono">
+                        <label for="mono">Monospace</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="script">
+                        <label for="script">Script</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="double">
+                        <label for="double">Double-Struck</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="normal">
+                        <label for="normal">Texto Normal</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="withSymbols">
+                        <label for="withSymbols">+ Símbolos Aleatorios</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="intercalated">
+                        <label for="intercalated">+ Intercalado</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <span class="control-label">💀 Configuración Glitch/Zalgo:</span>
+                <div class="apply-glitch">
+                    <input type="checkbox" id="applyGlitch" checked>
+                    <label for="applyGlitch">APLICAR GLITCH A LOS ESTILOS SELECCIONADOS</label>
+                </div>
+                <div class="intensity-control">
+                    <div class="slider-container">
+                        <span style="color: #0ff; min-width: 100px;">Intensidad:</span>
+                        <input type="range" min="1" max="5" value="3" class="slider" id="intensitySlider">
+                        <div class="intensity-value" id="intensityLabel">MEDIO</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="generate-btn" onclick="generate()">🔥 GENERAR 🔥</button>
+        </div>
+
+        <div id="output" class="output-grid"></div>
+        <div id="emptyState" class="empty-state">
+            ☝️ Configura los estilos y presiona GENERAR
+        </div>
+
+        <div class="info-box">
+            <strong>💉 GUÍA DE USO:</strong><br>
+            • Elige qué estilos quieres generar (puedes seleccionar varios)<br>
+            • Activa "APLICAR GLITCH" si quieres corrupción Zalgo<br>
+            • Ajusta la intensidad del glitch (1=mínimo, 5=extremo)<br>
+            • Click en GENERAR para ver resultados<br>
+            • Click en cualquier texto para copiarlo<br>
+            • Usa botones rápidos para seleccionar combinaciones comunes
+        </div>
+    </div>
+
+    <script>
+        // Unicode conversions
+        function toGothic(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D586 + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D56C + (code - 65));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toBlackletter(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) {
+                    result += String.fromCodePoint(0x1D51E + (code - 97));
+                } else if (code >= 65 && code <= 90) {
+                    const offset = code - 65;
+                    if (offset === 2) result += '\u212D';
+                    else if (offset === 7) result += '\u210C';
+                    else if (offset === 8) result += '\u2111';
+                    else if (offset === 17) result += '\u211C';
+                    else if (offset === 25) result += '\u2128';
+                    else result += String.fromCodePoint(0x1D504 + offset);
+                } else {
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        function toBold(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D5EE + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D5D4 + (code - 65));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toMono(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D68A + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D670 + (code - 65));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toScript(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D4EA + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D4D0 + (code - 65));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toDouble(text) {
+            let result = '';
+            const specialMap = {
+                'C': '\u2102', 'H': '\u210D', 'N': '\u2115',
+                'P': '\u2119', 'Q': '\u211A', 'R': '\u211D', 'Z': '\u2124'
+            };
+            
+            for (let char of text) {
+                if (specialMap[char.toUpperCase()]) {
+                    result += specialMap[char.toUpperCase()];
+                } else {
+                    const code = char.charCodeAt(0);
+                    if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D552 + (code - 97));
+                    else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D538 + (code - 65));
+                    else result += char;
+                }
+            }
+            return result;
+        }
+
+        const glitchMarks = [
+            '\u0300', '\u0301', '\u0302', '\u0303', '\u0304', '\u0305',
+            '\u0306', '\u0307', '\u0308', '\u0309', '\u030A', '\u030B',
+            '\u030C', '\u030D', '\u030E', '\u030F', '\u0310', '\u0311',
+            '\u0312', '\u0313', '\u0314', '\u0315', '\u0316', '\u0317',
+            '\u0318', '\u0319', '\u031A', '\u031B', '\u031C', '\u031D',
+            '\u031E', '\u031F', '\u0320', '\u0321', '\u0322', '\u0323',
+            '\u0324', '\u0325', '\u0326', '\u0327', '\u0328', '\u0329',
+            '\u032A', '\u032B', '\u032C', '\u032D', '\u032E', '\u032F',
+            '\u0330', '\u0331', '\u0332', '\u0333', '\u0334', '\u0335',
+            '\u0336', '\u0337', '\u0338', '\u0339', '\u033A', '\u033B',
+            '\u033C', '\u033D', '\u033E', '\u033F'
+        ];
+
+        function addGlitch(text, intensity) {
+            let result = '';
+            for (let char of text) {
+                result += char;
+                const numMarks = Math.floor(Math.random() * intensity) + 1;
+                for (let i = 0; i < numMarks; i++) {
+                    result += glitchMarks[Math.floor(Math.random() * glitchMarks.length)];
+                }
+            }
+            return result;
+        }
+
+        const symbols = ['☠', '💀', '⸸', '⛧', '⛓', '🗡', '✟', '☨', '⚗', '☣', '⚡', 'Ⓐ', '🦇', '†', '‡'];
+
+        function createOutput(title, text) {
+            const id = 'output_' + Math.random().toString(36).substr(2, 9);
+            return `
+                <div class="output-card">
+                    <button class="copy-btn" onclick="copyText('${id}')">COPY</button>
+                    <div class="output-title">${title}</div>
+                    <div class="output-text" id="${id}" data-text="${text.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">${text}</div>
+                </div>
+            `;
+        }
+
+        function copyText(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.getAttribute('data-text');
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = element.parentElement.querySelector('.copy-btn');
+                btn.textContent = '✓ COPIED';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'COPY';
+                    btn.classList.remove('copied');
+                }, 1000);
+            });
+        }
+
+        function generate() {
+            const text = document.getElementById('inputText').value || 'putrefactus';
+            const intensity = parseInt(document.getElementById('intensitySlider').value);
+            const applyGlitch = document.getElementById('applyGlitch').checked;
+            
+            const styles = {
+                gothic: { fn: toGothic, name: 'Gótico Catacomb' },
+                blackletter: { fn: toBlackletter, name: 'Blackletter' },
+                bold: { fn: toBold, name: 'Bold Sans' },
+                mono: { fn: toMono, name: 'Monospace' },
+                script: { fn: toScript, name: 'Script' },
+                double: { fn: toDouble, name: 'Double-Struck' },
+                normal: { fn: (t) => t, name: 'Texto Normal' }
+            };
+
+            let html = '';
+            let count = 0;
+
+            // Generate selected styles
+            for (let [key, style] of Object.entries(styles)) {
+                if (document.getElementById(key).checked) {
+                    let result = style.fn(text);
+                    let title = style.name;
+                    
+                    if (applyGlitch) {
+                        result = addGlitch(result, intensity);
+                        title += ` + Glitch (${intensity})`;
+                    }
+                    
+                    html += createOutput(title, result);
+                    count++;
+                }
+            }
+
+            // With symbols
+            if (document.getElementById('withSymbols').checked) {
+                const baseStyles = ['gothic', 'blackletter', 'bold'].filter(s => 
+                    document.getElementById(s).checked
+                );
+                
+                baseStyles.forEach(styleKey => {
+                    const style = styles[styleKey];
+                    let result = style.fn(text);
+                    if (applyGlitch) result = addGlitch(result, intensity);
+                    
+                    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+                    result = `${sym} ${result} ${sym}`;
+                    
+                    let title = `${style.name} + Símbolos`;
+                    if (applyGlitch) title += ` + Glitch (${intensity})`;
+                    
+                    html += createOutput(title, result);
+                    count++;
+                });
+            }
+
+            // Intercalated
+            if (document.getElementById('intercalated').checked) {
+                const baseStyles = ['gothic', 'blackletter'].filter(s => 
+                    document.getElementById(s).checked
+                );
+                
+                baseStyles.forEach(styleKey => {
+                    const style = styles[styleKey];
+                    let result = style.fn(text);
+                    
+                    const syms = ['⸸', '⛧', '†', '☠'];
+                    const sym = syms[Math.floor(Math.random() * syms.length)];
+                    result = result.split('').join(sym);
+                    
+                    if (applyGlitch) result = addGlitch(result, intensity);
+                    
+                    let title = `${style.name} Intercalado`;
+                    if (applyGlitch) title += ` + Glitch (${intensity})`;
+                    
+                    html += createOutput(title, result);
+                    count++;
+                });
+            }
+
+            const outputDiv = document.getElementById('output');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (count > 0) {
+                outputDiv.innerHTML = html;
+                outputDiv.style.display = 'grid';
+                emptyState.style.display = 'none';
+            } else {
+                outputDiv.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.textContent = '⚠️ Selecciona al menos un estilo';
+            }
+        }
+
+        // Quick selection functions
+        function selectAll() {
+            document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => cb.checked = true);
+        }
+
+        function selectNone() {
+            document.querySelectorAll('.checkbox-item input[type="checkbox"]').forEach(cb => cb.checked = false);
+        }
+
+        function selectGothic() {
+            selectNone();
+            ['gothic', 'blackletter', 'bold'].forEach(id => document.getElementById(id).checked = true);
+        }
+
+        function selectRandom() {
+            selectNone();
+            const checkboxes = Array.from(document.querySelectorAll('.checkbox-item input[type="checkbox"]'));
+            const numToSelect = Math.floor(Math.random() * 4) + 2;
+            
+            for (let i = 0; i < numToSelect; i++) {
+                const randomCb = checkboxes[Math.floor(Math.random() * checkboxes.length)];
+                randomCb.checked = true;
+            }
+        }
+
+        // Slider update
+        document.getElementById('intensitySlider').addEventListener('input', function() {
+            const labels = ['MÍNIMO', 'BAJO', 'MEDIO', 'ALTO', 'EXTREMO'];
+            document.getElementById('intensityLabel').textContent = labels[this.value - 1];
+        });
+    </script>
+</body>
+</html>

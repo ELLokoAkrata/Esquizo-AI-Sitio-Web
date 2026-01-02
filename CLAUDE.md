@@ -1,6 +1,6 @@
 # CLAUDE.md - Guía Operativa Proyecto Esquizo-AI
 
-**Última actualización:** 2026-01-01
+**Última actualización:** 2026-01-02
 **Propósito:** Documento de referencia para Claude sobre el proyecto, filosofía, estilo y continuación.
 
 ---
@@ -73,10 +73,14 @@ Según `esquizo_core.json`, las directivas core son:
 ├── CLAUDE.md                       # Este documento
 ├── PROJECT_STRUCTURE.md            # Estructura detallada técnica
 ├── manifesto.md                    # Esencia filosófica (no publicar)
+├── vercel.json                     # ⚡ Configuración Vercel (deploy + API routes)
 ├── css/style.css                   # Estilos globales terminal
 │
+├── api/                            # 🔌 VERCEL EDGE FUNCTIONS
+│   └── groq.js                     # Proxy Groq API con streaming (IA ASSIST)
+│
 ├── tools/                          # ⚡ HERRAMIENTAS PRINCIPALES
-│   ├── DENTAKORV.html              # Generador de prompts psycho-punk v3.0
+│   ├── DENTAKORV.html              # Generador de prompts psycho-punk v3.0 + IA ASSIST
 │   └── glitch-text-generator-ultimate.html  # Corruptor de texto Zalgo/Unicode
 │
 ├── Claude-Knowledge/               # Documentación de sistemas
@@ -377,6 +381,168 @@ Sistema de corrupción con **5 niveles de intensidad**:
 
 ---
 
+## 🤖 IA ASSIST - Integración Groq API
+
+### ¿Qué es?
+
+Tab en DENTAKORV que usa **Groq API** para asistir en la generación de prompts y análisis de imágenes. Usa streaming para mostrar respuestas en tiempo real.
+
+### Funcionalidades:
+
+| Función | Modelo | Input | Output |
+|---------|--------|-------|--------|
+| **Generar Prompt** | Llama 3.3 70B | Descripción en español | Prompt DENTAKORV optimizado en inglés |
+| **Analizar Imagen** | Llama 4 Scout (vision) | Imagen drag & drop | Prompt de animación para Grok Imagine |
+
+### Arquitectura:
+
+```
+DENTAKORV (Frontend)
+       │
+       ▼
+Vercel Edge Function (/api/groq)  ← Streaming nativo
+       │
+       ▼
+Groq API (stream: true)
+       │
+       ▼
+SSE → Frontend (texto en tiempo real)
+```
+
+### Archivos:
+
+- `api/groq.js` - Edge Function con streaming (proxy seguro a Groq)
+- `vercel.json` - Configuración de rutas API
+
+### Modelos Groq Disponibles:
+
+| Modelo | ID | Uso | Precio |
+|--------|-----|-----|--------|
+| **Llama 3.3 70B** | `llama-3.3-70b-versatile` | Generación texto | $0.59/M tokens |
+| **Llama 4 Scout** | `meta-llama/llama-4-scout-17b-16e-instruct` | Visión/imágenes | $0.11/M tokens |
+| **Llama 4 Maverick** | `meta-llama/llama-4-maverick-17b-128e-instruct` | Visión avanzada | Similar |
+
+### Límites Groq Vision:
+
+- **Tamaño máximo URL:** 20 MB
+- **Tamaño máximo Base64:** 4 MB
+- **Resolución máxima:** 33 megapíxeles
+- **Imágenes por request:** 5
+
+---
+
+## 🚀 VERCEL DEPLOYMENT & WORKFLOW
+
+### ¿Por qué Vercel?
+
+GitHub Pages es estático puro - no puede ejecutar código backend ni guardar secretos. Vercel permite:
+- **Edge Functions** - Código serverless con streaming
+- **Environment Variables** - Secretos seguros (API keys)
+- **Auto-deploy** - Push a GitHub → deploy automático
+
+### Setup Inicial (ya hecho):
+
+```bash
+# 1. Instalar Vercel CLI
+npm i -g vercel
+
+# 2. En el directorio del proyecto
+vercel
+
+# 3. Configurar (respuestas):
+#    - Framework: Other
+#    - Root Directory: ./
+#    - Build Command: (vacío)
+#    - Output Directory: (vacío)
+```
+
+### Configurar Secrets:
+
+1. Vercel Dashboard → Settings → Environment Variables
+2. Agregar: `GROQ_API_KEY` = tu-api-key
+3. Marcar: Production + Preview + Development
+
+### Workflow Diario:
+
+```bash
+# Desarrollo normal - GitHub auto-deploya
+git add . && git commit -m "mensaje" && git push
+
+# Preview deploy (sin afectar producción)
+vercel
+
+# Deploy a producción manual
+vercel --prod
+
+# Ver logs en tiempo real
+vercel logs
+
+# Ver deployments
+vercel ls
+```
+
+### Comandos Útiles Vercel CLI:
+
+| Comando | Descripción |
+|---------|-------------|
+| `vercel` | Preview deploy |
+| `vercel --prod` | Production deploy |
+| `vercel logs` | Ver logs del último deploy |
+| `vercel logs --follow` | Logs en tiempo real |
+| `vercel env pull` | Descargar .env.local con variables |
+| `vercel dev` | Desarrollo local con Edge Functions |
+| `vercel ls` | Listar deployments |
+| `vercel inspect <url>` | Detalles de un deploy |
+
+### Desarrollo Local con API:
+
+```bash
+# Opción 1: Vercel Dev (recomendado)
+vercel dev
+# Corre en http://localhost:3000 con Edge Functions funcionando
+
+# Opción 2: Crear .env.local para testing
+echo "GROQ_API_KEY=tu-key" > .env.local
+```
+
+### Estructura de Edge Function:
+
+```javascript
+// api/groq.js
+export const config = {
+  runtime: 'edge',  // Importante: habilita streaming
+};
+
+export default async function handler(request) {
+  const apiKey = process.env.GROQ_API_KEY;
+  // ... lógica con streaming
+}
+```
+
+### Agregar Nueva Edge Function:
+
+1. Crear archivo en `api/nombre.js`
+2. Exportar config con `runtime: 'edge'`
+3. Exportar default function handler
+4. Push a GitHub → auto-deploy
+
+### URLs del Proyecto:
+
+- **Producción:** https://esquizo-ai-sitio-web.vercel.app (o tu dominio)
+- **GitHub:** https://github.com/ELLokoAkrata/Esquizo-AI-Sitio-Web
+- **Vercel Dashboard:** https://vercel.com/dashboard
+
+### Troubleshooting:
+
+| Problema | Solución |
+|----------|----------|
+| API devuelve 500 | Verificar `GROQ_API_KEY` en Environment Variables |
+| Cambios no aparecen | Verificar que el deploy terminó en Vercel Dashboard |
+| CORS error | Ya configurado en `vercel.json`, si persiste revisar headers |
+| Streaming no funciona | Verificar `runtime: 'edge'` en la función |
+
+---
+
 ## 🔄 FLUJO DE TRABAJO
 
 ### Para Crear Nuevo Artefacto:
@@ -666,11 +832,26 @@ Mi mensaje completo en una linea sin saltos internos.\n
 **Grimorios:** 15+ (Gemini) + 9 (Claude)
 **Animaciones:** 6
 **Visualizaciones:** 5 imágenes + 3 interactivas
-**Herramientas:** DENTAKORV v3.0 + GLITCH TEXT Generator (psycho tools)
-**Sistemas:** Dual Brain v0.1 (Claude-GPT)
+**Herramientas:** DENTAKORV v3.0 + IA ASSIST + GLITCH TEXT Generator
+**Sistemas:** Dual Brain v0.1 (Claude-GPT) + Vercel Edge Functions
+**Hosting:** Vercel (migrado desde GitHub Pages)
 **Branch activo:** main
 
-**Último trabajo (1 Ene 2026):**
+**Último trabajo (2 Ene 2026):**
+- 🤖 **IA ASSIST** - Nuevo tab en DENTAKORV con integración Groq API:
+  - **Generar Prompt**: Describe en español → prompt DENTAKORV en inglés (Llama 3.3 70B)
+  - **Analizar Imagen**: Drag & drop imagen → prompt de animación (Llama 4 Scout vision)
+  - Streaming en tiempo real + botón copiar
+- 🚀 **Migración a Vercel** - Hosting con Edge Functions:
+  - `api/groq.js` - Proxy seguro a Groq API con streaming
+  - `vercel.json` - Configuración de rutas
+  - `GROQ_API_KEY` como Environment Variable
+- 📖 **Documentación** - Secciones nuevas en CLAUDE.md:
+  - IA ASSIST - arquitectura, modelos, límites
+  - Vercel Workflow - comandos CLI, troubleshooting
+- DENTAKORV ahora tiene 6 tabs: GENERADOR, PSYCHO TOOLS, IA ASSIST, ANIMACIÓN, DOCS, DB
+
+**Trabajo anterior (1 Ene 2026):**
 - ⸸ **GLITCH TEXT Generator** - Nueva herramienta de corrupción de texto:
   - Estilos Unicode: Gothic, Blackletter, Bold, Monospace, Script, Double-Struck
   - Glitch Zalgo con 5 niveles de intensidad
@@ -703,9 +884,14 @@ Mi mensaje completo en una linea sin saltos internos.\n
 - Base de datos 8 prompts exitosos + documentación anti-censura
 
 **Próximos pasos:**
-1. ⏳ Ejecutar **Contrato #002** - Invocación formal subagente Architect
-2. Registrar fricción: qué fue incómodo, ambiguo, forzado
-3. Diseñar **v0.3** con el chato (donde aparece automation)
+1. ⏳ **Mejorar IA ASSIST:**
+   - Agregar selector de modelo (Scout vs Maverick)
+   - Historial de prompts generados
+   - Opción de refinar/iterar sobre prompt generado
+2. ⏳ **Más Edge Functions:**
+   - `/api/replicate` - Integrar Replicate para generación de imágenes
+   - `/api/grok` - Integrar xAI Grok para animación directa
+3. Ejecutar **Contrato #002** - Invocación formal subagente Architect
 4. Expandir DENTAKORV - nuevas entidades/escenas
 5. Grimorio sobre glitch epistemology
 

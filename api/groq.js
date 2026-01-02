@@ -90,15 +90,28 @@ export default async function handler(request) {
 
   try {
     const body = await request.json();
-    const { mode, prompt, imageBase64 } = body;
+    const { mode, prompt, imageBase64, temperature = 0.5, selectedModel, maxTokens = 1024 } = body;
+
+    // Verificar tamaño de imagen (max ~3MB en base64)
+    if (imageBase64 && imageBase64.length > 3 * 1024 * 1024) {
+      return new Response(JSON.stringify({
+        error: 'Imagen demasiado grande. Maximo 2MB aproximadamente.'
+      }), {
+        status: 413,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
+    }
 
     // Seleccionar modelo y construir mensajes
     let model;
     let messages;
 
     if (mode === 'analyze' && imageBase64) {
-      // Modo vision - usar Llama 4 Scout
-      model = 'meta-llama/llama-4-scout-17b-16e-instruct';
+      // Modo vision - usar modelo seleccionado o default
+      model = selectedModel || 'meta-llama/llama-4-scout-17b-16e-instruct';
       messages = [
         { role: 'system', content: SYSTEM_PROMPTS.analyze },
         {
@@ -110,8 +123,8 @@ export default async function handler(request) {
         }
       ];
     } else {
-      // Modo generacion de texto - usar Llama 3.3 70B
-      model = 'llama-3.3-70b-versatile';
+      // Modo generacion de texto - usar modelo seleccionado o default
+      model = selectedModel || 'llama-3.3-70b-versatile';
       messages = [
         { role: 'system', content: SYSTEM_PROMPTS.generate },
         { role: 'user', content: prompt }
@@ -128,8 +141,8 @@ export default async function handler(request) {
       body: JSON.stringify({
         model,
         messages,
-        temperature: 0.8,
-        max_completion_tokens: 1024,
+        temperature: parseFloat(temperature),
+        max_completion_tokens: parseInt(maxTokens),
         stream: true,
       }),
     });

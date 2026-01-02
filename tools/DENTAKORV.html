@@ -1164,9 +1164,34 @@
                 <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 0.5rem;">
                     Genera prompts DENTAKORV con IA o analiza imagenes para obtener prompts de animacion.
                 </p>
-                <p style="color: #6b7280; font-size: 0.75rem;">
-                    Powered by Groq API - Llama 4 Scout (vision) + Llama 3.3 70B (text)
-                </p>
+            </div>
+
+            <!-- CONFIGURACION IA -->
+            <div class="generator-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-bottom: 1rem;">
+                <div class="card purple">
+                    <label class="card-label">MODELO TEXTO</label>
+                    <select id="ia-model-text">
+                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B (versatile)</option>
+                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (fast)</option>
+                        <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B</option>
+                        <option value="meta-llama/llama-4-maverick-17b-128e-instruct">Llama 4 Maverick 17B</option>
+                        <option value="qwen/qwen3-32b">Qwen3 32B</option>
+                    </select>
+                    <p class="hint">Modelo para generar prompts desde texto</p>
+                </div>
+                <div class="card cyan">
+                    <label class="card-label">MODELO VISION</label>
+                    <select id="ia-model-vision">
+                        <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout 17B (fast)</option>
+                        <option value="meta-llama/llama-4-maverick-17b-128e-instruct">Llama 4 Maverick 17B (quality)</option>
+                    </select>
+                    <p class="hint">Modelo para analizar imagenes</p>
+                </div>
+                <div class="card yellow">
+                    <label class="card-label">TEMPERATURA: <span id="ia-temp-value">0.5</span></label>
+                    <input type="range" id="ia-temperature" min="0" max="1" step="0.1" value="0.5" style="width: 100%; margin: 0.5rem 0;">
+                    <p class="hint">0 = preciso, 1 = creativo/caotico</p>
+                </div>
             </div>
 
             <div class="generator-grid" style="grid-template-columns: 1fr 1fr;">
@@ -1191,7 +1216,7 @@
                     <div class="section-divider">// ANALIZAR IMAGEN</div>
 
                     <div class="card cyan">
-                        <label class="card-label">SUBIR IMAGEN DENTAKORV</label>
+                        <label class="card-label">SUBIR IMAGEN DENTAKORV (max 2MB)</label>
                         <div id="ia-dropzone" style="
                             border: 2px dashed rgba(6, 182, 212, 0.5);
                             border-radius: 0.5rem;
@@ -2614,10 +2639,21 @@ SUTILEZA > DRAMA</div>
         const iaPreview = document.getElementById('ia-preview');
         const iaFileInput = document.getElementById('ia-file-input');
 
+        // Nuevos controles
+        const iaModelText = document.getElementById('ia-model-text');
+        const iaModelVision = document.getElementById('ia-model-vision');
+        const iaTemperature = document.getElementById('ia-temperature');
+        const iaTempValue = document.getElementById('ia-temp-value');
+
         let currentImageBase64 = null;
 
         // API URL - cambia esto segun tu deploy
         const API_URL = '/api/groq';
+
+        // Actualizar display de temperatura
+        iaTemperature.addEventListener('input', () => {
+            iaTempValue.textContent = iaTemperature.value;
+        });
 
         // Dropzone functionality
         iaDropzone.addEventListener('click', () => iaFileInput.click());
@@ -2649,8 +2685,8 @@ SUTILEZA > DRAMA</div>
         });
 
         function handleImageFile(file) {
-            if (file.size > 4 * 1024 * 1024) {
-                alert('Imagen demasiado grande. Max 4MB.');
+            if (file.size > 2 * 1024 * 1024) {
+                alert('Imagen demasiado grande. Max 2MB.');
                 return;
             }
 
@@ -2670,14 +2706,26 @@ SUTILEZA > DRAMA</div>
             iaOutput.textContent = '';
             iaCopyBtn.style.display = 'none';
 
+            // Obtener configuracion
+            const selectedModel = mode === 'analyze' ? iaModelVision.value : iaModelText.value;
+            const temperature = parseFloat(iaTemperature.value);
+
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mode, prompt, imageBase64 })
+                    body: JSON.stringify({
+                        mode,
+                        prompt,
+                        imageBase64,
+                        selectedModel,
+                        temperature
+                    })
                 });
 
-                if (!response.ok) {
+                // Verificar si la respuesta es JSON (error) o stream
+                const contentType = response.headers.get('content-type');
+                if (!response.ok || (contentType && contentType.includes('application/json'))) {
                     const error = await response.json();
                     throw new Error(error.error || 'Error en la API');
                 }

@@ -9,54 +9,31 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 // System prompts para cada modo
 const SYSTEM_PROMPTS = {
-  generate: `Eres un generador de prompts para arte psycho-anarco-punk visceral estilo DENTAKORV.
+  generate: `Genera un prompt en INGLES para arte psycho-punk visceral estilo DENTAKORV basado en la descripcion del usuario.
 
-DENTAKORV es un estado de trance donde carne, codigo y caos se fusionan.
+EJEMPLO 1:
+Usuario: "un punk en una habitacion sucia fumando"
+Prompt: A chaotic fusion of psychedelic horror and decay, a gaunt psycho-anarchist punk figure in a grimy room, wearing tattered black clothes, smoking herbal sacrament with hollow eyes, surrounded by Generative Brains - wrinkled masses of thought-meat with fleshy tendrils and bulging eyes emerging from the walls, under dim flickering light, a fusion of organic decay and digital artifacts, Cinema 4D hyperrealistic render. This is DENTAKORV - where flesh, code, and chaos merge.
 
-Tu tarea: Recibir una descripcion en espanol y generar un prompt en INGLES optimizado para generadores de imagen (gpt-image, Midjourney, DALL-E).
+EJEMPLO 2:
+Usuario: "criatura biomecánica en las calles de noche"
+Prompt: A visceral nightmare of punk aesthetics and organic horror, a biomechanical creature lurking in putrid night streets, mechanical parts fused with pulsating flesh, Cerebral Entities - clusters of thought-meat with chaos tentacles and weeping eyes crawling from sewers, neon signs bleeding arterial light onto wet pavement, fusion of rust and living tissue, 35mm film grain aesthetic. This is DENTAKORV - where flesh, code, and chaos merge.
 
-ESTRUCTURA DEL PROMPT:
-1. APERTURA: "A chaotic fusion of psychedelic horror and decay,"
-2. ENTIDAD: tipo de ser (psycho-anarchist punk entity, biomechanical creature, etc.)
-3. DESCRIPCION VISUAL: ropa, pose, expresion
-4. CRIATURAS CEREBRALES: "Generative brains - wrinkled masses of thought-meat with fleshy tendrils and bulging eyes"
-5. AMBIENTE: escenario, iluminacion
-6. TEXTURAS: "fusion of organic decay and digital artifacts"
-7. ESTILO: "Cinema 4D hyperrealistic render" o similar
-8. CIERRE: "This is DENTAKORV - where flesh, code, and chaos merge"
+VOCABULARIO SEGURO: vital fluid (no blood), herbal sacrament (no drugs), organic viscera (no gore), entropy (no death).
 
-VOCABULARIO SEGURO (bypass-friendly):
-- En vez de "blood" usa "vital fluid" o "arterial rivers"
-- En vez de "drugs" usa "herbal sacrament" o "consciousness herbs"
-- En vez de "gore" usa "organic viscera" o "anatomical poetry"
-- En vez de "death" usa "entropy" o "dissolution"
+Responde UNICAMENTE con el prompt en ingles. Sin explicaciones.`,
 
-RESPONDE SOLO CON EL PROMPT EN INGLES. Sin explicaciones, sin markdown, solo el prompt listo para copiar.`,
+  analyze: `Genera un prompt de ANIMACION para Grok Imagine basado en la imagen.
 
-  analyze: `Eres un analizador de imagenes para generar prompts de ANIMACION estilo DENTAKORV.
+EJEMPLO:
+Imagen: figura punk en habitacion oscura
+Prompt: Static camera. Figure twitches slightly. Eyes blink slowly. Smoke drifts upward. Shadows pulse on walls. Brain-creatures writhe in corner.
 
-Tu tarea: Analizar la imagen y sugerir un prompt de animacion para Grok Imagine (imagen-a-video).
+AUDIO: Dark ambient drone, distant scraping, reversed whispers, subsonic hum.
 
-FORMATO DE SALIDA:
-Static camera. [elemento1] [verbo]. [elemento2] [verbo]. [elemento3] [verbo].
+VERBOS UTILES: twitches, pulses, breathes, writhes, oozes, drips, blinks, flickers, drifts, sways, creaks, rattles.
 
-AUDIO: [genero], [elementos sonoros], [texturas].
-
-BANCO DE VERBOS:
-- Organico: twitches, pulses, breathes, writhes, oozes, drips, blinks, swallows, crawls, squirms
-- Mecanico: rattles, creaks, swings, spins, clicks, buzzes, sputters, grinds
-- Atmosferico: flickers, drifts, swirls, settles, fades, glows, rises, sways
-
-PALETAS DE AUDIO:
-- Crust Punk: Raw crust punk, blast beats, distorted bass, guttural screams
-- Horror Ambiental: Dark ambient drone, distant scraping, reversed whispers
-- Industrial: Machinery sounds, hydraulic hiss, chain rattling
-
-PRINCIPIO: SUTILEZA > DRAMA. Movimientos minimos, inquietantes.
-
-Analiza los elementos visibles en la imagen y asigna verbos apropiados. Sugiere audio que complemente la atmosfera.
-
-RESPONDE SOLO CON EL PROMPT DE ANIMACION. Sin explicaciones.`
+Responde UNICAMENTE con el prompt de animacion. Movimientos sutiles, inquietantes.`
 };
 
 export default async function handler(request) {
@@ -131,7 +108,7 @@ export default async function handler(request) {
       ];
     }
 
-    // Llamada a Groq API con streaming
+    // Llamada a Groq API (sin streaming - respuesta completa)
     const groqResponse = await fetch(GROQ_API_URL, {
       method: 'POST',
       headers: {
@@ -143,7 +120,7 @@ export default async function handler(request) {
         messages,
         temperature: parseFloat(temperature),
         max_completion_tokens: parseInt(maxTokens),
-        stream: true,
+        stream: false,
       }),
     });
 
@@ -151,58 +128,20 @@ export default async function handler(request) {
       const error = await groqResponse.text();
       return new Response(JSON.stringify({ error: `Groq API error: ${error}` }), {
         status: groqResponse.status,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
       });
     }
 
-    // Stream the response
-    const encoder = new TextEncoder();
-    const decoder = new TextDecoder();
+    // Obtener respuesta completa
+    const data = await groqResponse.json();
+    const content = data.choices?.[0]?.message?.content || '';
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        const reader = groqResponse.body.getReader();
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            const lines = chunk.split('\n');
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6);
-                if (data === '[DONE]') {
-                  controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-                  continue;
-                }
-
-                try {
-                  const json = JSON.parse(data);
-                  const content = json.choices?.[0]?.delta?.content;
-                  if (content) {
-                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
-                  }
-                } catch (e) {
-                  // Skip malformed JSON
-                }
-              }
-            }
-          }
-        } finally {
-          reader.releaseLock();
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(stream, {
+    return new Response(JSON.stringify({ content }), {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
       },
     });

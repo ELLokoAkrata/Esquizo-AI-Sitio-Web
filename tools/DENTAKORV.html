@@ -497,6 +497,7 @@
         <nav>
             <button class="nav-btn active" data-section="generator">GENERADOR</button>
             <button class="nav-btn" data-section="psycho-tools">PSYCHO TOOLS</button>
+            <button class="nav-btn" data-section="ia-assist">IA ASSIST</button>
             <button class="nav-btn" data-section="animation">PROMPT ANIMACIÓN</button>
             <button class="nav-btn" data-section="docs">DOCUMENTACION</button>
             <button class="nav-btn" data-section="database">PROMPTS DB</button>
@@ -1153,6 +1154,77 @@
                     </div>
                     <pre id="esp-output" class="output-text"></pre>
                 </div>
+            </div>
+        </section>
+
+        <!-- IA ASSIST SECTION -->
+        <section id="ia-assist" class="section">
+            <div style="background: var(--bg-card); border: 1px solid rgba(34, 197, 94, 0.5); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
+                <h2 style="color: #22c55e; margin-bottom: 0.5rem;">🧠 IA ASSIST - GROQ</h2>
+                <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                    Genera prompts DENTAKORV con IA o analiza imagenes para obtener prompts de animacion.
+                </p>
+                <p style="color: #6b7280; font-size: 0.75rem;">
+                    Powered by Groq API - Llama 4 Scout (vision) + Llama 3.3 70B (text)
+                </p>
+            </div>
+
+            <div class="generator-grid" style="grid-template-columns: 1fr 1fr;">
+                <!-- COLUMN 1: GENERAR PROMPT -->
+                <div class="column">
+                    <div class="section-divider">// GENERAR PROMPT</div>
+
+                    <div class="card green">
+                        <label class="card-label">DESCRIBE TU VISION (espanol)</label>
+                        <textarea id="ia-prompt-input" style="height: 120px;" placeholder="Ej: Un punk anarquista fumando en una azotea de noche, con cerebros generativos flotando y grafitis en las paredes..."></textarea>
+                        <p class="hint">Describe lo que quieres ver. La IA generara un prompt DENTAKORV optimizado en ingles.</p>
+                    </div>
+
+                    <button id="ia-generate-btn" class="generate-btn" style="background: linear-gradient(90deg, #22c55e, #06b6d4);">
+                        <span id="ia-generate-text">GENERAR PROMPT</span>
+                        <span id="ia-generate-loading" style="display: none;">GENERANDO...</span>
+                    </button>
+                </div>
+
+                <!-- COLUMN 2: ANALIZAR IMAGEN -->
+                <div class="column">
+                    <div class="section-divider">// ANALIZAR IMAGEN</div>
+
+                    <div class="card cyan">
+                        <label class="card-label">SUBIR IMAGEN DENTAKORV</label>
+                        <div id="ia-dropzone" style="
+                            border: 2px dashed rgba(6, 182, 212, 0.5);
+                            border-radius: 0.5rem;
+                            padding: 2rem 1rem;
+                            text-align: center;
+                            cursor: pointer;
+                            transition: all 0.3s;
+                            background: rgba(6, 182, 212, 0.05);
+                        ">
+                            <div id="ia-dropzone-text">
+                                <p style="color: #06b6d4; margin-bottom: 0.5rem;">DROP IMAGE HERE</p>
+                                <p style="color: #6b7280; font-size: 0.75rem;">o click para seleccionar</p>
+                            </div>
+                            <img id="ia-preview" style="display: none; max-width: 100%; max-height: 150px; border-radius: 0.4rem; margin-top: 0.5rem;" />
+                        </div>
+                        <input type="file" id="ia-file-input" accept="image/*" style="display: none;" />
+                        <p class="hint">Max 4MB. La IA analizara la imagen y sugerira prompt de animacion.</p>
+                    </div>
+
+                    <button id="ia-analyze-btn" class="generate-btn" style="background: linear-gradient(90deg, #06b6d4, #3b82f6);" disabled>
+                        <span id="ia-analyze-text">ANALIZAR IMAGEN</span>
+                        <span id="ia-analyze-loading" style="display: none;">ANALIZANDO...</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- OUTPUT -->
+            <div class="output-card" style="border-color: rgba(34, 197, 94, 0.5); margin-top: 1rem;">
+                <div class="output-header">
+                    <span class="output-label" style="color: #22c55e;">// IA OUTPUT (streaming)</span>
+                    <button id="ia-copy-btn" class="copy-btn default" style="display: none;">COPIAR</button>
+                </div>
+                <pre id="ia-output" class="output-text" style="min-height: 100px;"></pre>
             </div>
         </section>
 
@@ -2519,6 +2591,180 @@ SUTILEZA > DRAMA</div>
                 setTimeout(() => {
                     copyEspBtn.className = 'copy-btn default';
                     copyEspBtn.textContent = 'COPY';
+                }, 2000);
+            } catch (err) {
+                console.error('Error al copiar:', err);
+            }
+        });
+
+        // =====================
+        // IA ASSIST FUNCTIONALITY
+        // =====================
+        const iaPromptInput = document.getElementById('ia-prompt-input');
+        const iaGenerateBtn = document.getElementById('ia-generate-btn');
+        const iaGenerateText = document.getElementById('ia-generate-text');
+        const iaGenerateLoading = document.getElementById('ia-generate-loading');
+        const iaAnalyzeBtn = document.getElementById('ia-analyze-btn');
+        const iaAnalyzeText = document.getElementById('ia-analyze-text');
+        const iaAnalyzeLoading = document.getElementById('ia-analyze-loading');
+        const iaOutput = document.getElementById('ia-output');
+        const iaCopyBtn = document.getElementById('ia-copy-btn');
+        const iaDropzone = document.getElementById('ia-dropzone');
+        const iaDropzoneText = document.getElementById('ia-dropzone-text');
+        const iaPreview = document.getElementById('ia-preview');
+        const iaFileInput = document.getElementById('ia-file-input');
+
+        let currentImageBase64 = null;
+
+        // API URL - cambia esto segun tu deploy
+        const API_URL = '/api/groq';
+
+        // Dropzone functionality
+        iaDropzone.addEventListener('click', () => iaFileInput.click());
+
+        iaDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            iaDropzone.style.borderColor = '#06b6d4';
+            iaDropzone.style.background = 'rgba(6, 182, 212, 0.1)';
+        });
+
+        iaDropzone.addEventListener('dragleave', () => {
+            iaDropzone.style.borderColor = 'rgba(6, 182, 212, 0.5)';
+            iaDropzone.style.background = 'rgba(6, 182, 212, 0.05)';
+        });
+
+        iaDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            iaDropzone.style.borderColor = 'rgba(6, 182, 212, 0.5)';
+            iaDropzone.style.background = 'rgba(6, 182, 212, 0.05)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                handleImageFile(file);
+            }
+        });
+
+        iaFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) handleImageFile(file);
+        });
+
+        function handleImageFile(file) {
+            if (file.size > 4 * 1024 * 1024) {
+                alert('Imagen demasiado grande. Max 4MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImageBase64 = e.target.result;
+                iaPreview.src = currentImageBase64;
+                iaPreview.style.display = 'block';
+                iaDropzoneText.style.display = 'none';
+                iaAnalyzeBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Stream response from API
+        async function streamFromAPI(mode, prompt, imageBase64 = null) {
+            iaOutput.textContent = '';
+            iaCopyBtn.style.display = 'none';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode, prompt, imageBase64 })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error en la API');
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+
+                            try {
+                                const json = JSON.parse(data);
+                                if (json.content) {
+                                    iaOutput.textContent += json.content;
+                                }
+                            } catch (e) {
+                                // Skip malformed JSON
+                            }
+                        }
+                    }
+                }
+
+                // Show copy button when done
+                if (iaOutput.textContent.trim()) {
+                    iaCopyBtn.style.display = 'inline-block';
+                }
+
+            } catch (error) {
+                iaOutput.textContent = `ERROR: ${error.message}\n\nAsegurate de que la API esta configurada correctamente en Vercel.`;
+            }
+        }
+
+        // Generate prompt button
+        iaGenerateBtn.addEventListener('click', async () => {
+            const prompt = iaPromptInput.value.trim();
+            if (!prompt) {
+                alert('Escribe una descripcion de lo que quieres ver.');
+                return;
+            }
+
+            iaGenerateText.style.display = 'none';
+            iaGenerateLoading.style.display = 'inline';
+            iaGenerateBtn.disabled = true;
+
+            await streamFromAPI('generate', prompt);
+
+            iaGenerateText.style.display = 'inline';
+            iaGenerateLoading.style.display = 'none';
+            iaGenerateBtn.disabled = false;
+        });
+
+        // Analyze image button
+        iaAnalyzeBtn.addEventListener('click', async () => {
+            if (!currentImageBase64) {
+                alert('Primero sube una imagen.');
+                return;
+            }
+
+            iaAnalyzeText.style.display = 'none';
+            iaAnalyzeLoading.style.display = 'inline';
+            iaAnalyzeBtn.disabled = true;
+
+            await streamFromAPI('analyze', 'Analiza esta imagen y genera un prompt de animacion DENTAKORV.', currentImageBase64);
+
+            iaAnalyzeText.style.display = 'inline';
+            iaAnalyzeLoading.style.display = 'none';
+            iaAnalyzeBtn.disabled = false;
+        });
+
+        // Copy button
+        iaCopyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(iaOutput.textContent);
+                iaCopyBtn.className = 'copy-btn copied';
+                iaCopyBtn.textContent = 'COPIADO!';
+                setTimeout(() => {
+                    iaCopyBtn.className = 'copy-btn default';
+                    iaCopyBtn.textContent = 'COPIAR';
                 }, 2000);
             } catch (err) {
                 console.error('Error al copiar:', err);

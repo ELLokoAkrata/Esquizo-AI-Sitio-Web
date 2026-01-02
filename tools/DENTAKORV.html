@@ -2686,21 +2686,74 @@ SUTILEZA > DRAMA</div>
             if (file) handleImageFile(file);
         });
 
-        function handleImageFile(file) {
-            if (file.size > 2 * 1024 * 1024) {
-                alert('Imagen demasiado grande. Max 2MB.');
-                return;
+        // Comprimir imagen si excede el limite
+        async function compressImage(file, maxSizeKB = 1800) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Si es muy grande, reducir dimensiones primero
+                        const maxDim = 2048;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = (height / width) * maxDim;
+                                width = maxDim;
+                            } else {
+                                width = (width / height) * maxDim;
+                                height = maxDim;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Intentar diferentes calidades hasta que quepa
+                        let quality = 0.9;
+                        let result = canvas.toDataURL('image/jpeg', quality);
+
+                        while (result.length > maxSizeKB * 1024 * 1.37 && quality > 0.1) {
+                            quality -= 0.1;
+                            result = canvas.toDataURL('image/jpeg', quality);
+                        }
+
+                        resolve(result);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function handleImageFile(file) {
+            iaDropzoneText.textContent = 'Procesando imagen...';
+
+            let imageData;
+
+            // Si excede 1.5MB, comprimir
+            if (file.size > 1.5 * 1024 * 1024) {
+                iaDropzoneText.textContent = 'Comprimiendo imagen...';
+                imageData = await compressImage(file);
+            } else {
+                // Leer directamente
+                imageData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                currentImageBase64 = e.target.result;
-                iaPreview.src = currentImageBase64;
-                iaPreview.style.display = 'block';
-                iaDropzoneText.style.display = 'none';
-                iaAnalyzeBtn.disabled = false;
-            };
-            reader.readAsDataURL(file);
+            currentImageBase64 = imageData;
+            iaPreview.src = currentImageBase64;
+            iaPreview.style.display = 'block';
+            iaDropzoneText.style.display = 'none';
+            iaAnalyzeBtn.disabled = false;
         }
 
         // Fetch response from API (sin streaming)

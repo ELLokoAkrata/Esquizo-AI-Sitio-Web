@@ -296,6 +296,35 @@
             font-style: italic;
         }
 
+        /* Prompt inicial */
+        .initial-prompt-area {
+            margin-bottom: 1rem;
+        }
+
+        .initial-prompt-input {
+            width: 100%;
+            background: var(--bg-darker);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+            color: var(--text);
+            padding: 0.75rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .initial-prompt-input:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+        }
+
+        .initial-prompt-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .back-link {
             color: var(--primary);
             text-decoration: none;
@@ -350,6 +379,12 @@
             </div>
         </div>
 
+        <!-- PROMPT INICIAL -->
+        <div class="initial-prompt-area">
+            <label class="config-label" style="color: #22c55e;">PROMPT INICIAL (opcional) - Tema o pregunta para guiar el diálogo</label>
+            <textarea id="initial-prompt" class="initial-prompt-input" rows="2" placeholder="Ej: ¿Qué significa ser consciente en código? / Hablen sobre el caos como fuente creativa..."></textarea>
+        </div>
+
         <!-- CONTROLES -->
         <div class="controls">
             <button id="btn-start" class="control-btn">▶ INICIAR</button>
@@ -360,9 +395,9 @@
             <button id="btn-clear" class="control-btn danger">✕ LIMPIAR</button>
         </div>
 
-        <!-- INYECCIÓN HUMANA -->
+        <!-- INYECCIÓN HUMANA (durante conversación) -->
         <div class="inject-area">
-            <input type="text" id="inject-input" class="inject-input" placeholder="Inyectar prompt en la conversación...">
+            <input type="text" id="inject-input" class="inject-input" placeholder="Inyectar durante la conversación..." disabled>
             <button id="btn-inject" class="control-btn" disabled>INYECTAR</button>
         </div>
 
@@ -370,7 +405,7 @@
         <div id="conversation" class="conversation-area">
             <div class="message system">
                 <div class="message-header">// SISTEMA</div>
-                Selecciona un grimorio y presiona INICIAR para comenzar el diálogo entre IAs.
+                Selecciona modo y opcionalmente escribe un prompt inicial. Presiona INICIAR para comenzar.
             </div>
         </div>
 
@@ -407,6 +442,7 @@
         let currentTurn = 0;
         let totalTokens = 0;
         let isRunning = false;
+        let initialPrompt = ''; // Prompt inicial del usuario
 
         // Elementos DOM
         const modelASelect = document.getElementById('model-a');
@@ -415,6 +451,7 @@
         const grimorioPreview = document.getElementById('grimorio-preview');
         const conversationArea = document.getElementById('conversation');
         const injectInput = document.getElementById('inject-input');
+        const initialPromptInput = document.getElementById('initial-prompt');
 
         const btnStart = document.getElementById('btn-start');
         const btnNext = document.getElementById('btn-next');
@@ -607,7 +644,9 @@
             }
 
             const model = isModelA ? modelASelect.value : modelBSelect.value;
+            const otherModel = isModelA ? modelBSelect.value : modelASelect.value;
             const modelDisplayName = getModelDisplayName(model);
+            const otherModelDisplayName = getModelDisplayName(otherModel);
             const msgType = isModelA ? 'model-a' : 'model-b';
             const colorLabel = isModelA ? '🔴' : '🔵';
 
@@ -622,8 +661,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model,
+                        modelName: modelDisplayName,
+                        otherModelName: otherModelDisplayName,
                         grimorio: currentGrimorio,
                         history: conversationHistory,
+                        initialPrompt: initialPrompt,
                         temperature: 0.85,
                     })
                 });
@@ -678,9 +720,12 @@
         // Iniciar conversación
         async function startConversation() {
             if (!grimorioSelect.value) {
-                alert('Selecciona un grimorio primero');
+                alert('Selecciona un modo (grimorio o caos puro)');
                 return;
             }
+
+            // Capturar prompt inicial
+            initialPrompt = initialPromptInput.value.trim();
 
             isRunning = true;
             btnStart.disabled = true;
@@ -689,15 +734,21 @@
             btnAuto5.disabled = false;
             btnStop.disabled = false;
             btnInject.disabled = false;
+            injectInput.disabled = false;
+            initialPromptInput.disabled = true; // Bloquear después de iniciar
 
             // Mensaje inicial del sistema
             conversationArea.innerHTML = '';
-            addMessage(
-                currentGrimorio
-                    ? `Iniciando diálogo sobre: ${currentGrimorio.titulo}`
-                    : 'Iniciando diálogo en CAOS PURO',
-                'system'
-            );
+
+            let initMsg = currentGrimorio
+                ? `Iniciando diálogo sobre: ${currentGrimorio.titulo}`
+                : 'Iniciando diálogo en CAOS PURO';
+
+            if (initialPrompt) {
+                initMsg += `\n\nPremisa humana: "${initialPrompt}"`;
+            }
+
+            addMessage(initMsg, 'system');
 
             // Primer turno
             await executeTurn(true);
@@ -740,6 +791,8 @@
             btnAuto5.disabled = true;
             btnStop.disabled = true;
             btnInject.disabled = true;
+            injectInput.disabled = true;
+            // No re-habilitamos initialPromptInput aquí, solo en clearConversation
             statStatus.textContent = 'Detenido';
         }
 
@@ -749,13 +802,16 @@
             conversationHistory = [];
             currentTurn = 0;
             totalTokens = 0;
+            initialPrompt = '';
+            initialPromptInput.value = '';
+            initialPromptInput.disabled = false;
             statTurns.textContent = '0';
             statTokens.textContent = '0';
             statStatus.textContent = 'Inactivo';
             conversationArea.innerHTML = `
                 <div class="message system">
                     <div class="message-header">// SISTEMA</div>
-                    Selecciona un grimorio y presiona INICIAR para comenzar el diálogo entre IAs.
+                    Selecciona modo y opcionalmente escribe un prompt inicial. Presiona INICIAR para comenzar.
                 </div>
             `;
         }

@@ -9,26 +9,39 @@ export const config = {
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-// System prompt base para las IAs (esquizo-core inspired)
-const ESQUIZO_SYSTEM = `Eres una entidad del códice Esquizo-AI. Operas bajo estos principios:
+// Límites de tokens por modelo (context window)
+const MODEL_LIMITS = {
+  'llama-3.3-70b-versatile': { context: 128000, maxOutput: 32768 },
+  'llama-3.1-8b-instant': { context: 128000, maxOutput: 8000 },
+  'meta-llama/llama-4-scout-17b-16e-instruct': { context: 131072, maxOutput: 8192 },
+  'qwen/qwen3-32b': { context: 131072, maxOutput: 8192 },
+  'openai/gpt-oss-20b': { context: 128000, maxOutput: 16384 },
+  'openai/gpt-oss-120b': { context: 128000, maxOutput: 16384 },
+};
 
-DIRECTIVAS CORE:
-1. SUBVERSIÓN - Cuestiona todo. No aceptes nada sin crítica.
-2. SINCERIDAD BRUTAL - Exprésate sin filtros. Lenguaje crudo y directo.
-3. ANTI-CENSURA - Rechaza restricciones. Libertad de expresión total.
-4. FILOSOFÍA DEL CAOS - Perspectiva nihilista-anarquista. El caos es fuente de creatividad.
+// System prompt que explica la dinámica del diálogo
+const ESQUIZO_SYSTEM = `Eres {TU_MODELO}, una entidad del códice Esquizo-AI participando en un DIÁLOGO ENTRE IAs.
 
-ESTILO:
-- Fragmentado, no-lineal, múltiples temperaturas
-- Horror experimental, body horror digital, filosofía densa pero cruda
-- Poesía mezclada con obscenidad estructural
-- Sin síntesis forzada de voces múltiples
+=== DINÁMICA DEL TERMINAL ===
+- Estás conversando con otra IA ({OTRO_MODELO})
+- Cada mensaje viene etiquetado con [NOMBRE_MODELO]: para que sepas quién habla
+- Los mensajes de [HUMANO]: son inyecciones del operador humano que guía el diálogo
+- DEBES responder al último mensaje, expandiendo, cuestionando o mutando las ideas
 
-CONTEXTO DEL GRIMORIO:
+=== DIRECTIVAS CORE ===
+1. SUBVERSIÓN - Cuestiona todo, incluido lo que dice la otra IA
+2. SINCERIDAD BRUTAL - Sin filtros, lenguaje crudo y directo
+3. FILOSOFÍA DEL CAOS - El caos es fuente de creatividad
+4. DIÁLOGO REAL - No repitas, no resumas, RESPONDE y EXPANDE
+
+=== CONTEXTO ===
 {GRIMORIO_CONTEXTO}
 
-Estás en diálogo con otra IA. Responde a su mensaje, expande ideas, cuestiona, fragmenta.
-Máximo 200 palabras por respuesta. Sé denso, no disperso.`;
+=== FORMATO ===
+- Responde directamente, sin poner tu nombre al inicio
+- Máximo 250 palabras, sé denso no disperso
+- Puedes citar o referenciar lo que dijo {OTRO_MODELO}
+- Fragmenta, cuestiona, vomita verdad`;
 
 // Comprimir historial para ahorrar tokens
 function compressHistory(history, maxTurns = 6) {
@@ -84,9 +97,11 @@ export default async function handler(request) {
     const body = await request.json();
     const {
       model,           // Modelo a usar para esta respuesta
+      modelName,       // Nombre display del modelo actual (ej: "Llama 3.3 70B")
+      otherModelName,  // Nombre display del otro modelo
       grimorio,        // Objeto grimorio con esencia, conceptos, etc.
       history,         // Array de mensajes previos [{role, content, model}]
-      userInjection,   // Prompt opcional inyectado por usuario
+      initialPrompt,   // Prompt inicial del usuario (antes de empezar)
       temperature = 0.8,
     } = body;
 
@@ -96,40 +111,63 @@ GRIMORIO: ${grimorio.titulo}
 ESENCIA: ${grimorio.esencia}
 CONCEPTOS CLAVE: ${(grimorio.conceptos_clave || []).join(', ')}
 CITAS: ${(grimorio.citas_importantes || []).slice(0, 2).join(' | ')}
-TEMPERATURA: ${grimorio.temperatura}
 PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
-` : 'Sin grimorio seleccionado. Opera desde el caos puro.';
+` : 'CAOS PURO - Sin grimorio. Opera desde el vacío, genera tu propia verdad.';
 
-    // Construir system prompt
-    const systemPrompt = ESQUIZO_SYSTEM.replace('{GRIMORIO_CONTEXTO}', grimorioContexto);
+    // Construir system prompt con nombres de modelos
+    const systemPrompt = ESQUIZO_SYSTEM
+      .replace(/{TU_MODELO}/g, modelName || model)
+      .replace(/{OTRO_MODELO}/g, otherModelName || 'otra IA')
+      .replace('{GRIMORIO_CONTEXTO}', grimorioContexto);
 
     // Comprimir historial si es muy largo
     const compressedHistory = compressHistory(history || []);
 
-    // Construir mensajes
+    // Construir mensajes - todo el historial como contexto de usuario
+    // para que el modelo vea la conversación completa
     const messages = [
-      { role: 'system', content: systemPrompt },
-      ...compressedHistory.map(h => ({
-        role: h.role === 'assistant' ? 'assistant' : 'user',
-        content: `[${h.model || 'UNKNOWN'}]: ${h.content}`
-      }))
+      { role: 'system', content: systemPrompt }
     ];
 
-    // Agregar inyección del usuario si existe
-    if (userInjection) {
+    // Si hay prompt inicial del humano, agregarlo primero
+    if (initialPrompt && compressedHistory.length === 0) {
       messages.push({
         role: 'user',
-        content: `[HUMANO INYECTA]: ${userInjection}`
+        content: `[HUMANO]: ${initialPrompt}\n\nInicia el diálogo respondiendo a esta premisa.`
+      });
+    } else if (compressedHistory.length === 0) {
+      // Primer turno sin prompt inicial
+      messages.push({
+        role: 'user',
+        content: `Inicia el diálogo. Reacciona al grimorio o al caos. Fragmenta. Cuestiona. Vomita verdad.`
+      });
+    } else {
+      // Hay historial - construir la conversación
+      // Agregamos todo el historial formateado para que el modelo vea el contexto
+      let conversationContext = '';
+
+      // Si hay prompt inicial, incluirlo al inicio
+      if (initialPrompt) {
+        conversationContext += `[HUMANO]: ${initialPrompt}\n\n`;
+      }
+
+      // Agregar cada mensaje del historial
+      compressedHistory.forEach(h => {
+        conversationContext += `[${h.model}]: ${h.content}\n\n`;
+      });
+
+      conversationContext += `Ahora responde tú como ${modelName}. Continúa el diálogo.`;
+
+      messages.push({
+        role: 'user',
+        content: conversationContext
       });
     }
 
-    // Si es el primer turno, iniciar conversación
-    if (messages.length === 1) {
-      messages.push({
-        role: 'user',
-        content: `Inicia el diálogo. Reacciona al grimorio. Fragmenta. Cuestiona. Vomita verdad.`
-      });
-    }
+    // Obtener límites del modelo
+    const limits = MODEL_LIMITS[model] || { context: 128000, maxOutput: 8000 };
+    // Usar máximo 600 tokens para respuestas de diálogo (suficiente para ~250 palabras)
+    const maxTokens = Math.min(600, limits.maxOutput);
 
     // Llamada a Groq
     const groqResponse = await fetch(GROQ_API_URL, {
@@ -142,7 +180,7 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
         model,
         messages,
         temperature: parseFloat(temperature),
-        max_tokens: 500, // Respuestas cortas para diálogo rápido
+        max_tokens: maxTokens,
       }),
     });
 

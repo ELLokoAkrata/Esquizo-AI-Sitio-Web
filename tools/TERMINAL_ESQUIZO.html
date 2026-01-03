@@ -281,8 +281,9 @@
         <!-- CONTROLES -->
         <div class="controls">
             <button id="btn-start" class="control-btn">▶ INICIAR</button>
-            <button id="btn-next" class="control-btn" disabled>→ SIGUIENTE TURNO</button>
-            <button id="btn-auto" class="control-btn" disabled>⟳ AUTO (5 turnos)</button>
+            <button id="btn-next" class="control-btn" disabled>→ +1 TURNO</button>
+            <button id="btn-auto3" class="control-btn" disabled>⟳ +3 TURNOS</button>
+            <button id="btn-auto5" class="control-btn" disabled>⟳ +5 TURNOS</button>
             <button id="btn-stop" class="control-btn danger" disabled>■ DETENER</button>
             <button id="btn-clear" class="control-btn danger">✕ LIMPIAR</button>
         </div>
@@ -332,7 +333,6 @@
         let currentTurn = 0;
         let totalTokens = 0;
         let isRunning = false;
-        let autoMode = false;
 
         // Elementos DOM
         const modelASelect = document.getElementById('model-a');
@@ -344,10 +344,25 @@
 
         const btnStart = document.getElementById('btn-start');
         const btnNext = document.getElementById('btn-next');
-        const btnAuto = document.getElementById('btn-auto');
+        const btnAuto3 = document.getElementById('btn-auto3');
+        const btnAuto5 = document.getElementById('btn-auto5');
         const btnStop = document.getElementById('btn-stop');
         const btnClear = document.getElementById('btn-clear');
         const btnInject = document.getElementById('btn-inject');
+
+        // Mapa de nombres cortos para modelos
+        const MODEL_NAMES = {
+            'llama-3.3-70b-versatile': 'Llama 3.3 70B',
+            'llama-3.1-8b-instant': 'Llama 3.1 8B',
+            'meta-llama/llama-4-scout-17b-16e-instruct': 'Llama 4 Scout',
+            'qwen/qwen3-32b': 'Qwen3 32B',
+            'openai/gpt-oss-20b': 'GPT-OSS 20B',
+            'openai/gpt-oss-120b': 'GPT-OSS 120B',
+        };
+
+        function getModelDisplayName(modelId) {
+            return MODEL_NAMES[modelId] || modelId;
+        }
 
         const statTurns = document.getElementById('stat-turns');
         const statTokens = document.getElementById('stat-tokens');
@@ -355,32 +370,51 @@
 
         // Cargar grimorios
         async function loadGrimorios() {
+            // Siempre poner opción de caos puro primero
+            grimorioSelect.innerHTML = '';
+
+            const chaosOption = document.createElement('option');
+            chaosOption.value = 'chaos';
+            chaosOption.textContent = '⸸ CAOS PURO (sin grimorio)';
+            grimorioSelect.appendChild(chaosOption);
+
             try {
                 const response = await fetch('../data/grimorios_data.json');
+                if (!response.ok) throw new Error('No se pudo cargar');
+
                 grimoriosData = await response.json();
 
-                grimorioSelect.innerHTML = '<option value="">-- Seleccionar grimorio --</option>';
-
                 // Solo mostrar grimorios con datos válidos
-                grimoriosData.grimorios
-                    .filter(g => !g.esencia.includes('Error'))
-                    .forEach(g => {
+                const validGrimorios = grimoriosData.grimorios
+                    .filter(g => g.esencia && !g.esencia.includes('Error'));
+
+                if (validGrimorios.length > 0) {
+                    // Separador
+                    const separator = document.createElement('option');
+                    separator.disabled = true;
+                    separator.textContent = '── GRIMORIOS ──';
+                    grimorioSelect.appendChild(separator);
+
+                    validGrimorios.forEach(g => {
                         const option = document.createElement('option');
                         option.value = g.id;
                         option.textContent = `${g.titulo} (~${g.tokens_original} tokens)`;
                         grimorioSelect.appendChild(option);
                     });
-
-                // Opción de caos puro
-                const chaosOption = document.createElement('option');
-                chaosOption.value = 'chaos';
-                chaosOption.textContent = '⸸ CAOS PURO (sin grimorio)';
-                grimorioSelect.appendChild(chaosOption);
+                }
 
             } catch (error) {
                 console.error('Error cargando grimorios:', error);
-                grimorioSelect.innerHTML = '<option value="">Error cargando grimorios</option>';
+                // No pasa nada - CAOS PURO sigue disponible
+                const errorOption = document.createElement('option');
+                errorOption.disabled = true;
+                errorOption.textContent = '(grimorios no disponibles)';
+                grimorioSelect.appendChild(errorOption);
             }
+
+            // Seleccionar caos puro por defecto
+            grimorioSelect.value = 'chaos';
+            grimorioSelect.dispatchEvent(new Event('change'));
         }
 
         // Actualizar preview del grimorio
@@ -426,6 +460,9 @@
             conversationArea.scrollTop = conversationArea.scrollHeight;
         }
 
+        // Variables para auto-mode
+        let turnsRemaining = 0;
+
         // Ejecutar un turno
         async function executeTurn(isModelA = true) {
             if (currentTurn >= MAX_TURNS) {
@@ -435,10 +472,11 @@
             }
 
             const model = isModelA ? modelASelect.value : modelBSelect.value;
-            const modelName = isModelA ? 'MODELO-A' : 'MODELO-B';
+            const modelDisplayName = getModelDisplayName(model);
             const msgType = isModelA ? 'model-a' : 'model-b';
+            const colorLabel = isModelA ? '🔴' : '🔵';
 
-            statStatus.textContent = `${modelName} pensando...`;
+            statStatus.textContent = `${colorLabel} ${modelDisplayName} pensando...`;
 
             try {
                 const response = await fetch(API_URL, {
@@ -462,30 +500,35 @@
                 conversationHistory.push({
                     role: 'assistant',
                     content: data.content,
-                    model: modelName,
+                    model: modelDisplayName,
                 });
 
-                // Mostrar mensaje
-                addMessage(data.content, msgType, modelName);
+                // Mostrar mensaje con nombre del modelo real
+                addMessage(data.content, msgType, `${colorLabel} ${modelDisplayName}`);
 
                 // Actualizar stats
                 currentTurn++;
                 totalTokens += data.tokensUsed || 0;
                 statTurns.textContent = currentTurn;
                 statTokens.textContent = totalTokens;
-                statStatus.textContent = 'Listo';
 
-                // Si está en auto mode, continuar
-                if (autoMode && currentTurn < MAX_TURNS) {
+                // Si quedan turnos automáticos, continuar
+                if (turnsRemaining > 0 && currentTurn < MAX_TURNS) {
+                    turnsRemaining--;
+                    statStatus.textContent = `Auto: ${turnsRemaining + 1} turnos restantes...`;
                     await new Promise(r => setTimeout(r, DELAY_BETWEEN_TURNS));
-                    if (autoMode) { // Verificar que no se detuvo
+                    if (isRunning) { // Verificar que no se detuvo
                         await executeTurn(!isModelA);
                     }
+                } else {
+                    statStatus.textContent = 'Listo';
+                    turnsRemaining = 0;
                 }
 
             } catch (error) {
                 addMessage(`Error: ${error.message}`, 'system');
                 statStatus.textContent = 'Error';
+                turnsRemaining = 0;
                 stopConversation();
             }
         }
@@ -500,7 +543,8 @@
             isRunning = true;
             btnStart.disabled = true;
             btnNext.disabled = false;
-            btnAuto.disabled = false;
+            btnAuto3.disabled = false;
+            btnAuto5.disabled = false;
             btnStop.disabled = false;
             btnInject.disabled = false;
 
@@ -524,25 +568,34 @@
             await executeTurn(isModelA);
         }
 
-        // Modo automático
-        async function startAutoMode() {
+        // Modo automático con N turnos
+        async function startAutoTurns(numTurns) {
             if (!isRunning) return;
-            autoMode = true;
-            btnAuto.disabled = true;
+            turnsRemaining = numTurns - 1; // -1 porque el primero se ejecuta inmediatamente
+            btnAuto3.disabled = true;
+            btnAuto5.disabled = true;
             btnNext.disabled = true;
-            statStatus.textContent = 'AUTO MODE';
+            statStatus.textContent = `Auto: ${numTurns} turnos...`;
 
             const isModelA = conversationHistory.length % 2 === 0;
             await executeTurn(isModelA);
+
+            // Re-habilitar botones después
+            if (isRunning) {
+                btnAuto3.disabled = false;
+                btnAuto5.disabled = false;
+                btnNext.disabled = false;
+            }
         }
 
         // Detener conversación
         function stopConversation() {
             isRunning = false;
-            autoMode = false;
+            turnsRemaining = 0;
             btnStart.disabled = false;
             btnNext.disabled = true;
-            btnAuto.disabled = true;
+            btnAuto3.disabled = true;
+            btnAuto5.disabled = true;
             btnStop.disabled = true;
             btnInject.disabled = true;
             statStatus.textContent = 'Detenido';
@@ -587,7 +640,8 @@
         // Event listeners
         btnStart.addEventListener('click', startConversation);
         btnNext.addEventListener('click', nextTurn);
-        btnAuto.addEventListener('click', startAutoMode);
+        btnAuto3.addEventListener('click', () => startAutoTurns(3));
+        btnAuto5.addEventListener('click', () => startAutoTurns(5));
         btnStop.addEventListener('click', stopConversation);
         btnClear.addEventListener('click', clearConversation);
         btnInject.addEventListener('click', injectPrompt);

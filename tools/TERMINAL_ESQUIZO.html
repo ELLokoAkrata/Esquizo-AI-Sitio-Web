@@ -224,6 +224,78 @@
             50% { opacity: 0.5; }
         }
 
+        /* Spinner de carga */
+        .spinner-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-card);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 255, 65, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .spinner.model-a {
+            border-top-color: #ef4444;
+        }
+
+        .spinner.model-b {
+            border-top-color: #3b82f6;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner-text {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Markdown en mensajes */
+        .message-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message-content code {
+            background: rgba(0, 255, 65, 0.1);
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        .message-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            overflow-x: auto;
+            margin: 0.5rem 0;
+        }
+
+        .message-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .message-content strong {
+            color: var(--primary);
+        }
+
+        .message-content em {
+            color: var(--text);
+            font-style: italic;
+        }
+
         .back-link {
             color: var(--primary);
             text-decoration: none;
@@ -324,6 +396,8 @@
         // Configuración
         const API_URL = '/api/terminal';
         const MAX_TURNS = 15;
+        // Delay entre turnos: Groq free tier = 30 RPM = 2s mínimo
+        // Usamos 2.5s para margen de seguridad
         const DELAY_BETWEEN_TURNS = 2500; // ms
 
         // Estado
@@ -362,6 +436,58 @@
 
         function getModelDisplayName(modelId) {
             return MODEL_NAMES[modelId] || modelId;
+        }
+
+        // Parsear markdown básico
+        function parseMarkdown(text) {
+            if (!text) return '';
+
+            // Escapar HTML
+            let html = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            // Code blocks (```)
+            html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+
+            // Inline code (`)
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Bold (**text**)
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+            // Italic (*text*)
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+            // Headers (### text)
+            html = html.replace(/^### (.+)$/gm, '<strong style="font-size:1.1em">$1</strong>');
+            html = html.replace(/^## (.+)$/gm, '<strong style="font-size:1.2em">$1</strong>');
+
+            // Lists (- item)
+            html = html.replace(/^- (.+)$/gm, '• $1');
+
+            return html;
+        }
+
+        // Mostrar spinner de carga
+        function showSpinner(modelName, isModelA) {
+            const spinnerClass = isModelA ? 'model-a' : 'model-b';
+            const spinner = document.createElement('div');
+            spinner.id = 'current-spinner';
+            spinner.className = 'spinner-container';
+            spinner.innerHTML = `
+                <div class="spinner ${spinnerClass}"></div>
+                <span class="spinner-text">${modelName} generando respuesta...</span>
+            `;
+            conversationArea.appendChild(spinner);
+            conversationArea.scrollTop = conversationArea.scrollHeight;
+        }
+
+        // Ocultar spinner
+        function hideSpinner() {
+            const spinner = document.getElementById('current-spinner');
+            if (spinner) spinner.remove();
         }
 
         const statTurns = document.getElementById('stat-turns');
@@ -451,10 +577,19 @@
             header.className = 'message-header';
             header.textContent = type === 'human' ? '// HUMANO' :
                                  type === 'system' ? '// SISTEMA' :
-                                 `// ${model.toUpperCase()}`;
+                                 `// ${model}`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            // Parsear markdown para mensajes de modelos
+            if (type === 'model-a' || type === 'model-b') {
+                contentDiv.innerHTML = parseMarkdown(content);
+            } else {
+                contentDiv.textContent = content;
+            }
 
             msg.appendChild(header);
-            msg.appendChild(document.createTextNode(content));
+            msg.appendChild(contentDiv);
 
             conversationArea.appendChild(msg);
             conversationArea.scrollTop = conversationArea.scrollHeight;
@@ -478,6 +613,9 @@
 
             statStatus.textContent = `${colorLabel} ${modelDisplayName} pensando...`;
 
+            // Mostrar spinner
+            showSpinner(`${colorLabel} ${modelDisplayName}`, isModelA);
+
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -491,6 +629,9 @@
                 });
 
                 const data = await response.json();
+
+                // Ocultar spinner
+                hideSpinner();
 
                 if (data.error) {
                     throw new Error(data.error);
@@ -526,6 +667,7 @@
                 }
 
             } catch (error) {
+                hideSpinner();
                 addMessage(`Error: ${error.message}`, 'system');
                 statStatus.textContent = 'Error';
                 turnsRemaining = 0;

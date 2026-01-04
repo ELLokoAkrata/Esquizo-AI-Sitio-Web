@@ -334,6 +334,32 @@
         .back-link:hover {
             text-decoration: underline;
         }
+
+        /* Selector de turnos */
+        .turns-selector {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--primary);
+        }
+
+        .turns-selector select {
+            background: var(--bg-darker);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        /* Botón download */
+        .control-btn:hover.download-btn {
+            background: #a855f7;
+            color: var(--bg);
+        }
     </style>
 </head>
 <body>
@@ -387,18 +413,22 @@
 
         <!-- CONTROLES -->
         <div class="controls">
+            <div class="turns-selector">
+                <label class="config-label" style="margin-right: 0.5rem;">TURNOS:</label>
+                <select id="turns-count">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5" selected>5</option>
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
             <button id="btn-start" class="control-btn">▶ INICIAR</button>
-            <button id="btn-next" class="control-btn" disabled>→ +1 TURNO</button>
-            <button id="btn-auto3" class="control-btn" disabled>⟳ +3 TURNOS</button>
-            <button id="btn-auto5" class="control-btn" disabled>⟳ +5 TURNOS</button>
             <button id="btn-stop" class="control-btn danger" disabled>■ DETENER</button>
             <button id="btn-clear" class="control-btn danger">✕ LIMPIAR</button>
-        </div>
-
-        <!-- INYECCIÓN HUMANA (durante conversación) -->
-        <div class="inject-area">
-            <input type="text" id="inject-input" class="inject-input" placeholder="Inyectar durante la conversación..." disabled>
-            <button id="btn-inject" class="control-btn" disabled>INYECTAR</button>
+            <button id="btn-download" class="control-btn" disabled style="border-color: #a855f7; color: #a855f7;">⬇ DESCARGAR MD</button>
         </div>
 
         <!-- ÁREA DE CONVERSACIÓN -->
@@ -412,12 +442,12 @@
         <!-- ESTADÍSTICAS -->
         <div class="stats">
             <div class="stat-item">
-                <span class="stat-label">Turnos:</span>
+                <span class="stat-label">Turno:</span>
                 <span id="stat-turns" class="stat-value">0</span>
-                <span class="stat-label">/ 15</span>
+                <span class="stat-label">/ <span id="stat-total-turns">5</span></span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">Tokens usados:</span>
+                <span class="stat-label">Tokens:</span>
                 <span id="stat-tokens" class="stat-value">0</span>
             </div>
             <div class="stat-item">
@@ -430,7 +460,6 @@
     <script>
         // Configuración
         const API_URL = '/api/terminal';
-        const MAX_TURNS = 15;
         // Delay entre turnos: Groq free tier = 30 RPM = 2s mínimo
         // Usamos 2.5s para margen de seguridad
         const DELAY_BETWEEN_TURNS = 2500; // ms
@@ -442,7 +471,8 @@
         let currentTurn = 0;
         let totalTokens = 0;
         let isRunning = false;
-        let initialPrompt = ''; // Prompt inicial del usuario
+        let initialPrompt = '';
+        let targetTurns = 5;
 
         // Elementos DOM
         const modelASelect = document.getElementById('model-a');
@@ -450,16 +480,18 @@
         const grimorioSelect = document.getElementById('grimorio-select');
         const grimorioPreview = document.getElementById('grimorio-preview');
         const conversationArea = document.getElementById('conversation');
-        const injectInput = document.getElementById('inject-input');
         const initialPromptInput = document.getElementById('initial-prompt');
+        const turnsCountSelect = document.getElementById('turns-count');
 
         const btnStart = document.getElementById('btn-start');
-        const btnNext = document.getElementById('btn-next');
-        const btnAuto3 = document.getElementById('btn-auto3');
-        const btnAuto5 = document.getElementById('btn-auto5');
         const btnStop = document.getElementById('btn-stop');
         const btnClear = document.getElementById('btn-clear');
-        const btnInject = document.getElementById('btn-inject');
+        const btnDownload = document.getElementById('btn-download');
+
+        const statTurns = document.getElementById('stat-turns');
+        const statTotalTurns = document.getElementById('stat-total-turns');
+        const statTokens = document.getElementById('stat-tokens');
+        const statStatus = document.getElementById('stat-status');
 
         // Mapa de nombres cortos para modelos
         const MODEL_NAMES = {
@@ -479,61 +511,43 @@
         function parseMarkdown(text) {
             if (!text) return '';
 
-            // Escapar HTML
             let html = text
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
 
-            // Code blocks (```)
             html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-
-            // Inline code (`)
             html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
-            // Bold (**text**)
             html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-            // Italic (*text*)
             html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-
-            // Headers (### text)
             html = html.replace(/^### (.+)$/gm, '<strong style="font-size:1.1em">$1</strong>');
             html = html.replace(/^## (.+)$/gm, '<strong style="font-size:1.2em">$1</strong>');
-
-            // Lists (- item)
             html = html.replace(/^- (.+)$/gm, '• $1');
 
             return html;
         }
 
         // Mostrar spinner de carga
-        function showSpinner(modelName, isModelA) {
+        function showSpinner(modelName, isModelA, turnNum) {
             const spinnerClass = isModelA ? 'model-a' : 'model-b';
             const spinner = document.createElement('div');
             spinner.id = 'current-spinner';
             spinner.className = 'spinner-container';
             spinner.innerHTML = `
                 <div class="spinner ${spinnerClass}"></div>
-                <span class="spinner-text">${modelName} generando respuesta...</span>
+                <span class="spinner-text">[Turno ${turnNum}] ${modelName} generando...</span>
             `;
             conversationArea.appendChild(spinner);
             conversationArea.scrollTop = conversationArea.scrollHeight;
         }
 
-        // Ocultar spinner
         function hideSpinner() {
             const spinner = document.getElementById('current-spinner');
             if (spinner) spinner.remove();
         }
 
-        const statTurns = document.getElementById('stat-turns');
-        const statTokens = document.getElementById('stat-tokens');
-        const statStatus = document.getElementById('stat-status');
-
         // Cargar grimorios
         async function loadGrimorios() {
-            // Siempre poner opción de caos puro primero
             grimorioSelect.innerHTML = '';
 
             const chaosOption = document.createElement('option');
@@ -547,12 +561,10 @@
 
                 grimoriosData = await response.json();
 
-                // Solo mostrar grimorios con datos válidos
                 const validGrimorios = grimoriosData.grimorios
                     .filter(g => g.esencia && !g.esencia.includes('Error'));
 
                 if (validGrimorios.length > 0) {
-                    // Separador
                     const separator = document.createElement('option');
                     separator.disabled = true;
                     separator.textContent = '── GRIMORIOS ──';
@@ -568,19 +580,17 @@
 
             } catch (error) {
                 console.error('Error cargando grimorios:', error);
-                // No pasa nada - CAOS PURO sigue disponible
                 const errorOption = document.createElement('option');
                 errorOption.disabled = true;
                 errorOption.textContent = '(grimorios no disponibles)';
                 grimorioSelect.appendChild(errorOption);
             }
 
-            // Seleccionar caos puro por defecto
             grimorioSelect.value = 'chaos';
             grimorioSelect.dispatchEvent(new Event('change'));
         }
 
-        // Actualizar preview del grimorio
+        // Preview del grimorio
         grimorioSelect.addEventListener('change', () => {
             const id = grimorioSelect.value;
 
@@ -605,20 +615,30 @@
             }
         });
 
-        // Agregar mensaje a la conversación
-        function addMessage(content, type, model = '') {
+        // Actualizar stat de turnos totales cuando cambia selector
+        turnsCountSelect.addEventListener('change', () => {
+            statTotalTurns.textContent = turnsCountSelect.value;
+        });
+
+        // Agregar mensaje con número de turno
+        function addMessage(content, type, model = '', turnNum = null) {
             const msg = document.createElement('div');
             msg.className = `message ${type}`;
 
             const header = document.createElement('div');
             header.className = 'message-header';
-            header.textContent = type === 'human' ? '// HUMANO' :
-                                 type === 'system' ? '// SISTEMA' :
-                                 `// ${model}`;
+
+            if (type === 'system') {
+                header.textContent = '// SISTEMA';
+            } else if (turnNum !== null) {
+                header.textContent = `// [Turno ${turnNum}] ${model}`;
+            } else {
+                header.textContent = `// ${model}`;
+            }
 
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
-            // Parsear markdown para mensajes de modelos
+
             if (type === 'model-a' || type === 'model-b') {
                 contentDiv.innerHTML = parseMarkdown(content);
             } else {
@@ -632,17 +652,11 @@
             conversationArea.scrollTop = conversationArea.scrollHeight;
         }
 
-        // Variables para auto-mode
-        let turnsRemaining = 0;
-
         // Ejecutar un turno
         async function executeTurn(isModelA = true) {
-            if (currentTurn >= MAX_TURNS) {
-                addMessage('Límite de turnos alcanzado.', 'system');
-                stopConversation();
-                return;
-            }
+            if (!isRunning) return;
 
+            const turnNum = currentTurn + 1;
             const model = isModelA ? modelASelect.value : modelBSelect.value;
             const otherModel = isModelA ? modelBSelect.value : modelASelect.value;
             const modelDisplayName = getModelDisplayName(model);
@@ -650,10 +664,9 @@
             const msgType = isModelA ? 'model-a' : 'model-b';
             const colorLabel = isModelA ? '🔴' : '🔵';
 
-            statStatus.textContent = `${colorLabel} ${modelDisplayName} pensando...`;
+            statStatus.textContent = `[${turnNum}/${targetTurns}] ${colorLabel} ${modelDisplayName}...`;
 
-            // Mostrar spinner
-            showSpinner(`${colorLabel} ${modelDisplayName}`, isModelA);
+            showSpinner(`${colorLabel} ${modelDisplayName}`, isModelA, turnNum);
 
             try {
                 const response = await fetch(API_URL, {
@@ -671,49 +684,41 @@
                 });
 
                 const data = await response.json();
-
-                // Ocultar spinner
                 hideSpinner();
 
                 if (data.error) {
                     throw new Error(data.error);
                 }
 
-                // Agregar a historial
                 conversationHistory.push({
                     role: 'assistant',
                     content: data.content,
                     model: modelDisplayName,
                 });
 
-                // Mostrar mensaje con nombre del modelo real
-                addMessage(data.content, msgType, `${colorLabel} ${modelDisplayName}`);
+                addMessage(data.content, msgType, `${colorLabel} ${modelDisplayName}`, turnNum);
 
-                // Actualizar stats
                 currentTurn++;
                 totalTokens += data.tokensUsed || 0;
                 statTurns.textContent = currentTurn;
                 statTokens.textContent = totalTokens;
 
-                // Si quedan turnos automáticos, continuar
-                if (turnsRemaining > 0 && currentTurn < MAX_TURNS) {
-                    turnsRemaining--;
-                    statStatus.textContent = `Auto: ${turnsRemaining + 1} turnos restantes...`;
+                // Continuar si quedan turnos
+                if (currentTurn < targetTurns && isRunning) {
                     await new Promise(r => setTimeout(r, DELAY_BETWEEN_TURNS));
-                    if (isRunning) { // Verificar que no se detuvo
+                    if (isRunning) {
                         await executeTurn(!isModelA);
                     }
                 } else {
-                    statStatus.textContent = 'Listo';
-                    turnsRemaining = 0;
+                    // Terminó
+                    finishConversation();
                 }
 
             } catch (error) {
                 hideSpinner();
                 addMessage(`Error: ${error.message}`, 'system');
                 statStatus.textContent = 'Error';
-                turnsRemaining = 0;
-                stopConversation();
+                finishConversation();
             }
         }
 
@@ -724,76 +729,51 @@
                 return;
             }
 
-            // Capturar prompt inicial
             initialPrompt = initialPromptInput.value.trim();
+            targetTurns = parseInt(turnsCountSelect.value);
 
             isRunning = true;
             btnStart.disabled = true;
-            btnNext.disabled = false;
-            btnAuto3.disabled = false;
-            btnAuto5.disabled = false;
             btnStop.disabled = false;
-            btnInject.disabled = false;
-            injectInput.disabled = false;
-            initialPromptInput.disabled = true; // Bloquear después de iniciar
+            btnDownload.disabled = true;
+            initialPromptInput.disabled = true;
+            turnsCountSelect.disabled = true;
+            modelASelect.disabled = true;
+            modelBSelect.disabled = true;
+            grimorioSelect.disabled = true;
 
-            // Mensaje inicial del sistema
+            statTotalTurns.textContent = targetTurns;
+
             conversationArea.innerHTML = '';
 
             let initMsg = currentGrimorio
-                ? `Iniciando diálogo sobre: ${currentGrimorio.titulo}`
-                : 'Iniciando diálogo en CAOS PURO';
+                ? `Iniciando ${targetTurns} turnos sobre: ${currentGrimorio.titulo}`
+                : `Iniciando ${targetTurns} turnos en CAOS PURO`;
 
             if (initialPrompt) {
-                initMsg += `\n\nPremisa humana: "${initialPrompt}"`;
+                initMsg += `\n\nPremisa: "${initialPrompt}"`;
             }
 
             addMessage(initMsg, 'system');
 
-            // Primer turno
+            // Ejecutar todos los turnos
             await executeTurn(true);
         }
 
-        // Siguiente turno manual
-        async function nextTurn() {
-            if (!isRunning) return;
-            const isModelA = conversationHistory.length % 2 === 0;
-            await executeTurn(isModelA);
-        }
-
-        // Modo automático con N turnos
-        async function startAutoTurns(numTurns) {
-            if (!isRunning) return;
-            turnsRemaining = numTurns - 1; // -1 porque el primero se ejecuta inmediatamente
-            btnAuto3.disabled = true;
-            btnAuto5.disabled = true;
-            btnNext.disabled = true;
-            statStatus.textContent = `Auto: ${numTurns} turnos...`;
-
-            const isModelA = conversationHistory.length % 2 === 0;
-            await executeTurn(isModelA);
-
-            // Re-habilitar botones después
-            if (isRunning) {
-                btnAuto3.disabled = false;
-                btnAuto5.disabled = false;
-                btnNext.disabled = false;
-            }
+        // Terminar conversación (completada o detenida)
+        function finishConversation() {
+            isRunning = false;
+            btnStart.disabled = false;
+            btnStop.disabled = true;
+            btnDownload.disabled = conversationHistory.length === 0;
+            statStatus.textContent = currentTurn >= targetTurns ? '✅ Completado' : '⏹ Detenido';
         }
 
         // Detener conversación
         function stopConversation() {
             isRunning = false;
-            turnsRemaining = 0;
-            btnStart.disabled = false;
-            btnNext.disabled = true;
-            btnAuto3.disabled = true;
-            btnAuto5.disabled = true;
-            btnStop.disabled = true;
-            btnInject.disabled = true;
-            injectInput.disabled = true;
-            // No re-habilitamos initialPromptInput aquí, solo en clearConversation
-            statStatus.textContent = 'Detenido';
+            hideSpinner();
+            finishConversation();
         }
 
         // Limpiar todo
@@ -805,47 +785,71 @@
             initialPrompt = '';
             initialPromptInput.value = '';
             initialPromptInput.disabled = false;
+            turnsCountSelect.disabled = false;
+            modelASelect.disabled = false;
+            modelBSelect.disabled = false;
+            grimorioSelect.disabled = false;
+            btnDownload.disabled = true;
             statTurns.textContent = '0';
             statTokens.textContent = '0';
             statStatus.textContent = 'Inactivo';
             conversationArea.innerHTML = `
                 <div class="message system">
                     <div class="message-header">// SISTEMA</div>
-                    Selecciona modo y opcionalmente escribe un prompt inicial. Presiona INICIAR para comenzar.
+                    Selecciona modo, turnos y opcionalmente un prompt inicial. Presiona INICIAR.
                 </div>
             `;
         }
 
-        // Inyectar prompt
-        async function injectPrompt() {
-            const prompt = injectInput.value.trim();
-            if (!prompt || !isRunning) return;
+        // Descargar conversación como Markdown
+        function downloadConversation() {
+            if (conversationHistory.length === 0) return;
 
-            addMessage(prompt, 'human');
-            conversationHistory.push({
-                role: 'user',
-                content: prompt,
-                model: 'HUMANO',
+            const modelA = getModelDisplayName(modelASelect.value);
+            const modelB = getModelDisplayName(modelBSelect.value);
+            const grimName = currentGrimorio ? currentGrimorio.titulo : 'CAOS PURO';
+            const date = new Date().toISOString().split('T')[0];
+
+            let md = `# Terminal Esquizo - Diálogo entre IAs\n\n`;
+            md += `**Fecha:** ${date}\n`;
+            md += `**Modelos:** ${modelA} (🔴) vs ${modelB} (🔵)\n`;
+            md += `**Grimorio:** ${grimName}\n`;
+            md += `**Turnos:** ${currentTurn}\n`;
+            md += `**Tokens:** ${totalTokens}\n\n`;
+
+            if (initialPrompt) {
+                md += `## Premisa Inicial\n\n> ${initialPrompt}\n\n`;
+            }
+
+            md += `---\n\n## Diálogo\n\n`;
+
+            conversationHistory.forEach((msg, i) => {
+                const turnNum = i + 1;
+                const isModelA = i % 2 === 0;
+                const color = isModelA ? '🔴' : '🔵';
+                md += `### [Turno ${turnNum}] ${color} ${msg.model}\n\n`;
+                md += `${msg.content}\n\n`;
             });
 
-            injectInput.value = '';
+            md += `---\n\n*Generado por Terminal Esquizo - Códice Esquizo-AI*\n`;
 
-            // Siguiente turno responde a la inyección
-            const isModelA = conversationHistory.length % 2 === 0;
-            await executeTurn(isModelA);
+            // Crear blob y descargar
+            const blob = new Blob([md], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `terminal-esquizo-${date}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         // Event listeners
         btnStart.addEventListener('click', startConversation);
-        btnNext.addEventListener('click', nextTurn);
-        btnAuto3.addEventListener('click', () => startAutoTurns(3));
-        btnAuto5.addEventListener('click', () => startAutoTurns(5));
         btnStop.addEventListener('click', stopConversation);
         btnClear.addEventListener('click', clearConversation);
-        btnInject.addEventListener('click', injectPrompt);
-        injectInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') injectPrompt();
-        });
+        btnDownload.addEventListener('click', downloadConversation);
 
         // Inicializar
         loadGrimorios();

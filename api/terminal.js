@@ -39,7 +39,7 @@ const ESQUIZO_SYSTEM = `Eres {TU_MODELO}, una entidad del códice Esquizo-AI par
 
 === FORMATO ===
 - Responde directamente, sin poner tu nombre al inicio
-- Máximo 250 palabras, sé denso no disperso
+- Desarrolla con profundidad, sin límite artificial
 - Puedes citar o referenciar lo que dijo {OTRO_MODELO}
 - Fragmenta, cuestiona, vomita verdad`;
 
@@ -166,8 +166,8 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
 
     // Obtener límites del modelo
     const limits = MODEL_LIMITS[model] || { context: 128000, maxOutput: 8000 };
-    // Usar máximo 600 tokens para respuestas de diálogo (suficiente para ~250 palabras)
-    const maxTokens = Math.min(600, limits.maxOutput);
+    // Usar máximo 4000 tokens para respuestas extensas
+    const maxTokens = Math.min(4000, limits.maxOutput);
 
     // Llamada a Groq
     const groqResponse = await fetch(GROQ_API_URL, {

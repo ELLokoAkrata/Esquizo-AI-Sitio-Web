@@ -1,22 +1,29 @@
 /**
  * Terminal Esquizo - API Endpoint
  * Conversación entre IAs basada en grimorios
+ * Soporta: Groq (Llama, Qwen, GPT-OSS) + DeepSeek (Chat, Reasoner)
  */
 
 export const config = {
   runtime: 'edge',
 };
 
+// URLs de APIs
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions';
 
 // Límites de tokens por modelo (context window)
 const MODEL_LIMITS = {
-  'llama-3.3-70b-versatile': { context: 128000, maxOutput: 32768 },
-  'llama-3.1-8b-instant': { context: 128000, maxOutput: 8000 },
-  'meta-llama/llama-4-scout-17b-16e-instruct': { context: 131072, maxOutput: 8192 },
-  'qwen/qwen3-32b': { context: 131072, maxOutput: 8192 },
-  'openai/gpt-oss-20b': { context: 128000, maxOutput: 16384 },
-  'openai/gpt-oss-120b': { context: 128000, maxOutput: 16384 },
+  // Groq models
+  'llama-3.3-70b-versatile': { context: 128000, maxOutput: 32768, provider: 'groq' },
+  'llama-3.1-8b-instant': { context: 128000, maxOutput: 8000, provider: 'groq' },
+  'meta-llama/llama-4-scout-17b-16e-instruct': { context: 131072, maxOutput: 8192, provider: 'groq' },
+  'qwen/qwen3-32b': { context: 131072, maxOutput: 8192, provider: 'groq' },
+  'openai/gpt-oss-20b': { context: 128000, maxOutput: 16384, provider: 'groq' },
+  'openai/gpt-oss-120b': { context: 128000, maxOutput: 16384, provider: 'groq' },
+  // DeepSeek models
+  'deepseek-chat': { context: 64000, maxOutput: 8192, provider: 'deepseek' },
+  'deepseek-reasoner': { context: 64000, maxOutput: 32768, provider: 'deepseek', noTemperature: true },
 };
 
 // System prompt que explica la dinámica del diálogo
@@ -85,18 +92,26 @@ export default async function handler(request) {
     });
   }
 
-  const apiKey = process.env.GROQ_API_KEY;
+  // Obtener configuración del modelo
+  const body = await request.json();
+  const { model } = body;
+  const modelConfig = MODEL_LIMITS[model] || { provider: 'groq' };
+  const provider = modelConfig.provider || 'groq';
+
+  // Obtener API key según proveedor
+  const apiKey = provider === 'deepseek'
+    ? process.env.DEEPSEEK_API_KEY
+    : process.env.GROQ_API_KEY;
+
   if (!apiKey) {
-    return new Response(JSON.stringify({ error: 'GROQ_API_KEY not configured' }), {
+    return new Response(JSON.stringify({ error: `${provider.toUpperCase()}_API_KEY not configured` }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
 
   try {
-    const body = await request.json();
     const {
-      model,           // Modelo a usar para esta respuesta
       modelName,       // Nombre display del modelo actual (ej: "Llama 3.3 70B")
       otherModelName,  // Nombre display del otro modelo
       grimorio,        // Objeto grimorio con esencia, conceptos, etc.
@@ -165,29 +180,39 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
     }
 
     // Obtener límites del modelo
-    const limits = MODEL_LIMITS[model] || { context: 128000, maxOutput: 8000 };
+    const limits = MODEL_LIMITS[model] || { context: 128000, maxOutput: 8000, provider: 'groq' };
     // Usar máximo 4000 tokens para respuestas extensas
     const maxTokens = Math.min(4000, limits.maxOutput);
 
-    // Llamada a Groq
-    const groqResponse = await fetch(GROQ_API_URL, {
+    // Seleccionar API según proveedor
+    const apiUrl = provider === 'deepseek' ? DEEPSEEK_API_URL : GROQ_API_URL;
+
+    // Construir body de la request
+    const requestBody = {
+      model,
+      messages,
+      max_tokens: maxTokens,
+    };
+
+    // DeepSeek Reasoner NO soporta temperature
+    if (!modelConfig.noTemperature) {
+      requestBody.temperature = parseFloat(temperature);
+    }
+
+    // Llamada a la API
+    const apiResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature: parseFloat(temperature),
-        max_tokens: maxTokens,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
-    if (!groqResponse.ok) {
-      const error = await groqResponse.text();
-      return new Response(JSON.stringify({ error: `Groq API error: ${error}` }), {
-        status: groqResponse.status,
+    if (!apiResponse.ok) {
+      const error = await apiResponse.text();
+      return new Response(JSON.stringify({ error: `${provider} API error: ${error}` }), {
+        status: apiResponse.status,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
@@ -195,8 +220,19 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
       });
     }
 
-    const data = await groqResponse.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    const data = await apiResponse.json();
+    const message = data.choices?.[0]?.message || {};
+
+    // DeepSeek Reasoner devuelve reasoning_content + content
+    // Para el terminal, mostramos ambos si existe reasoning
+    let content = message.content || '';
+    const reasoningContent = message.reasoning_content;
+
+    if (reasoningContent) {
+      // Mostrar el razonamiento como bloque colapsable en el contenido
+      content = `**💭 Razonamiento:**\n\n${reasoningContent}\n\n---\n\n**💬 Respuesta:**\n\n${content}`;
+    }
+
     const tokensUsed = data.usage?.total_tokens || 0;
 
     return new Response(JSON.stringify({

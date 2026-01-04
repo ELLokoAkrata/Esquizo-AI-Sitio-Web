@@ -375,12 +375,18 @@
             <div class="config-card model-a">
                 <label class="config-label">MODELO A (ROJO)</label>
                 <select id="model-a">
-                    <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
-                    <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
-                    <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
-                    <option value="qwen/qwen3-32b">Qwen3 32B</option>
-                    <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
-                    <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+                    <optgroup label="── GROQ ──">
+                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
+                        <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
+                        <option value="qwen/qwen3-32b">Qwen3 32B</option>
+                        <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+                        <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+                    </optgroup>
+                    <optgroup label="── DEEPSEEK ──">
+                        <option value="deepseek-chat">DeepSeek Chat</option>
+                        <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option>
+                    </optgroup>
                 </select>
             </div>
 
@@ -395,12 +401,18 @@
             <div class="config-card model-b">
                 <label class="config-label">MODELO B (AZUL)</label>
                 <select id="model-b">
-                    <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
-                    <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
-                    <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
-                    <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
-                    <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
-                    <option value="qwen/qwen3-32b">Qwen3 32B</option>
+                    <optgroup label="── DEEPSEEK ──">
+                        <option value="deepseek-chat">DeepSeek Chat</option>
+                        <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option>
+                    </optgroup>
+                    <optgroup label="── GROQ ──">
+                        <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+                        <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
+                        <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
+                        <option value="qwen/qwen3-32b">Qwen3 32B</option>
+                    </optgroup>
                 </select>
             </div>
         </div>
@@ -495,12 +507,16 @@
 
         // Mapa de nombres cortos para modelos
         const MODEL_NAMES = {
+            // Groq models
             'llama-3.3-70b-versatile': 'Llama 3.3 70B',
             'llama-3.1-8b-instant': 'Llama 3.1 8B',
             'meta-llama/llama-4-scout-17b-16e-instruct': 'Llama 4 Scout',
             'qwen/qwen3-32b': 'Qwen3 32B',
             'openai/gpt-oss-20b': 'GPT-OSS 20B',
             'openai/gpt-oss-120b': 'GPT-OSS 120B',
+            // DeepSeek models
+            'deepseek-chat': 'DeepSeek Chat',
+            'deepseek-reasoner': 'DeepSeek Reasoner 🧠',
         };
 
         function getModelDisplayName(modelId) {

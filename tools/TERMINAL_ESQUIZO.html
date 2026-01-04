@@ -556,7 +556,7 @@
             grimorioSelect.appendChild(chaosOption);
 
             try {
-                const response = await fetch('../data/grimorios_data.json');
+                const response = await fetch('/data/grimorios_data.json');
                 if (!response.ok) throw new Error('No se pudo cargar');
 
                 grimoriosData = await response.json();

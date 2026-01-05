@@ -699,6 +699,18 @@
                     })
                 });
 
+                // Verificar si la respuesta es OK antes de parsear
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API ${response.status}: ${errorText.substring(0, 300)}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    throw new Error(`Respuesta no-JSON: ${text.substring(0, 300)}`);
+                }
+
                 const data = await response.json();
                 hideSpinner();
 

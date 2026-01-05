@@ -699,7 +699,16 @@
                     })
                 });
 
-                const data = await response.json();
+                // Manejar respuestas no-JSON (errores de API)
+                const contentType = response.headers.get('content-type');
+                let data;
+                if (contentType && contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const text = await response.text();
+                    throw new Error(`API error (${response.status}): ${text.substring(0, 200)}`);
+                }
+
                 hideSpinner();
 
                 if (data.error) {

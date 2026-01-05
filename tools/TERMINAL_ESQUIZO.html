@@ -696,37 +696,71 @@
                         history: conversationHistory,
                         initialPrompt: initialPrompt,
                         temperature: 0.85,
+                        useStreaming: true,
                     })
                 });
 
-                // Manejar respuestas no-JSON (errores de API)
-                const contentType = response.headers.get('content-type');
-                let data;
-                if (contentType && contentType.includes('application/json')) {
-                    data = await response.json();
-                } else {
+                // Manejar respuestas de error
+                if (!response.ok) {
                     const text = await response.text();
                     throw new Error(`API error (${response.status}): ${text.substring(0, 200)}`);
                 }
 
-                hideSpinner();
+                const contentType = response.headers.get('content-type');
+                let finalContent = '';
 
-                if (data.error) {
-                    throw new Error(data.error);
+                // Si es streaming (SSE)
+                if (contentType && contentType.includes('text/event-stream')) {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const data = JSON.parse(line.slice(6));
+                                    if (data.error) {
+                                        throw new Error(data.error);
+                                    }
+                                    if (data.done) {
+                                        finalContent = data.content;
+                                    }
+                                } catch (e) {
+                                    // Ignorar errores de parse en chunks intermedios
+                                }
+                            }
+                        }
+                    }
+                } else if (contentType && contentType.includes('application/json')) {
+                    // Fallback a JSON normal
+                    const data = await response.json();
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    finalContent = data.content;
+                } else {
+                    const text = await response.text();
+                    throw new Error(`Unexpected response: ${text.substring(0, 200)}`);
                 }
+
+                hideSpinner();
 
                 conversationHistory.push({
                     role: 'assistant',
-                    content: data.content,
+                    content: finalContent,
                     model: modelDisplayName,
                 });
 
-                addMessage(data.content, msgType, `${colorLabel} ${modelDisplayName}`, turnNum);
+                addMessage(finalContent, msgType, `${colorLabel} ${modelDisplayName}`, turnNum);
 
                 currentTurn++;
-                totalTokens += data.tokensUsed || 0;
                 statTurns.textContent = currentTurn;
-                statTokens.textContent = totalTokens;
 
                 // Continuar si quedan turnos
                 if (currentTurn < targetTurns && isRunning) {

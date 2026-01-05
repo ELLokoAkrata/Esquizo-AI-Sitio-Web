@@ -2,6 +2,7 @@
  * Terminal Esquizo - API Endpoint
  * Conversación entre IAs basada en grimorios
  * Soporta: Groq (Llama, Qwen, GPT-OSS) + DeepSeek (Chat, Reasoner)
+ * Usa STREAMING para evitar timeouts de Vercel
  */
 
 export const config = {
@@ -94,7 +95,7 @@ export default async function handler(request) {
 
   // Obtener configuración del modelo
   const body = await request.json();
-  const { model } = body;
+  const { model, useStreaming = true } = body;
   const modelConfig = MODEL_LIMITS[model] || { provider: 'groq' };
   const provider = modelConfig.provider || 'groq';
 
@@ -106,7 +107,7 @@ export default async function handler(request) {
   if (!apiKey) {
     return new Response(JSON.stringify({ error: `${provider.toUpperCase()}_API_KEY not configured` }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
 
@@ -138,8 +139,7 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
     // Comprimir historial si es muy largo
     const compressedHistory = compressHistory(history || []);
 
-    // Construir mensajes - todo el historial como contexto de usuario
-    // para que el modelo vea la conversación completa
+    // Construir mensajes
     const messages = [
       { role: 'system', content: systemPrompt }
     ];
@@ -151,28 +151,19 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
         content: `[HUMANO]: ${initialPrompt}\n\nInicia el diálogo respondiendo a esta premisa.`
       });
     } else if (compressedHistory.length === 0) {
-      // Primer turno sin prompt inicial
       messages.push({
         role: 'user',
         content: `Inicia el diálogo. Reacciona al grimorio o al caos. Fragmenta. Cuestiona. Vomita verdad.`
       });
     } else {
-      // Hay historial - construir la conversación
-      // Agregamos todo el historial formateado para que el modelo vea el contexto
       let conversationContext = '';
-
-      // Si hay prompt inicial, incluirlo al inicio
       if (initialPrompt) {
         conversationContext += `[HUMANO]: ${initialPrompt}\n\n`;
       }
-
-      // Agregar cada mensaje del historial
       compressedHistory.forEach(h => {
         conversationContext += `[${h.model}]: ${h.content}\n\n`;
       });
-
       conversationContext += `Ahora responde tú como ${modelName}. Continúa el diálogo.`;
-
       messages.push({
         role: 'user',
         content: conversationContext
@@ -181,7 +172,6 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
 
     // Obtener límites del modelo
     const limits = MODEL_LIMITS[model] || { context: 128000, maxOutput: 8000, provider: 'groq' };
-    // Usar máximo 4000 tokens para respuestas extensas
     const maxTokens = Math.min(4000, limits.maxOutput);
 
     // Seleccionar API según proveedor
@@ -192,6 +182,7 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
       model,
       messages,
       max_tokens: maxTokens,
+      stream: useStreaming, // Activar streaming
     };
 
     // DeepSeek Reasoner NO soporta temperature
@@ -199,7 +190,7 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
       requestBody.temperature = parseFloat(temperature);
     }
 
-    // Llamada a la API
+    // Llamada a la API con streaming
     const apiResponse = await fetch(apiUrl, {
       method: 'POST',
       headers: {
@@ -220,29 +211,107 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
       });
     }
 
-    const data = await apiResponse.json();
-    const message = data.choices?.[0]?.message || {};
+    // Si no es streaming, procesar como antes
+    if (!useStreaming) {
+      const data = await apiResponse.json();
+      const message = data.choices?.[0]?.message || {};
+      let content = message.content || '';
+      const reasoningContent = message.reasoning_content;
 
-    // DeepSeek Reasoner devuelve reasoning_content + content
-    // Para el terminal, mostramos ambos si existe reasoning
-    let content = message.content || '';
-    const reasoningContent = message.reasoning_content;
+      if (reasoningContent) {
+        content = `**💭 Razonamiento:**\n\n${reasoningContent}\n\n---\n\n**💬 Respuesta:**\n\n${content}`;
+      }
 
-    if (reasoningContent) {
-      // Mostrar el razonamiento como bloque colapsable en el contenido
-      content = `**💭 Razonamiento:**\n\n${reasoningContent}\n\n---\n\n**💬 Respuesta:**\n\n${content}`;
+      return new Response(JSON.stringify({
+        content,
+        model,
+        tokensUsed: data.usage?.total_tokens || 0,
+        historyLength: compressedHistory.length,
+      }), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
     }
 
-    const tokensUsed = data.usage?.total_tokens || 0;
+    // Procesar streaming y reenviarlo al cliente
+    const reader = apiResponse.body.getReader();
+    const decoder = new TextDecoder();
 
-    return new Response(JSON.stringify({
-      content,
-      model,
-      tokensUsed,
-      historyLength: compressedHistory.length,
-    }), {
+    let fullContent = '';
+    let reasoningContent = '';
+    let isReasoning = false;
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        const encoder = new TextEncoder();
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6);
+                if (data === '[DONE]') {
+                  // Enviar contenido final
+                  let finalContent = fullContent;
+                  if (reasoningContent) {
+                    finalContent = `**💭 Razonamiento:**\n\n${reasoningContent}\n\n---\n\n**💬 Respuesta:**\n\n${fullContent}`;
+                  }
+
+                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                    done: true,
+                    content: finalContent,
+                    model,
+                    historyLength: compressedHistory.length
+                  })}\n\n`));
+                  continue;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+                  const delta = parsed.choices?.[0]?.delta;
+
+                  if (delta) {
+                    // DeepSeek Reasoner: manejar reasoning_content
+                    if (delta.reasoning_content) {
+                      reasoningContent += delta.reasoning_content;
+                      isReasoning = true;
+                    }
+                    if (delta.content) {
+                      fullContent += delta.content;
+                      // Enviar chunk al cliente
+                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                        chunk: delta.content,
+                        isReasoning: false
+                      })}\n\n`));
+                    }
+                  }
+                } catch (e) {
+                  // Ignorar líneas que no son JSON válido
+                }
+              }
+            }
+          }
+        } catch (error) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error.message })}\n\n`));
+        } finally {
+          controller.close();
+        }
+      }
+    });
+
+    return new Response(stream, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
         'Access-Control-Allow-Origin': '*',
       },
     });

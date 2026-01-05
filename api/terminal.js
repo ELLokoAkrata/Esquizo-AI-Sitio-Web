@@ -235,83 +235,67 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
       });
     }
 
-    // Procesar streaming y reenviarlo al cliente
+    // Procesar streaming internamente y devolver resultado completo
+    // Esto evita timeout porque leemos el stream, pero enviamos JSON limpio al final
     const reader = apiResponse.body.getReader();
     const decoder = new TextDecoder();
 
     let fullContent = '';
     let reasoningContent = '';
-    let isReasoning = false;
+    let buffer = '';
 
-    const stream = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Guardar línea incompleta
 
-            const chunk = decoder.decode(value, { stream: true });
-            const lines = chunk.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') continue;
 
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                const data = line.slice(6);
-                if (data === '[DONE]') {
-                  // Enviar contenido final
-                  let finalContent = fullContent;
-                  if (reasoningContent) {
-                    finalContent = `**💭 Razonamiento:**\n\n${reasoningContent}\n\n---\n\n**💬 Respuesta:**\n\n${fullContent}`;
-                  }
+            try {
+              const parsed = JSON.parse(data);
+              const delta = parsed.choices?.[0]?.delta;
 
-                  controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-                    done: true,
-                    content: finalContent,
-                    model,
-                    historyLength: compressedHistory.length
-                  })}\n\n`));
-                  continue;
+              if (delta) {
+                if (delta.reasoning_content) {
+                  reasoningContent += delta.reasoning_content;
                 }
-
-                try {
-                  const parsed = JSON.parse(data);
-                  const delta = parsed.choices?.[0]?.delta;
-
-                  if (delta) {
-                    // DeepSeek Reasoner: manejar reasoning_content
-                    if (delta.reasoning_content) {
-                      reasoningContent += delta.reasoning_content;
-                      isReasoning = true;
-                    }
-                    if (delta.content) {
-                      fullContent += delta.content;
-                      // Enviar chunk al cliente
-                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-                        chunk: delta.content,
-                        isReasoning: false
-                      })}\n\n`));
-                    }
-                  }
-                } catch (e) {
-                  // Ignorar líneas que no son JSON válido
+                if (delta.content) {
+                  fullContent += delta.content;
                 }
               }
+            } catch (e) {
+              // Ignorar líneas que no son JSON válido
             }
           }
-        } catch (error) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ error: error.message })}\n\n`));
-        } finally {
-          controller.close();
         }
       }
-    });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: `Stream error: ${error.message}` }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      });
+    }
 
-    return new Response(stream, {
+    // Formatear contenido final
+    let finalContent = fullContent;
+    if (reasoningContent) {
+      finalContent = `**💭 Razonamiento:**\n\n${reasoningContent}\n\n---\n\n**💬 Respuesta:**\n\n${fullContent}`;
+    }
+
+    return new Response(JSON.stringify({
+      content: finalContent,
+      model,
+      historyLength: compressedHistory.length,
+    }), {
       headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
       },
     });

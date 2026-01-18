@@ -385,7 +385,7 @@
                     </optgroup>
                     <optgroup label="── DEEPSEEK ──">
                         <option value="deepseek-chat">DeepSeek Chat</option>
-                        <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option>
+                        <!-- <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option> DISABLED: Vercel timeout -->
                     </optgroup>
                 </select>
             </div>
@@ -403,7 +403,7 @@
                 <select id="model-b">
                     <optgroup label="── DEEPSEEK ──">
                         <option value="deepseek-chat">DeepSeek Chat</option>
-                        <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option>
+                        <!-- <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option> DISABLED: Vercel timeout -->
                     </optgroup>
                     <optgroup label="── GROQ ──">
                         <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
@@ -516,7 +516,7 @@
             'openai/gpt-oss-120b': 'GPT-OSS 120B',
             // DeepSeek models
             'deepseek-chat': 'DeepSeek Chat',
-            'deepseek-reasoner': 'DeepSeek Reasoner 🧠',
+            // 'deepseek-reasoner': 'DeepSeek Reasoner 🧠', // DISABLED: Vercel timeout
         };
 
         function getModelDisplayName(modelId) {

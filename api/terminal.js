@@ -24,7 +24,7 @@ const MODEL_LIMITS = {
   'openai/gpt-oss-120b': { context: 128000, maxOutput: 16384, provider: 'groq' },
   // DeepSeek models
   'deepseek-chat': { context: 64000, maxOutput: 8192, provider: 'deepseek' },
-  'deepseek-reasoner': { context: 64000, maxOutput: 32768, provider: 'deepseek', noTemperature: true },
+  // 'deepseek-reasoner': { context: 64000, maxOutput: 32768, provider: 'deepseek', noTemperature: true }, // DISABLED: Vercel timeout issues
 };
 
 // System prompt que explica la dinámica del diálogo
@@ -172,6 +172,10 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
 
     // Obtener límites del modelo
     const limits = MODEL_LIMITS[model] || { context: 128000, maxOutput: 8000, provider: 'groq' };
+    // DISABLED: Reasoner logic - Vercel timeout issues
+    // const maxTokens = model === 'deepseek-reasoner'
+    //   ? Math.min(1500, limits.maxOutput)  // Reasoner: máx 1500 tokens
+    //   : Math.min(4000, limits.maxOutput); // Otros: máx 4000 tokens
     const maxTokens = Math.min(4000, limits.maxOutput);
 
     // Seleccionar API según proveedor

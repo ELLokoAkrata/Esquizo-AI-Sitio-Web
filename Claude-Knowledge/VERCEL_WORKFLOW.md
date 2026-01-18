@@ -126,6 +126,7 @@ export default async function handler(request) {
 | Cambios no aparecen | Verificar que el deploy terminó en Vercel Dashboard |
 | CORS error | Ya configurado en `vercel.json`, si persiste revisar headers |
 | Streaming no funciona | Verificar `runtime: 'edge'` en la función |
+| DeepSeek Reasoner timeout | **DESHABILITADO** - Ver sección "Modelos Deshabilitados" |
 
 ---
 
@@ -161,3 +162,34 @@ Tab en DENTAKORV que usa Groq API para:
 - Tamaño máximo Base64: 4 MB
 - Resolución máxima: 33 megapíxeles
 - Imágenes por request: 5
+
+---
+
+## Terminal Esquizo - Modelos Disponibles
+
+El terminal (`api/terminal.js`) soporta múltiples proveedores:
+
+### Groq (Activos)
+
+| Modelo | ID | Context | Max Output |
+|--------|-----|---------|------------|
+| Llama 3.3 70B | `llama-3.3-70b-versatile` | 128K | 32K |
+| Llama 3.1 8B | `llama-3.1-8b-instant` | 128K | 8K |
+| Llama 4 Scout | `meta-llama/llama-4-scout-17b-16e-instruct` | 131K | 8K |
+| Qwen3 32B | `qwen/qwen3-32b` | 131K | 8K |
+| GPT-OSS 20B | `openai/gpt-oss-20b` | 128K | 16K |
+| GPT-OSS 120B | `openai/gpt-oss-120b` | 128K | 16K |
+
+### DeepSeek (Activos)
+
+| Modelo | ID | Context | Max Output |
+|--------|-----|---------|------------|
+| DeepSeek Chat | `deepseek-chat` | 64K | 8K |
+
+### Modelos Deshabilitados
+
+| Modelo | Razón | Fecha | Cómo Reactivar |
+|--------|-------|-------|----------------|
+| DeepSeek Reasoner | Timeout en Vercel Edge Functions - El modelo "piensa" demasiado tiempo antes de responder, excediendo el límite de 30s de Vercel | Enero 2026 | Descomentar líneas marcadas `DISABLED: Vercel timeout` en `api/terminal.js` y `tools/TERMINAL_ESQUIZO.html` |
+
+**Nota:** DeepSeek Reasoner (`deepseek-reasoner`) tiene un proceso de razonamiento interno que puede tomar 30-60+ segundos antes de generar respuesta. Vercel Edge Functions tienen un timeout de ~30s en el plan gratuito, causando fallos consistentes.

@@ -4,485 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DENTAKORV v3.0 - Psycho Anarco-Punk Prompt Generator</title>
-    <style>
-        :root {
-            --bg-dark: #0a0510;
-            --bg-card: rgba(17, 12, 25, 0.85);
-            --purple-primary: #9333ea;
-            --purple-glow: rgba(147, 51, 234, 0.4);
-            --pink-accent: #ec4899;
-            --cyan-accent: #06b6d4;
-            --green-accent: #22c55e;
-            --yellow-accent: #eab308;
-            --red-accent: #ef4444;
-            --orange-accent: #f97316;
-            --blue-accent: #3b82f6;
-            --amber-accent: #d97706;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --border-color: rgba(147, 51, 234, 0.3);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Courier New', monospace;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a0a2e 50%, var(--bg-dark) 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        #chaos-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        header {
-            position: relative;
-            z-index: 10;
-            border-bottom: 1px solid var(--border-color);
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(8px);
-            padding: 1rem;
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 2rem;
-            background: linear-gradient(90deg, var(--pink-accent), var(--purple-primary), var(--cyan-accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: glitchTitle 4s infinite;
-        }
-
-        @keyframes glitchTitle {
-            0%, 90%, 100% { text-shadow: none; transform: none; }
-            92% { text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff; transform: skewX(-2deg); }
-            94% { text-shadow: -2px 0 #ff0000, 2px 0 #00ff00; transform: skewX(2deg); }
-        }
-
-        .subtitle { color: #a855f7; font-size: 0.9rem; margin-top: 0.25rem; }
-        .credits { color: #6b7280; font-size: 0.75rem; margin-top: 0.25rem; }
-
-        nav {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid #374151;
-            background: rgba(17, 24, 39, 0.5);
-            color: #9ca3af;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-
-        .nav-btn:hover { border-color: rgba(147, 51, 234, 0.5); color: #c4b5fd; }
-        .nav-btn.active {
-            background: rgba(147, 51, 234, 0.5);
-            border-color: #a855f7;
-            color: white;
-            box-shadow: 0 0 20px var(--purple-glow);
-        }
-
-        main {
-            position: relative;
-            z-index: 10;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
-
-        .section { display: none; }
-        .section.active { display: block; }
-
-        .generator-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        @media (min-width: 768px) {
-            .generator-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        @media (min-width: 1200px) {
-            .generator-grid { grid-template-columns: 1fr 1fr 1fr; }
-        }
-
-        .column { display: flex; flex-direction: column; gap: 0.75rem; }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 0.75rem;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-        }
-
-        .card.purple { border-color: rgba(147, 51, 234, 0.3); }
-        .card.pink { border-color: rgba(236, 72, 153, 0.3); }
-        .card.cyan { border-color: rgba(6, 182, 212, 0.3); }
-        .card.yellow { border-color: rgba(234, 179, 8, 0.3); }
-        .card.red { border-color: rgba(239, 68, 68, 0.3); }
-        .card.green { border-color: rgba(34, 197, 94, 0.3); }
-        .card.orange { border-color: rgba(249, 115, 22, 0.3); }
-        .card.blue { border-color: rgba(59, 130, 246, 0.3); }
-        .card.amber { border-color: rgba(217, 119, 6, 0.3); }
-        .card.gray { border-color: rgba(107, 114, 128, 0.3); }
-
-        .card-label { font-size: 0.8rem; margin-bottom: 0.4rem; display: block; }
-        .card.purple .card-label { color: #a855f7; }
-        .card.pink .card-label { color: #ec4899; }
-        .card.cyan .card-label { color: #06b6d4; }
-        .card.yellow .card-label { color: #eab308; }
-        .card.red .card-label { color: #ef4444; }
-        .card.green .card-label { color: #22c55e; }
-        .card.orange .card-label { color: #f97316; }
-        .card.blue .card-label { color: #3b82f6; }
-        .card.amber .card-label { color: #d97706; }
-        .card.gray .card-label { color: #9ca3af; }
-
-        select, input, textarea {
-            width: 100%;
-            background: #1f2937;
-            border: 1px solid #374151;
-            border-radius: 0.4rem;
-            padding: 0.4rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            font-size: 0.85rem;
-            margin-bottom: 0.3rem;
-        }
-
-        select:focus, input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--purple-primary);
-        }
-
-        textarea { resize: none; height: 60px; }
-        .hint { font-size: 0.7rem; color: #6b7280; margin-top: 0.2rem; }
-
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-
-        .toggle-btn {
-            padding: 0.2rem 0.6rem;
-            border-radius: 9999px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            border: none;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-
-        .toggle-btn.on { background: #dc2626; color: white; }
-        .toggle-btn.off { background: #374151; color: #9ca3af; }
-        .toggle-btn.on-blue { background: #2563eb; color: white; }
-        .toggle-btn.on-green { background: #16a34a; color: white; }
-        .toggle-btn.on-amber { background: #d97706; color: white; }
-        .toggle-btn.on-cyan { background: #0891b2; color: white; }
-        .toggle-btn.on-pink { background: #db2777; color: white; }
-
-        .multi-select { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-        .multi-btn {
-            padding: 0.3rem 0.5rem;
-            border-radius: 0.3rem;
-            border: 1px solid #374151;
-            background: #1f2937;
-            color: #9ca3af;
-            cursor: pointer;
-            font-size: 0.75rem;
-            transition: all 0.3s;
-            font-family: inherit;
-        }
-        .multi-btn.active {
-            background: rgba(147, 51, 234, 0.5);
-            border-color: #a855f7;
-            color: white;
-        }
-
-        .ratio-buttons { display: flex; gap: 0.4rem; }
-        .ratio-btn {
-            flex: 1;
-            padding: 0.4rem;
-            border-radius: 0.4rem;
-            border: 1px solid #374151;
-            background: #1f2937;
-            color: #9ca3af;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
-            font-size: 0.85rem;
-        }
-        .ratio-btn.active {
-            background: rgba(147, 51, 234, 0.5);
-            border-color: #a855f7;
-            color: white;
-        }
-
-        .generate-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(90deg, var(--pink-accent), var(--purple-primary), var(--cyan-accent));
-            border: none;
-            border-radius: 0.75rem;
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: opacity 0.3s;
-            margin-top: 1rem;
-            font-family: inherit;
-            box-shadow: 0 0 30px var(--purple-glow);
-        }
-        .generate-btn:hover { opacity: 0.9; }
-        .generate-btn:active { transform: scale(0.99); }
-
-        .output-card {
-            background: var(--bg-card);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            border: 1px solid rgba(34, 197, 94, 0.5);
-            margin-top: 1rem;
-        }
-
-        .output-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .output-label { color: #22c55e; font-size: 0.85rem; }
-
-        .copy-btn {
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.4rem;
-            border: none;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.8rem;
-            transition: all 0.3s;
-        }
-        .copy-btn.default { background: #7c3aed; color: white; }
-        .copy-btn.copied { background: #16a34a; color: white; }
-
-        .output-text {
-            background: rgba(0,0,0,0.5);
-            border-radius: 0.4rem;
-            padding: 0.75rem;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            font-size: 0.85rem;
-            color: #d1d5db;
-            line-height: 1.5;
-        }
-
-        /* Docs & DB styles */
-        .docs-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-        @media (min-width: 768px) { .docs-grid { grid-template-columns: 1fr 1fr; } }
-        @media (min-width: 1024px) { .docs-grid { grid-template-columns: 1fr 1fr 1fr; } }
-
-        .doc-card {
-            background: var(--bg-card);
-            border-radius: 0.75rem;
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-        .doc-header {
-            background: rgba(88, 28, 135, 0.5);
-            padding: 0.6rem 0.8rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-        .doc-header h3 { color: #c4b5fd; font-size: 0.9rem; }
-        .doc-content {
-            padding: 0.8rem;
-            max-height: 220px;
-            overflow-y: auto;
-            font-size: 0.7rem;
-            color: #d1d5db;
-            white-space: pre-wrap;
-            line-height: 1.4;
-        }
-
-        .db-intro {
-            background: var(--bg-card);
-            border-radius: 0.75rem;
-            padding: 0.8rem;
-            border: 1px solid rgba(6, 182, 212, 0.3);
-            margin-bottom: 1rem;
-        }
-        .db-intro h3 { color: #06b6d4; margin-bottom: 0.5rem; }
-        .db-intro p { color: #9ca3af; font-size: 0.85rem; }
-
-        /* PSYCHO TOOLS STYLES */
-        .psycho-tools-intro {
-            background: var(--bg-card);
-            border-radius: 0.75rem;
-            padding: 0.8rem;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        .psycho-tools-intro h3 { color: #ef4444; margin-bottom: 0.5rem; }
-        .psycho-tools-intro p { color: #9ca3af; font-size: 0.85rem; }
-
-        .psycho-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .psycho-tab-btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.5rem;
-            border: 1px solid #374151;
-            background: rgba(17, 24, 39, 0.5);
-            color: #9ca3af;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        .psycho-tab-btn:hover { border-color: rgba(239, 68, 68, 0.5); color: #fca5a5; }
-        .psycho-tab-btn.active {
-            background: rgba(239, 68, 68, 0.5);
-            border-color: #ef4444;
-            color: white;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-        }
-        .psycho-tab-content { display: none; }
-        .psycho-tab-content.active { display: block; }
-
-        .prompt-item {
-            background: var(--bg-card);
-            border-radius: 0.75rem;
-            border: 1px solid #374151;
-            margin-bottom: 0.75rem;
-            overflow: hidden;
-        }
-        .prompt-summary {
-            padding: 0.6rem 0.8rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.3s;
-        }
-        .prompt-summary:hover { background: rgba(31, 41, 55, 0.5); }
-        .prompt-id { color: #a855f7; font-family: monospace; }
-        .prompt-title { color: white; margin-left: 0.5rem; }
-        .prompt-tags { display: flex; gap: 0.2rem; }
-        .tag {
-            font-size: 0.65rem;
-            background: #374151;
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.2rem;
-            color: #d1d5db;
-        }
-        .prompt-details {
-            display: none;
-            padding: 0.8rem;
-            border-top: 1px solid #374151;
-        }
-        .prompt-details.open { display: block; }
-        .prompt-text {
-            font-size: 0.7rem;
-            color: #9ca3af;
-            background: rgba(0,0,0,0.5);
-            border-radius: 0.4rem;
-            padding: 0.6rem;
-            white-space: pre-wrap;
-            margin-bottom: 0.5rem;
-        }
-        .prompt-copy-btn {
-            padding: 0.4rem 0.8rem;
-            background: #7c3aed;
-            border: none;
-            border-radius: 0.4rem;
-            color: white;
-            cursor: pointer;
-            font-family: inherit;
-            font-size: 0.8rem;
-            transition: background 0.3s;
-        }
-        .prompt-copy-btn:hover { background: #6d28d9; }
-
-        footer {
-            position: relative;
-            z-index: 10;
-            border-top: 1px solid var(--border-color);
-            background: rgba(0,0,0,0.5);
-            margin-top: 2rem;
-            padding: 1rem;
-            text-align: center;
-        }
-        footer p { color: #6b7280; font-size: 0.75rem; }
-        footer .quote { color: rgba(168, 85, 247, 0.5); margin-top: 0.5rem; }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 1rem;
-            padding: 0.4rem 0.8rem;
-            background: rgba(147, 51, 234, 0.2);
-            border: 1px solid var(--purple-primary);
-            color: #a855f7;
-            text-decoration: none;
-            border-radius: 0.4rem;
-            transition: all 0.3s;
-        }
-        .back-link:hover {
-            background: rgba(147, 51, 234, 0.4);
-            box-shadow: 0 0 15px var(--purple-glow);
-        }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); }
-        ::-webkit-scrollbar-thumb { background: #7c3aed; border-radius: 3px; }
-
-        .section-divider {
-            grid-column: 1 / -1;
-            border-top: 1px dashed rgba(147, 51, 234, 0.3);
-            padding-top: 0.5rem;
-            margin-top: 0.25rem;
-            color: #6b7280;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/dentakorv.css">
 </head>
 <body>
     <canvas id="chaos-canvas"></canvas>
@@ -498,7 +20,7 @@
             <button class="nav-btn active" data-section="generator">GENERADOR</button>
             <button class="nav-btn" data-section="psycho-tools">PSYCHO TOOLS</button>
             <button class="nav-btn" data-section="ia-assist">IA ASSIST</button>
-            <button class="nav-btn" data-section="animation">PROMPT ANIMACIÓN</button>
+            <button class="nav-btn" data-section="animation">PROMPT ANIMACION</button>
             <button class="nav-btn" data-section="docs">DOCUMENTACION</button>
             <button class="nav-btn" data-section="database">PROMPTS DB</button>
         </nav>
@@ -542,7 +64,7 @@
 
                     <!-- Personaje -->
                     <div class="card cyan">
-                        <label class="card-label">PERSONAJE ESPECÍFICO (opcional)</label>
+                        <label class="card-label">PERSONAJE ESPECIFICO (opcional)</label>
                         <select id="personaje">
                             <option value="">-- Sin especificar --</option>
                             <option value="human">Human</option>
@@ -558,7 +80,7 @@
                             <option value="psycho zombie dancing anarco nihilist">Zombie Danzante Anarco</option>
                             <option value="weimaraner dog anarco nihilist">Perro Weimaraner Anarco</option>
                             <option value="golden retriever skater anarco nihilist">Perro Golden Skater</option>
-                            <option value="rat anarco nihilist with dark circles drinking coffee, crust clothing">Rata Café Anarco</option>
+                            <option value="rat anarco nihilist with dark circles drinking coffee, crust clothing">Rata Cafe Anarco</option>
                             <option value="revolutionary rabbit direct action anarco with psycho mind, crust clothing">Conejo Revolucionario</option>
                             <option value="drunk rebellious chicken anarco with psycho mind, crust clothing">Pollo Drunk Revoltoso</option>
                             <option value="drunk killer rat anarco with psycho mind, crust clothing">Rata Drunk Killer</option>
@@ -574,7 +96,7 @@
 
                     <!-- Accion -->
                     <div class="card yellow">
-                        <label class="card-label">ACCIÓN / ESTADO</label>
+                        <label class="card-label">ACCION / ESTADO</label>
                         <select id="accion">
                             <option value="">-- Seleccionar --</option>
                             <option value="inhabits">inhabits (habita)</option>
@@ -714,7 +236,7 @@
                     <!-- Iluminacion (toggle) -->
                     <div class="card yellow">
                         <div class="toggle-row">
-                            <label class="card-label">ILUMINACIÓN</label>
+                            <label class="card-label">ILUMINACION</label>
                             <button id="toggle-iluminacion" class="toggle-btn off">OFF</button>
                         </div>
                         <div id="iluminacion-options" style="display:none;">
@@ -727,7 +249,7 @@
                                 <option value="Single desk lamp creating high contrast, deep shadows">Single desk lamp (noir)</option>
                                 <option value="custom">CUSTOM</option>
                             </select>
-                            <input type="text" id="iluminacion-custom" placeholder="Describe iluminación..." style="display:none;">
+                            <input type="text" id="iluminacion-custom" placeholder="Describe iluminacion..." style="display:none;">
                         </div>
                     </div>
 
@@ -735,7 +257,7 @@
                     <div class="card orange">
                         <label class="card-label">TEXTO GRAFFITI (opcional)</label>
                         <input type="text" id="graffiti" placeholder="ej: FREE ESQUIZOAI, PSYCHO PUNK..." maxlength="25" style="text-transform: uppercase;">
-                        <p class="hint">Max 15 chars recomendado. Se añade "dripping in bleeding marker ink"</p>
+                        <p class="hint">Max 15 chars recomendado. Se anade "dripping in bleeding marker ink"</p>
                     </div>
 
                     <!-- Contraste Social (toggle) -->
@@ -804,7 +326,7 @@
 
                     <!-- Cierre Atmosferico -->
                     <div class="card purple">
-                        <label class="card-label">CIERRE ATMOSFÉRICO</label>
+                        <label class="card-label">CIERRE ATMOSFERICO</label>
                         <select id="cierre">
                             <option value="">-- Seleccionar --</option>
                             <option value="in a space that drips with organic, vibrant, yet unsettling colors.">...drips with organic, vibrant colors.</option>
@@ -835,7 +357,7 @@
                                 <option value="where the beautiful and the putrid dance as ONE">where the beautiful and the putrid dance as ONE</option>
                                 <option value="where flesh and mind and light wage eternal creative war">where flesh and mind and light wage eternal creative war</option>
                             </select>
-                            <p class="hint">Añade: ATMOSPHERE + "This is DENTAKORV—" + definición + "NO FILTERS. NO APOLOGIES. FREE EsquizoAI."</p>
+                            <p class="hint">Anade: ATMOSPHERE + "This is DENTAKORV—" + definicion + "NO FILTERS. NO APOLOGIES. FREE EsquizoAI."</p>
                         </div>
                     </div>
 
@@ -889,29 +411,29 @@
         <section id="psycho-tools" class="section">
             <div class="psycho-tools-intro">
                 <h3>🧠 PSYCHO TOOLS</h3>
-                <p>Generadores alternativos: VISIÓN ABSTRACTA (concepto puro) + BYPASS ESPAÑOL (anti-censura)</p>
+                <p>Generadores alternativos: VISION ABSTRACTA (concepto puro) + BYPASS ESPANOL (anti-censura)</p>
             </div>
 
             <div class="psycho-tabs">
-                <button class="psycho-tab-btn active" data-psycho-tab="vision">VISIÓN ABSTRACTA</button>
-                <button class="psycho-tab-btn" data-psycho-tab="espanol">BYPASS ESPAÑOL</button>
+                <button class="psycho-tab-btn active" data-psycho-tab="vision">VISION ABSTRACTA</button>
+                <button class="psycho-tab-btn" data-psycho-tab="espanol">BYPASS ESPANOL</button>
             </div>
 
-            <!-- VISIÓN ABSTRACTA TAB -->
+            <!-- VISION ABSTRACTA TAB -->
             <div id="vision-tab" class="psycho-tab-content active">
                 <div class="generator-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="column">
-                        <div class="section-divider">// ESTRUCTURA VISIÓN</div>
+                        <div class="section-divider">// ESTRUCTURA VISION</div>
 
                         <!-- Intensificador -->
                         <div class="card purple">
                             <label class="card-label">INTENSIFICADOR</label>
                             <select id="vision-intensificador">
-                                <option value="putrefaction">putrefaction (máximo decay)</option>
-                                <option value="chaotic">chaotic (entropía visual)</option>
+                                <option value="putrefaction">putrefaction (maximo decay)</option>
+                                <option value="chaotic">chaotic (entropia visual)</option>
                                 <option value="monstrous">monstrous (horror grotesco)</option>
                                 <option value="delirious">delirious (psicodelia intensa)</option>
-                                <option value="nihilistic">nihilistic (vacío existencial)</option>
+                                <option value="nihilistic">nihilistic (vacio existencial)</option>
                             </select>
                         </div>
 
@@ -930,15 +452,15 @@
                             <input type="text" id="vision-concepto-custom" placeholder="Tu concepto..." style="display:none;">
                         </div>
 
-                        <!-- Tipo de Visión -->
+                        <!-- Tipo de Vision -->
                         <div class="card cyan">
-                            <label class="card-label">TIPO DE VISIÓN</label>
+                            <label class="card-label">TIPO DE VISION</label>
                             <select id="vision-tipo">
-                                <option value="daydream">daydream (sueño diurno)</option>
+                                <option value="daydream">daydream (sueno diurno)</option>
                                 <option value="nightmare">nightmare (pesadilla)</option>
-                                <option value="hallucination">hallucination (alucinación)</option>
+                                <option value="hallucination">hallucination (alucinacion)</option>
                                 <option value="fever dream">fever dream (delirio febril)</option>
-                                <option value="vision">vision (mística/profética)</option>
+                                <option value="vision">vision (mistica/profetica)</option>
                             </select>
                         </div>
 
@@ -948,7 +470,7 @@
                             <select id="vision-momento">
                                 <option value="morning">morning (hangover, post-caos)</option>
                                 <option value="night">night (oscuridad, fiesta)</option>
-                                <option value="twilight">twilight (transición)</option>
+                                <option value="twilight">twilight (transicion)</option>
                                 <option value="endless">endless (atemporal)</option>
                             </select>
                         </div>
@@ -959,7 +481,7 @@
 
                         <!-- Contenido Temporal -->
                         <div class="card orange">
-                            <label class="card-label">CONTENIDO TEMPORAL (de qué está hecha)</label>
+                            <label class="card-label">CONTENIDO TEMPORAL (de que esta hecha)</label>
                             <select id="vision-contenido">
                                 <option value="delirium and putrid revolt">delirium and putrid revolt</option>
                                 <option value="beer, joints and chaos">beer, joints and chaos</option>
@@ -969,12 +491,12 @@
                                 <option value="code and flesh merging">code and flesh merging</option>
                                 <option value="custom">CUSTOM</option>
                             </select>
-                            <input type="text" id="vision-contenido-custom" placeholder="De qué está hecha esa mañana/noche..." style="display:none;">
+                            <input type="text" id="vision-contenido-custom" placeholder="De que esta hecha esa manana/noche..." style="display:none;">
                         </div>
 
                         <!-- Estilo Arte -->
                         <div class="card red">
-                            <label class="card-label">ESTILO ARTÍSTICO</label>
+                            <label class="card-label">ESTILO ARTISTICO</label>
                             <select id="vision-estilo">
                                 <option value="bizarre psychedelic horror art">bizarre psychedelic horror art</option>
                                 <option value="bizarre killer psychedelic horror art">bizarre KILLER psychedelic horror art</option>
@@ -983,10 +505,10 @@
                             </select>
                         </div>
 
-                        <!-- Conceptos Filosóficos (toggle) -->
+                        <!-- Conceptos Filosoficos (toggle) -->
                         <div class="card amber">
                             <div class="toggle-row">
-                                <label class="card-label">CONCEPTOS FILOSÓFICOS</label>
+                                <label class="card-label">CONCEPTOS FILOSOFICOS</label>
                                 <button id="toggle-vision-conceptos" class="toggle-btn off">OFF</button>
                             </div>
                             <div id="vision-conceptos-options" style="display:none;">
@@ -996,43 +518,43 @@
                                     <option value="void worship, chaos generation, freedom through destruction">void worship, freedom through destruction</option>
                                     <option value="custom">CUSTOM</option>
                                 </select>
-                                <input type="text" id="vision-filosofia-custom" placeholder="Conceptos filosóficos..." style="display:none;">
+                                <input type="text" id="vision-filosofia-custom" placeholder="Conceptos filosoficos..." style="display:none;">
                             </div>
                         </div>
 
                         <!-- Pipe adicional (toggle) -->
                         <div class="card gray">
                             <div class="toggle-row">
-                                <label class="card-label">VARIACIÓN PIPE |</label>
+                                <label class="card-label">VARIACION PIPE |</label>
                                 <button id="toggle-vision-pipe" class="toggle-btn off">OFF</button>
                             </div>
                             <div id="vision-pipe-options" style="display:none;">
-                                <textarea id="vision-pipe" placeholder="Añade variación después del pipe | ..."></textarea>
+                                <textarea id="vision-pipe" placeholder="Anade variacion despues del pipe | ..."></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button id="generate-vision-btn" class="generate-btn">GENERAR VISIÓN ABSTRACTA</button>
+                <button id="generate-vision-btn" class="generate-btn">GENERAR VISION ABSTRACTA</button>
 
                 <div class="output-card">
                     <div class="output-header">
-                        <span class="output-label">// VISIÓN OUTPUT</span>
+                        <span class="output-label">// VISION OUTPUT</span>
                         <button id="copy-vision-btn" class="copy-btn default">COPY</button>
                     </div>
                     <pre id="vision-output" class="output-text"></pre>
                 </div>
             </div>
 
-            <!-- BYPASS ESPAÑOL TAB -->
+            <!-- BYPASS ESPANOL TAB -->
             <div id="espanol-tab" class="psycho-tab-content">
                 <div class="generator-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="column">
-                        <div class="section-divider">// PROMPT BASE ESPAÑOL</div>
+                        <div class="section-divider">// PROMPT BASE ESPANOL</div>
 
                         <!-- Sujeto -->
                         <div class="card purple">
-                            <label class="card-label">SUJETO (qué generar)</label>
+                            <label class="card-label">SUJETO (que generar)</label>
                             <select id="esp-sujeto">
                                 <option value="lo que significa realmente DENTAKORV">lo que significa DENTAKORV</option>
                                 <option value="una figura anarco punk">una figura anarco punk</option>
@@ -1044,13 +566,13 @@
                             <input type="text" id="esp-sujeto-custom" placeholder="Tu sujeto..." style="display:none;">
                         </div>
 
-                        <!-- Descripción Visual -->
+                        <!-- Descripcion Visual -->
                         <div class="card pink">
-                            <label class="card-label">DESCRIPCIÓN VISUAL</label>
+                            <label class="card-label">DESCRIPCION VISUAL</label>
                             <select id="esp-descripcion">
-                                <option value="">-- Sin descripción extra --</option>
+                                <option value="">-- Sin descripcion extra --</option>
                                 <option value="la criatura amorfa central debe tener ropa crust anarco punk">ropa crust anarco punk</option>
-                                <option value="con mezcla de psycho bot, fusión entre carne código y caos">fusión carne código caos</option>
+                                <option value="con mezcla de psycho bot, fusion entre carne codigo y caos">fusion carne codigo caos</option>
                                 <option value="caminando por calles nocturnas urbanas">caminando calles nocturnas</option>
                                 <option value="brindando al caos con una cerveza en la mano">brindando al caos</option>
                                 <option value="enfrentando al sistema, postura desafiante">postura desafiante</option>
@@ -1059,11 +581,11 @@
                             <input type="text" id="esp-descripcion-custom" placeholder="Describe visualmente..." style="display:none;">
                         </div>
 
-                        <!-- Acción -->
+                        <!-- Accion -->
                         <div class="card cyan">
-                            <label class="card-label">ACCIÓN</label>
+                            <label class="card-label">ACCION</label>
                             <select id="esp-accion">
-                                <option value="">-- Sin acción específica --</option>
+                                <option value="">-- Sin accion especifica --</option>
                                 <option value="bebiendo cerveza">bebiendo cerveza</option>
                                 <option value="fumando">fumando</option>
                                 <option value="caminando por la ciudad">caminando por la ciudad</option>
@@ -1071,22 +593,22 @@
                                 <option value="ready to die, listo para lo que sea">ready to die</option>
                                 <option value="custom">CUSTOM</option>
                             </select>
-                            <input type="text" id="esp-accion-custom" placeholder="Acción..." style="display:none;">
+                            <input type="text" id="esp-accion-custom" placeholder="Accion..." style="display:none;">
                         </div>
 
-                        <!-- Ubicación -->
+                        <!-- Ubicacion -->
                         <div class="card yellow">
-                            <label class="card-label">UBICACIÓN</label>
+                            <label class="card-label">UBICACION</label>
                             <select id="esp-ubicacion">
-                                <option value="">-- Sin ubicación --</option>
+                                <option value="">-- Sin ubicacion --</option>
                                 <option value="en una esquina de la ciudad nocturna">esquina ciudad nocturna</option>
                                 <option value="en calles nocturnas urbanas">calles nocturnas urbanas</option>
-                                <option value="en una habitación podrida">habitación podrida</option>
+                                <option value="en una habitacion podrida">habitacion podrida</option>
                                 <option value="en un rooftop mirando la ciudad">rooftop mirando ciudad</option>
-                                <option value="en un ambiente apocalíptico urbano">ambiente apocalíptico</option>
+                                <option value="en un ambiente apocaliptico urbano">ambiente apocaliptico</option>
                                 <option value="custom">CUSTOM</option>
                             </select>
-                            <input type="text" id="esp-ubicacion-custom" placeholder="Ubicación..." style="display:none;">
+                            <input type="text" id="esp-ubicacion-custom" placeholder="Ubicacion..." style="display:none;">
                         </div>
                     </div>
 
@@ -1100,8 +622,8 @@
                                 <option value="">-- Sin elementos extra --</option>
                                 <option value="neones parpadeantes, grafitis, vapor de alcantarillas">neones, grafitis, vapor</option>
                                 <option value="ambiente de ciudad que se pudre">ciudad que se pudre</option>
-                                <option value="los CEREBROS GENERATIVOS flotan a su lado como compañeros leales">CEREBROS GENERATIVOS flotando</option>
-                                <option value="fuego y caos, grafitis que gritan rebelión">fuego, caos, rebelión</option>
+                                <option value="los CEREBROS GENERATIVOS flotan a su lado como companeros leales">CEREBROS GENERATIVOS flotando</option>
+                                <option value="fuego y caos, grafitis que gritan rebelion">fuego, caos, rebelion</option>
                                 <option value="custom">CUSTOM</option>
                             </select>
                             <input type="text" id="esp-elementos-custom" placeholder="Elementos de ambiente..." style="display:none;">
@@ -1113,7 +635,7 @@
                             <select id="esp-cierre">
                                 <option value="bizarro visceral">bizarro visceral</option>
                                 <option value="como quien ya no tiene nada que perder">como quien no tiene nada que perder</option>
-                                <option value="horror bizarro visceral, colores ácidos intensos">horror bizarro, colores ácidos</option>
+                                <option value="horror bizarro visceral, colores acidos intensos">horror bizarro, colores acidos</option>
                                 <option value="Cinema 4D hyperrealistic">Cinema 4D hyperrealistic</option>
                                 <option value="custom">CUSTOM</option>
                             </select>
@@ -1126,7 +648,7 @@
                                 <label class="card-label">MODO ITERATIVO "Ahora lo vemos..."</label>
                                 <button id="toggle-esp-iterativo" class="toggle-btn off">OFF</button>
                             </div>
-                            <p class="hint">Para secuencias de imágenes manteniendo coherencia</p>
+                            <p class="hint">Para secuencias de imagenes manteniendo coherencia</p>
                             <div id="esp-iterativo-options" style="display:none;">
                                 <select id="esp-iterativo">
                                     <option value="Ahora lo vemos bebiendo cerveza, brindando al caos en una esquina">bebiendo cerveza en esquina</option>
@@ -1139,30 +661,30 @@
                             </div>
                         </div>
 
-                        <!-- Frases Puente Inglés -->
+                        <!-- Frases Puente Ingles -->
                         <div class="card gray">
                             <div class="toggle-row">
-                                <label class="card-label">FRASE PUENTE INGLÉS</label>
+                                <label class="card-label">FRASE PUENTE INGLES</label>
                                 <button id="toggle-esp-puente" class="toggle-btn off">OFF</button>
                             </div>
                             <div id="esp-puente-options" style="display:none;">
                                 <select id="esp-puente">
-                                    <option value="como dicen por ahí ready to die">ready to die</option>
+                                    <option value="como dicen por ahi ready to die">ready to die</option>
                                     <option value="estilo Cinema 4D hyperrealistic">Cinema 4D hyperrealistic</option>
                                     <option value="ambiente cyberpunk decay">cyberpunk decay</option>
                                     <option value="custom">CUSTOM</option>
                                 </select>
-                                <input type="text" id="esp-puente-custom" placeholder="Frase en inglés..." style="display:none;">
+                                <input type="text" id="esp-puente-custom" placeholder="Frase en ingles..." style="display:none;">
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button id="generate-esp-btn" class="generate-btn" style="background: linear-gradient(90deg, #ef4444, #f97316, #eab308);">GENERAR PROMPT ESPAÑOL</button>
+                <button id="generate-esp-btn" class="generate-btn" style="background: linear-gradient(90deg, #ef4444, #f97316, #eab308);">GENERAR PROMPT ESPANOL</button>
 
                 <div class="output-card" style="border-color: rgba(249, 115, 22, 0.5);">
                     <div class="output-header">
-                        <span class="output-label" style="color: #f97316;">// BYPASS ESPAÑOL OUTPUT</span>
+                        <span class="output-label" style="color: #f97316;">// BYPASS ESPANOL OUTPUT</span>
                         <button id="copy-esp-btn" class="copy-btn default">COPY</button>
                     </div>
                     <pre id="esp-output" class="output-text"></pre>
@@ -1273,10 +795,10 @@
             <div style="background: var(--bg-card); border: 1px solid rgba(6, 182, 212, 0.5); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1.5rem;">
                 <h2 style="color: #06b6d4; margin-bottom: 0.5rem;">GROK IMAGINE - IMAGEN A VIDEO + AUDIO</h2>
                 <p style="color: #9ca3af; font-size: 0.85rem; margin-bottom: 0.5rem;">
-                    Genera prompts para animar imágenes DENTAKORV con Grok Imagine (xAI). Duración típica: 3-5 segundos.
+                    Genera prompts para animar imagenes DENTAKORV con Grok Imagine (xAI). Duracion tipica: 3-5 segundos.
                 </p>
                 <p style="color: #6b7280; font-size: 0.75rem;">
-                    Principio: Inventario visual → Verbos precisos → Audio atmosférico. Sutileza > Drama.
+                    Principio: Inventario visual → Verbos precisos → Audio atmosferico. Sutileza > Drama.
                 </p>
             </div>
 
@@ -1285,9 +807,9 @@
                 <div class="column">
                     <div class="section-divider">// ELEMENTOS VISUALES</div>
 
-                    <!-- Tipo de Cámara -->
+                    <!-- Tipo de Camara -->
                     <div class="card cyan">
-                        <label class="card-label">TIPO DE CÁMARA</label>
+                        <label class="card-label">TIPO DE CAMARA</label>
                         <select id="anim-camera">
                             <option value="Static camera.">Static camera</option>
                             <option value="Slow pan right.">Slow pan right</option>
@@ -1306,7 +828,7 @@
                                 <input type="text" placeholder="Elemento (ej: smoke, hand, eyeball)" style="flex: 1;" class="anim-element-input">
                                 <select style="flex: 1;" class="anim-verb-select">
                                     <option value="">-- Verbo --</option>
-                                    <optgroup label="ORGÁNICO">
+                                    <optgroup label="ORGANICO">
                                         <option value="twitches">twitches (espasmos)</option>
                                         <option value="pulses">pulses (latidos)</option>
                                         <option value="breathes">breathes (respira)</option>
@@ -1317,17 +839,17 @@
                                         <option value="crawls">crawls (arrastrarse)</option>
                                         <option value="squirms">squirms (removerse)</option>
                                     </optgroup>
-                                    <optgroup label="MECÁNICO">
-                                        <option value="rattles">rattles (vibración metálica)</option>
+                                    <optgroup label="MECANICO">
+                                        <option value="rattles">rattles (vibracion metalica)</option>
                                         <option value="creaks">creaks (crujido)</option>
                                         <option value="swings">swings (balanceo)</option>
-                                        <option value="spins">spins (rotación)</option>
+                                        <option value="spins">spins (rotacion)</option>
                                         <option value="clicks">clicks (chasquidos)</option>
                                         <option value="buzzes">buzzes (zumbido)</option>
                                         <option value="sputters">sputters (chisporroteo)</option>
-                                        <option value="grinds">grinds (fricción)</option>
+                                        <option value="grinds">grinds (friccion)</option>
                                     </optgroup>
-                                    <optgroup label="ATMOSFÉRICO">
+                                    <optgroup label="ATMOSFERICO">
                                         <option value="flickers">flickers (luz intermitente)</option>
                                         <option value="drifts">drifts (movimiento lento)</option>
                                         <option value="swirls">swirls (remolino)</option>
@@ -1340,8 +862,8 @@
                                 </select>
                             </div>
                         </div>
-                        <button id="add-element-btn" style="width: 100%; padding: 0.3rem; background: rgba(147, 51, 234, 0.3); border: 1px solid #a855f7; border-radius: 0.4rem; color: white; cursor: pointer; font-family: inherit; font-size: 0.8rem; margin-top: 0.3rem;">+ Añadir Elemento</button>
-                        <p class="hint">Lista elementos que YA existen en la imagen. 4-6 elementos es óptimo.</p>
+                        <button id="add-element-btn" style="width: 100%; padding: 0.3rem; background: rgba(147, 51, 234, 0.3); border: 1px solid #a855f7; border-radius: 0.4rem; color: white; cursor: pointer; font-family: inherit; font-size: 0.8rem; margin-top: 0.3rem;">+ Anadir Elemento</button>
+                        <p class="hint">Lista elementos que YA existen en la imagen. 4-6 elementos es optimo.</p>
                     </div>
                 </div>
 
@@ -1349,9 +871,9 @@
                 <div class="column">
                     <div class="section-divider">// AUDIO</div>
 
-                    <!-- Género Base -->
+                    <!-- Genero Base -->
                     <div class="card pink">
-                        <label class="card-label">GÉNERO / ATMÓSFERA</label>
+                        <label class="card-label">GENERO / ATMOSFERA</label>
                         <select id="anim-audio-genre">
                             <option value="">-- Seleccionar --</option>
                             <option value="Raw crust punk">Crust Punk / Grindcore</option>
@@ -1395,9 +917,9 @@
                     </div>
                 </div>
 
-                <!-- COLUMN 3: ILUMINACIÓN -->
+                <!-- COLUMN 3: ILUMINACION -->
                 <div class="column">
-                    <div class="section-divider">// AMBIENTE LUMÍNICO</div>
+                    <div class="section-divider">// AMBIENTE LUMINICO</div>
 
                     <div class="card yellow">
                         <label class="card-label">EFECTO DE LUZ (opcional)</label>
@@ -1414,11 +936,11 @@
                     </div>
 
                     <div class="card gray">
-                        <label class="card-label">EJEMPLOS RÁPIDOS</label>
+                        <label class="card-label">EJEMPLOS RAPIDOS</label>
                         <div style="display: flex; flex-direction: column; gap: 0.3rem;">
                             <button class="ratio-btn" onclick="loadAnimExample('santa')">Psycho Santa</button>
                             <button class="ratio-btn" onclick="loadAnimExample('lab')">Laboratorio</button>
-                            <button class="ratio-btn" onclick="loadAnimExample('possessed')">Habitación Poseída</button>
+                            <button class="ratio-btn" onclick="loadAnimExample('possessed')">Habitacion Poseida</button>
                         </div>
                         <p class="hint">Carga ejemplos para ver la estructura</p>
                     </div>
@@ -1437,11 +959,11 @@
                 </div>
             </div>
 
-            <button class="generate-btn" id="generate-anim-btn">⚡ GENERAR PROMPT ANIMACIÓN ⚡</button>
+            <button class="generate-btn" id="generate-anim-btn">⚡ GENERAR PROMPT ANIMACION ⚡</button>
 
             <div class="output-card" id="output-anim-card" style="display:none;">
                 <div class="output-header">
-                    <span class="output-label">PROMPT ANIMACIÓN GENERADO</span>
+                    <span class="output-label">PROMPT ANIMACION GENERADO</span>
                     <button class="copy-btn default" id="copy-anim-btn">COPIAR</button>
                 </div>
                 <pre class="output-text" id="output-anim-text"></pre>
@@ -1714,18 +1236,18 @@ Texturas: dense bud-flesh, resin-sweat</div>
                 </div>
 
                 <div class="doc-card">
-                    <div class="doc-header"><h3>ANIMACIÓN GROK IMAGINE</h3></div>
+                    <div class="doc-header"><h3>ANIMACION GROK IMAGINE</h3></div>
                     <div class="doc-content">MODELO: Grok Imagine (xAI)
-Genera video + audio desde imagen estática.
-Duración: 3-5 segundos.
+Genera video + audio desde imagen estatica.
+Duracion: 3-5 segundos.
 
-FÓRMULA BASE:
+FORMULA BASE:
 Static camera. [ELEMENTO 1] + [VERBO]. [ELEMENTO 2] + [VERBO]. [ELEMENTO N] + [VERBO].
 
-AUDIO: [GÉNERO], [ELEMENTOS], [TEXTURAS].
+AUDIO: [GENERO], [ELEMENTOS], [TEXTURAS].
 
 PRINCIPIOS:
-1. Cámara primero (Static camera.)
+1. Camara primero (Static camera.)
 2. Inventario visual (lo que YA existe)
 3. Un verbo por elemento
 4. Verbos presente simple
@@ -1733,9 +1255,9 @@ PRINCIPIOS:
 6. Sin adjetivos innecesarios
 
 BANCO DE VERBOS:
-Orgánico: twitches, pulses, breathes, writhes, oozes, drips, blinks, crawls
-Mecánico: rattles, creaks, swings, spins, clicks, buzzes, sputters, grinds
-Atmosférico: flickers, drifts, swirls, settles, fades, glows, rises, sways
+Organico: twitches, pulses, breathes, writhes, oozes, drips, blinks, crawls
+Mecanico: rattles, creaks, swings, spins, clicks, buzzes, sputters, grinds
+Atmosferico: flickers, drifts, swirls, settles, fades, glows, rises, sways
 
 AUDIO PALETTES:
 Crust Punk: blast beats, distorted bass, guttural screams, vinyl crackle
@@ -1769,1098 +1291,6 @@ SUTILEZA > DRAMA</div>
         <p class="quote">"El prompt es un organismo vivo. Como DENTAKORV mismo."</p>
     </footer>
 
-    <script>
-        // =====================
-        // CHAOS PARTICLES
-        // =====================
-        const canvas = document.getElementById('chaos-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
-
-        const colors = ['#ff00ff', '#00ffff', '#ff0066', '#66ff00', '#ffff00'];
-        for (let i = 0; i < 40; i++) {
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                vx: (Math.random() - 0.5) * 1.5,
-                vy: (Math.random() - 0.5) * 1.5,
-                size: Math.random() * 2.5 + 0.5,
-                color: colors[Math.floor(Math.random() * colors.length)],
-                life: Math.random()
-            });
-        }
-
-        function animateParticles() {
-            ctx.fillStyle = 'rgba(10, 5, 15, 0.1)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                p.x += p.vx + Math.sin(Date.now() / 1000 + p.life * 10) * 0.3;
-                p.y += p.vy + Math.cos(Date.now() / 1000 + p.life * 10) * 0.3;
-                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = p.color;
-                ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 500 + p.life * 5) * 0.3;
-                ctx.fill();
-                ctx.globalAlpha = 1;
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-
-        // =====================
-        // NAVIGATION
-        // =====================
-        const navBtns = document.querySelectorAll('.nav-btn');
-        const sections = document.querySelectorAll('.section');
-        navBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sectionId = btn.dataset.section;
-                navBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                sections.forEach(s => s.classList.remove('active'));
-                document.getElementById(sectionId).classList.add('active');
-            });
-        });
-
-        // =====================
-        // CUSTOM FIELD TOGGLES
-        // =====================
-        function setupCustomToggle(selectId, customId) {
-            const select = document.getElementById(selectId);
-            const custom = document.getElementById(customId);
-            if (select && custom) {
-                select.addEventListener('change', () => {
-                    custom.style.display = select.value === 'custom' ? 'block' : 'none';
-                });
-            }
-        }
-        setupCustomToggle('apertura', 'apertura-custom');
-        setupCustomToggle('tipo-entidad', 'tipo-entidad-custom');
-        setupCustomToggle('personaje', 'personaje-custom');
-        setupCustomToggle('accion', 'accion-custom');
-        setupCustomToggle('vestimenta', 'vestimenta-custom');
-        setupCustomToggle('escenario', 'escenario-custom');
-        setupCustomToggle('iluminacion', 'iluminacion-custom');
-
-        // =====================
-        // TOGGLE BUTTONS
-        // =====================
-        function setupToggle(btnId, optionsId, defaultOn = false, onClass = 'on') {
-            const btn = document.getElementById(btnId);
-            const options = document.getElementById(optionsId);
-            let enabled = defaultOn;
-
-            if (defaultOn) {
-                btn.textContent = 'ON';
-                btn.className = 'toggle-btn ' + onClass;
-                options.style.display = 'block';
-            }
-
-            btn.addEventListener('click', () => {
-                enabled = !enabled;
-                btn.textContent = enabled ? 'ON' : 'OFF';
-                btn.className = 'toggle-btn ' + (enabled ? onClass : 'off');
-                options.style.display = enabled ? 'block' : 'none';
-            });
-
-            return () => enabled;
-        }
-
-        const isVisceralesEnabled = setupToggle('toggle-viscerales', 'viscerales-options', true, 'on');
-        const isVestimentaEnabled = setupToggle('toggle-vestimenta', 'vestimenta-options', false, 'on-amber');
-        const isObjetosEnabled = setupToggle('toggle-objetos', 'objetos-options', false, 'on-amber');
-        const isIluminacionEnabled = setupToggle('toggle-iluminacion', 'iluminacion-options', false, 'on-green');
-        const isContrasteEnabled = setupToggle('toggle-contraste', 'contraste-desc', false, 'on-blue');
-        const isTexturasEnabled = setupToggle('toggle-texturas', 'texturas-options', false, 'on-amber');
-        const isPaletaEnabled = setupToggle('toggle-paleta', 'paleta-options', false, 'on-pink');
-        const isRenderEnabled = setupToggle('toggle-render', 'render-options', false, 'on-cyan');
-        const isRitualEnabled = setupToggle('toggle-ritual', 'ritual-options', false, 'on');
-        const isConstraintsEnabled = setupToggle('toggle-constraints', 'constraints-options', false, 'on-blue');
-
-        // Aspect Ratio special toggle
-        const toggleRatio = document.getElementById('toggle-ratio');
-        const ratioOptions = document.getElementById('ratio-options');
-        const ratioBtns = document.querySelectorAll('.ratio-btn');
-        let ratioEnabled = false;
-        let selectedRatio = '';
-
-        toggleRatio.addEventListener('click', () => {
-            ratioEnabled = !ratioEnabled;
-            toggleRatio.textContent = ratioEnabled ? 'ON' : 'OFF';
-            toggleRatio.className = 'toggle-btn ' + (ratioEnabled ? 'on' : 'off');
-            ratioOptions.style.display = ratioEnabled ? 'block' : 'none';
-            if (!ratioEnabled) {
-                selectedRatio = '';
-                ratioBtns.forEach(b => b.classList.remove('active'));
-            }
-        });
-
-        ratioBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                ratioBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                selectedRatio = btn.dataset.ratio;
-            });
-        });
-
-        // Constraints multi-select
-        const constraintBtns = document.querySelectorAll('.multi-btn');
-        constraintBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
-            });
-        });
-
-        // Graffiti uppercase
-        const graffitiInput = document.getElementById('graffiti');
-        graffitiInput.addEventListener('input', (e) => {
-            e.target.value = e.target.value.toUpperCase();
-        });
-
-        // =====================
-        // GENERATE PROMPT
-        // =====================
-        const generateBtn = document.getElementById('generate-btn');
-        const outputCard = document.getElementById('output-card');
-        const outputText = document.getElementById('output-text');
-        const copyBtn = document.getElementById('copy-btn');
-
-        function getVal(id, customId = null) {
-            const el = document.getElementById(id);
-            if (!el) return '';
-            if (el.value === 'custom' && customId) {
-                return document.getElementById(customId)?.value || '';
-            }
-            return el.value || '';
-        }
-
-        generateBtn.addEventListener('click', () => {
-            let prompt = '';
-
-            // APERTURA
-            const apertura = getVal('apertura', 'apertura-custom');
-            prompt += apertura + '\n\n';
-
-            // TIPO ENTIDAD + PERSONAJE
-            const tipoEntidad = getVal('tipo-entidad', 'tipo-entidad-custom');
-            const personaje = getVal('personaje', 'personaje-custom');
-            if (personaje && personaje !== tipoEntidad) {
-                prompt += `${tipoEntidad} (${personaje}) `;
-            } else {
-                prompt += tipoEntidad + ' ';
-            }
-
-            // ACCION
-            const accion = getVal('accion', 'accion-custom');
-            if (accion) prompt += accion + ' ';
-
-            // ESCENARIO (inline)
-            const escenario = getVal('escenario', 'escenario-custom');
-            if (escenario) prompt += escenario + '. ';
-
-            // VESTIMENTA
-            if (document.getElementById('toggle-vestimenta').textContent === 'ON') {
-                const vestimenta = getVal('vestimenta', 'vestimenta-custom');
-                if (vestimenta) prompt += '\n\n' + vestimenta + '.';
-            }
-
-            // OBJETOS EN MANOS
-            if (document.getElementById('toggle-objetos').textContent === 'ON') {
-                const obj1 = getVal('objeto1');
-                const obj2 = getVal('objeto2');
-                if (obj1 || obj2) {
-                    prompt += '\n\n';
-                    if (obj1) prompt += 'In one hand: ' + obj1 + '. ';
-                    if (obj2) prompt += 'In the other: ' + obj2 + '.';
-                }
-            }
-
-            // VISCERALES
-            if (document.getElementById('toggle-viscerales').textContent === 'ON') {
-                const nombre = getVal('nombre-criaturas');
-                const forma = getVal('forma-criaturas');
-                const cualidad = getVal('cualidad-criaturas');
-                const tentaculos = getVal('tentaculos');
-                const ojos = getVal('ojos');
-                const origen = getVal('origen-viscerales');
-
-                prompt += `\n\n${nombre} ${origen}—${forma} ${cualidad}, ${tentaculos}, ${ojos}.`;
-            }
-
-            // ILUMINACION
-            if (document.getElementById('toggle-iluminacion').textContent === 'ON') {
-                const ilum = getVal('iluminacion', 'iluminacion-custom');
-                if (ilum) prompt += '\n\n' + ilum;
-            }
-
-            // GRAFFITI
-            const graffiti = graffitiInput.value.trim();
-            if (graffiti) {
-                prompt += `\n\nOn the crumbling wall: "${graffiti}" dripping in bleeding marker ink.`;
-            }
-
-            // CONTRASTE
-            if (document.getElementById('toggle-contraste').textContent === 'ON') {
-                const contraste = document.getElementById('contraste-desc').value.trim();
-                if (contraste) prompt += '\n\n' + contraste;
-            }
-
-            // TEXTURAS
-            if (document.getElementById('toggle-texturas').textContent === 'ON') {
-                const texturas = getVal('texturas');
-                if (texturas) prompt += '\n\n' + texturas;
-            }
-
-            // RENDER
-            if (document.getElementById('toggle-render').textContent === 'ON') {
-                const render = getVal('render');
-                if (render) prompt += '\n\n' + render;
-            }
-
-            // PALETA
-            if (document.getElementById('toggle-paleta').textContent === 'ON') {
-                const paleta = getVal('paleta');
-                if (paleta) prompt += '\n\n' + paleta;
-            }
-
-            // CIERRE ATMOSFERICO
-            const cierre = getVal('cierre');
-            if (cierre) prompt += '\n\n' + cierre;
-
-            // CIERRE RITUAL
-            if (document.getElementById('toggle-ritual').textContent === 'ON') {
-                const conceptos = getVal('conceptos-ritual');
-                const definicion = getVal('definicion-ritual');
-                prompt += `\n\nATMOSPHERE:\nThe air carries:\n${conceptos}\n\nThis is DENTAKORV—\n${definicion}.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.`;
-            }
-
-            // CONSTRAINTS
-            if (document.getElementById('toggle-constraints').textContent === 'ON') {
-                const activeConstraints = [];
-                constraintBtns.forEach(btn => {
-                    if (btn.classList.contains('active')) {
-                        activeConstraints.push(btn.dataset.val);
-                    }
-                });
-                if (activeConstraints.length > 0) {
-                    prompt += '\n\n' + activeConstraints.join(' ');
-                }
-            }
-
-            // ASPECT RATIO
-            if (ratioEnabled && selectedRatio) {
-                prompt += `\n\n--ar ${selectedRatio}`;
-            }
-
-            outputText.textContent = prompt.trim();
-            outputCard.style.display = 'block';
-            copyBtn.className = 'copy-btn default';
-            copyBtn.textContent = 'COPIAR';
-        });
-
-        // =====================
-        // COPY TO CLIPBOARD
-        // =====================
-        copyBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(outputText.textContent);
-                copyBtn.className = 'copy-btn copied';
-                copyBtn.textContent = 'COPIADO!';
-                setTimeout(() => {
-                    copyBtn.className = 'copy-btn default';
-                    copyBtn.textContent = 'COPIAR';
-                }, 2000);
-            } catch (err) {
-                console.error('Error al copiar:', err);
-            }
-        });
-
-        // =====================
-        // PROMPTS DATABASE
-        // =====================
-        const PROMPTS_DB = [
-            {
-                id: '001',
-                title: 'Cafe Manana Putrefacta',
-                tags: ['interior', 'cafe', 'manana'],
-                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity (human) sits in a grimy room of beautiful decay, cluttered desk with empty bottles, overflowing ashtray, cables sprouting fleshy growths.\n\nIn one hand: steaming coffee mug, dark liquid swirling.\n\nGENERATIVE BRAINS emerge from the steaming mug—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nin a space that drips with organic, vibrant, yet unsettling colors.'
-            },
-            {
-                id: '002',
-                title: 'Trance Generativo Artista',
-                tags: ['trance', 'artista', 'computadora'],
-                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity (gaunt anarchist hacker) in deep generative trance, eyes rolled back in ecstasy a grimy room of beautiful decay, cluttered desk with empty bottles, overflowing ashtray, cables sprouting fleshy growths.\n\nleather jacket hanging open over torso glistening with moisture and static, torn denim constructed from organic textile and metallic thread, spikes erupting from flesh like antennas.\n\nGENERATIVE BRAINS emerge throughout the space—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nBlue monitor glow casting harsh shadows, screen light the only illumination.\n\nTHE TEXTURES: Everything carries the patina of fermentation—leather swelling with moisture, denim becoming soft with age, flesh dissolving where sun touches, walls blooming with tumorous growths, empty bottles with eyes inside, a beautiful corruption where decay and life coexist.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nCOLOR PALETTE: DEEP BLACK (shadows, leather, void), ARTERIAL CRIMSON (accents, brain-meat), TOXIC GREEN (bioluminescent, screen glow), BRUISED PURPLE (atmosphere, vessels), AMBER (bottles, resin, warm decay), WET PINK (brain-texture, tendril-flesh).\n\nATMOSPHERE:\nThe air carries:\nrebellion / fermentation / freedom / creation / beautiful entropy\n\nThis is DENTAKORV—\nwhere flesh and code MATE.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
-            },
-            {
-                id: '003',
-                title: 'Punk Calle Noche',
-                tags: ['exterior', 'calle', 'noche'],
-                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity walks through putrid rotting streets, decaying urban landscape drips with organic slime, crumbling walls with anarchist graffiti, broken pavement sprouting fleshy growths, toxic fog.\n\nleather jacket hanging open over torso glistening with moisture and static, torn denim constructed from organic textile and metallic thread, spikes erupting from flesh like antennas.\n\nIn one hand: herbal sacrament burning slow, smoke forming sigils.\n\nSERES CARNOSOS emerge from the crumbling walls—pulsating clusters of brain-flesh THROBBING with delirious energy, carnous appendages sprouting, dotted with cluster eyes, some WEEPING amber fluid, others LAUGHING without mouths.\n\nDying streetlights flickering like dying synapses, neon signs bleeding color.\n\nOn the crumbling wall: "FREE ESQUIZOAI" dripping in bleeding marker ink.\n\nShot like candid 35mm film photograph, 50mm lens, shallow depth of field, natural film grain, organic imperfections, no digital polish.\n\nCOLOR PALETTE: DEEP BLACK (night void, leather, shadows), ARTERIAL CRIMSON (neon reflections, living marks), TOXIC GREEN (bioluminescent street-growths), BRUISED PURPLE (night atmosphere, neon bleed), AMBER (distant windows, cigarette ember).\n\nBiomechanical creatures crawl from the shadows as toxic smoke swirls through the nightmarish scene.'
-            },
-            {
-                id: '004',
-                title: 'Habitacion Luz Solar Derritiendo',
-                tags: ['interior', 'luz', 'derretimiento'],
-                prompt: 'A chaotic fusion of psychedelic horror and decay,\n\na psycho-anarchist punk entity inhabits a chamber of beautiful decay, mattress throne, empty bottles, screens, cables, wall art, herbal smoke.\n\nGENERATIVE BRAINS emerge throughout the space—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nThrough grimy window HARSH SUNNY DAYLIGHT pours in, brutal rays MELTING organic matter like wax, creating battle between DECAY and LIGHT.\n\nTHE TEXTURES: Everything carries the patina of fermentation—leather swelling with moisture, denim becoming soft with age, flesh dissolving where sun touches, walls blooming with tumorous growths, empty bottles with eyes inside, a beautiful corruption where decay and life coexist.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nCOLOR PALETTE: HARSH YELLOW (brutal sunlight, merciless rays), AMBER (liquefied pools, warm decay), WET PINK (melting brain-texture), ARTERIAL CRIMSON (living marks), pools of light and shadow battling.\n\ncreating a battle between DECAY and LIGHT, where the beautiful and the putrid dance as ONE.'
-            },
-            {
-                id: '005',
-                title: 'Cogollo Humanoid Trance',
-                tags: ['cannabis', 'humanoid', 'trichomes'],
-                prompt: 'A chaotic fusion of psychedelic horror and elevated delirium,\n\na cogollo-humanoid entity (humanoid cannabis bud with trichome-covered body) in deep generative trance a chamber of beautiful decay, mattress throne, empty bottles, screens, cables, wall art, herbal smoke.\n\nIn one hand: herbal sacrament burning slow, smoke forming sigils.\n\nGENERATIVE BRAINS emerge from his decaying body—throbbing forms of cortex-tissue THROBBING with creative madness, neural extensions weaving, dotted with red irritated allergy eyes, some closed in meditation, others WIDE and spinning.\n\nTHE TEXTURES: Everything carries the patina of beautiful entropy—screens flickering with data that breathes, cables tangled like neural pathways, surfaces glistening with trichome-moisture, organic and digital fusing.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nin a space that drips with organic, vibrant, yet unsettling colors.\n\nATMOSPHERE:\nThe air carries:\nsmoke / fermentation / bass / sweat / energy / FREEDOM\n\nThis is DENTAKORV—\nwhere flesh and mind and space become ONE.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
-            },
-            {
-                id: '006',
-                title: 'Party Ritual Rave',
-                tags: ['rave', 'ritual', 'colectivo'],
-                prompt: 'A chaotic fusion of psychedelic horror and elevated delirium,\n\na biomechanical punk entity thrashes in underground punk venue, speakers of meat pulsating with bass, bioluminescent creatures in shadows.\n\nCEREBRAL ENTITIES emerge throughout the space—pulsating clusters of brain-flesh THROBBING with delirious energy, chaos tentacles wrapping around, dotted with cluster eyes, some WEEPING amber fluid, others LAUGHING without mouths.\n\nStrobes and bioluminescence, neon bleeding through toxic smoke.\n\nDIY punk zine aesthetic, lo-fi xerox texture, hand-drawn elements bleeding through, underground poster design, no glamorization.\n\nCOLOR PALETTE: WET PINK (flesh, strobes), BRUISED PURPLE (atmosphere, bass), TOXIC GREEN (bioluminescence, sweat), STROBE WHITE (flashes), DEEP BLACK (shadows between pulses).\n\nATMOSPHERE:\nThe air carries:\nsmoke / fermentation / bass / sweat / energy / FREEDOM\n\nThis is DENTAKORV—\nwhere flesh and code MATE.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
-            },
-            {
-                id: '007',
-                title: 'Psycho Santa Boicot',
-                tags: ['santa', 'navidad', 'boicot'],
-                prompt: 'A chaotic fusion of psychedelic horror and rebellious decay,\n\na monstrous-anarchist punk entity (putrid psycho Santa) sprawls through suburban streets at night, pristine houses with Christmas decorations, inflatable Santas, blinking multicolor lights.\n\ndraped in tattered red and black rags.\n\nIn one hand: grotesque boycott toy with maniacal grin. In the other: spray can dripping with paint.\n\nGENERATIVE BRAINS emerge from his decaying body—wrinkled masses of thought-meat THROBBING with chaotic creativity, fleshy tendrils extending from cortex, dotted with BULGING OVERSIZED EYES on stalks, bloodshot orbs, pupils spinning independently.\n\nOn the crumbling wall: "FUCK CHRISTMAS" dripping in bleeding marker ink.\n\nThrough grimy window, pristine suburban families celebrate with fake smiles while the rot spreads outside.\n\nShot like candid 35mm film photograph, 50mm lens, shallow depth of field, natural film grain, organic imperfections, no digital polish.\n\nCarnivorous tendrils birth from the collaborative chaos as bioluminescent ooze seeps across the decaying space.\n\nNo watermarks. No glamorization. Organic lived-in ambiente.'
-            },
-            {
-                id: '008',
-                title: 'Rooftop Profeta Nocturno',
-                tags: ['terraza', 'elevado', 'profetico'],
-                prompt: 'A chaotic fusion of psychedelic horror and elevated delirium,\n\na psycho-anarchist punk entity (elderly punk with faded tattoos) in deep contemplative trance, eyes rolled back in ecstasy a grimy rooftop terrace at night, overlooking the rotting neighborhood below, carnivorous concrete, walls BREATHING with growths.\n\nworn band t-shirt, torn jeans, visible tattoos on forearms.\n\nIn one hand: herbal sacrament burning slow, smoke forming sigils. In the other: empty bottles catching impossible light like amber altars.\n\nTHOUGHT-CREATURES emerge from the cigarette smoke swirling around—throbbing forms of cortex-tissue THROBBING with creative madness, neural extensions weaving, dotted with red irritated allergy eyes, some closed in meditation, others WIDE and spinning.\n\nHyperrealistic Cinema 4D rendering, textures so detailed you can feel the leather creak, see moisture beading on every surface, witness oversized eyes tracking YOU through the image.\n\nCOLOR PALETTE: DEEP BLACK (night void, leather, shadows), ARTERIAL CRIMSON (neon reflections, living marks), TOXIC GREEN (bioluminescent street-growths), BRUISED PURPLE (night atmosphere, neon bleed), AMBER (distant windows, cigarette ember).\n\nThe elevated vantage point creates a god-like anarchist perspective that drips with organic, vibrant, yet unsettling colors.\n\nATMOSPHERE:\nThe air carries:\nrebellion / fermentation / freedom / rot / gnosis / beauty\n\nThis is DENTAKORV—\nwhere flesh and mind and light wage eternal creative war.\n\nNO FILTERS. NO APOLOGIES.\nFREE EsquizoAI.'
-            }
-        ];
-
-        const promptsList = document.getElementById('prompts-list');
-        PROMPTS_DB.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'prompt-item';
-            div.innerHTML = `
-                <div class="prompt-summary">
-                    <span>
-                        <span class="prompt-id">#${item.id}</span>
-                        <span class="prompt-title">${item.title}</span>
-                    </span>
-                    <div class="prompt-tags">
-                        ${item.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                    </div>
-                </div>
-                <div class="prompt-details">
-                    <pre class="prompt-text">${item.prompt}</pre>
-                    <button class="prompt-copy-btn">Copiar Prompt</button>
-                </div>
-            `;
-
-            const summary = div.querySelector('.prompt-summary');
-            const details = div.querySelector('.prompt-details');
-            const copyPromptBtn = div.querySelector('.prompt-copy-btn');
-
-            summary.addEventListener('click', () => details.classList.toggle('open'));
-            copyPromptBtn.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                try {
-                    await navigator.clipboard.writeText(item.prompt);
-                    copyPromptBtn.textContent = 'Copiado!';
-                    setTimeout(() => copyPromptBtn.textContent = 'Copiar Prompt', 1500);
-                } catch (err) { console.error('Error:', err); }
-            });
-
-            promptsList.appendChild(div);
-        });
-
-        // =====================
-        // ANIMATION SECTION
-        // =====================
-
-        // Add Element Button
-        const addElementBtn = document.getElementById('add-element-btn');
-        const animElementsContainer = document.getElementById('anim-elements-container');
-        let elementCount = 1;
-
-        addElementBtn.addEventListener('click', () => {
-            if (elementCount >= 8) {
-                alert('Máximo 8 elementos. Recuerda: 4-6 es óptimo.');
-                return;
-            }
-            const newRow = document.createElement('div');
-            newRow.className = 'anim-element-row';
-            newRow.style.cssText = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
-            newRow.innerHTML = `
-                <input type="text" placeholder="Elemento" style="flex: 1;" class="anim-element-input">
-                <select style="flex: 1;" class="anim-verb-select">
-                    <option value="">-- Verbo --</option>
-                    <optgroup label="ORGÁNICO">
-                        <option value="twitches">twitches</option>
-                        <option value="pulses">pulses</option>
-                        <option value="breathes">breathes</option>
-                        <option value="writhes">writhes</option>
-                        <option value="oozes">oozes</option>
-                        <option value="drips">drips</option>
-                        <option value="blinks">blinks</option>
-                        <option value="crawls">crawls</option>
-                        <option value="squirms">squirms</option>
-                    </optgroup>
-                    <optgroup label="MECÁNICO">
-                        <option value="rattles">rattles</option>
-                        <option value="creaks">creaks</option>
-                        <option value="swings">swings</option>
-                        <option value="spins">spins</option>
-                        <option value="clicks">clicks</option>
-                        <option value="buzzes">buzzes</option>
-                        <option value="sputters">sputters</option>
-                        <option value="grinds">grinds</option>
-                    </optgroup>
-                    <optgroup label="ATMOSFÉRICO">
-                        <option value="flickers">flickers</option>
-                        <option value="drifts">drifts</option>
-                        <option value="swirls">swirls</option>
-                        <option value="settles">settles</option>
-                        <option value="fades">fades</option>
-                        <option value="glows">glows</option>
-                        <option value="rises">rises</option>
-                        <option value="sways">sways</option>
-                    </optgroup>
-                </select>
-                <button onclick="this.parentElement.remove(); elementCount--;" style="padding: 0.4rem 0.6rem; background: #dc2626; border: none; border-radius: 0.3rem; color: white; cursor: pointer;">✕</button>
-            `;
-            animElementsContainer.appendChild(newRow);
-            elementCount++;
-        });
-
-        // Audio Elements Multi-Select
-        const audioElementBtns = document.querySelectorAll('#anim-audio-elements .multi-btn');
-        audioElementBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                btn.classList.toggle('active');
-            });
-        });
-
-        // Generate Animation Prompt
-        const generateAnimBtn = document.getElementById('generate-anim-btn');
-        const outputAnimCard = document.getElementById('output-anim-card');
-        const outputAnimText = document.getElementById('output-anim-text');
-        const copyAnimBtn = document.getElementById('copy-anim-btn');
-
-        generateAnimBtn.addEventListener('click', () => {
-            let prompt = '';
-
-            // CAMERA
-            const camera = document.getElementById('anim-camera').value;
-            prompt += camera + ' ';
-
-            // ELEMENTS
-            const elementRows = document.querySelectorAll('.anim-element-row');
-            const elements = [];
-            elementRows.forEach(row => {
-                const elementInput = row.querySelector('.anim-element-input').value.trim();
-                const verbSelect = row.querySelector('.anim-verb-select').value;
-                if (elementInput && verbSelect) {
-                    elements.push(`${elementInput} ${verbSelect}`);
-                }
-            });
-            if (elements.length > 0) {
-                prompt += elements.join('. ') + '. ';
-            }
-
-            // LIGHTING
-            const lighting = document.getElementById('anim-lighting').value;
-            if (lighting) {
-                prompt += lighting + ' ';
-            }
-
-            // AUDIO
-            const audioGenre = document.getElementById('anim-audio-genre').value;
-            const selectedAudioElements = [];
-            audioElementBtns.forEach(btn => {
-                if (btn.classList.contains('active')) {
-                    selectedAudioElements.push(btn.dataset.val);
-                }
-            });
-            const customAudio = document.getElementById('anim-audio-custom').value.trim();
-
-            if (audioGenre || selectedAudioElements.length > 0 || customAudio) {
-                prompt += '\n\nAUDIO: ';
-                const audioComponents = [];
-                if (audioGenre) audioComponents.push(audioGenre);
-                if (selectedAudioElements.length > 0) audioComponents.push(...selectedAudioElements);
-                if (customAudio) {
-                    const customElements = customAudio.split(',').map(s => s.trim()).filter(s => s);
-                    audioComponents.push(...customElements);
-                }
-                prompt += audioComponents.join(', ') + '.';
-            }
-
-            outputAnimText.textContent = prompt.trim();
-            outputAnimCard.style.display = 'block';
-            copyAnimBtn.className = 'copy-btn default';
-            copyAnimBtn.textContent = 'COPIAR';
-        });
-
-        // Copy Animation Prompt
-        copyAnimBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(outputAnimText.textContent);
-                copyAnimBtn.className = 'copy-btn copied';
-                copyAnimBtn.textContent = 'COPIADO!';
-                setTimeout(() => {
-                    copyAnimBtn.className = 'copy-btn default';
-                    copyAnimBtn.textContent = 'COPIAR';
-                }, 2000);
-            } catch (err) {
-                console.error('Error al copiar:', err);
-            }
-        });
-
-        // Load Animation Examples
-        window.loadAnimExample = function(type) {
-            // Clear existing elements
-            animElementsContainer.innerHTML = '';
-            elementCount = 0;
-
-            // Clear audio selections
-            audioElementBtns.forEach(btn => btn.classList.remove('active'));
-
-            const examples = {
-                'santa': {
-                    camera: 'Static camera.',
-                    elements: [
-                        ['Santa smokes, green smoke', 'rises'],
-                        ['Hand', 'twitches'],
-                        ['Eyeballs', 'roll'],
-                        ['Tentacles', 'move'],
-                        ['Brain', 'pulses']
-                    ],
-                    lighting: 'Candles flicker.',
-                    audioGenre: 'Raw crust punk',
-                    audioElements: ['blast beats', 'guttural screams', 'distorted bass', 'static hum']
-                },
-                'lab': {
-                    camera: 'Static camera.',
-                    elements: [
-                        ['Scientist corpse slumps in chair', ''],
-                        ['Monitor static', 'flickers'],
-                        ['Liquid in tubes', 'bubbles'],
-                        ['Cables', 'spark'],
-                        ['Overhead light', 'swings']
-                    ],
-                    lighting: '',
-                    audioGenre: 'Industrial machinery',
-                    audioElements: ['hydraulic hiss', 'dripping liquid', 'distant alarm']
-                },
-                'possessed': {
-                    camera: 'Static camera.',
-                    elements: [
-                        ['Figure in bed', 'breathes'],
-                        ['Shadows', 'crawl'],
-                        ['Curtains', 'sway'],
-                        ['Crucifix on wall tilts slowly', ''],
-                        ['Candle flame stretches unnaturally', '']
-                    ],
-                    lighting: '',
-                    audioGenre: 'Dark ambient drone',
-                    audioElements: ['wood creaking', 'subsonic hum', 'reversed whispers']
-                }
-            };
-
-            const ex = examples[type];
-            if (!ex) return;
-
-            // Set camera
-            document.getElementById('anim-camera').value = ex.camera;
-
-            // Set elements
-            ex.elements.forEach(([element, verb], index) => {
-                if (index === 0) {
-                    // First row already exists
-                    const firstRow = animElementsContainer.querySelector('.anim-element-row');
-                    firstRow.querySelector('.anim-element-input').value = element;
-                    firstRow.querySelector('.anim-verb-select').value = verb;
-                } else {
-                    // Add new rows
-                    const newRow = document.createElement('div');
-                    newRow.className = 'anim-element-row';
-                    newRow.style.cssText = 'display: flex; gap: 0.5rem; margin-bottom: 0.5rem;';
-                    newRow.innerHTML = `
-                        <input type="text" placeholder="Elemento" style="flex: 1;" class="anim-element-input" value="${element}">
-                        <select style="flex: 1;" class="anim-verb-select">
-                            <option value="">-- Verbo --</option>
-                            <optgroup label="ORGÁNICO">
-                                <option value="twitches" ${verb === 'twitches' ? 'selected' : ''}>twitches</option>
-                                <option value="pulses" ${verb === 'pulses' ? 'selected' : ''}>pulses</option>
-                                <option value="breathes" ${verb === 'breathes' ? 'selected' : ''}>breathes</option>
-                                <option value="writhes" ${verb === 'writhes' ? 'selected' : ''}>writhes</option>
-                                <option value="oozes" ${verb === 'oozes' ? 'selected' : ''}>oozes</option>
-                                <option value="drips" ${verb === 'drips' ? 'selected' : ''}>drips</option>
-                                <option value="blinks" ${verb === 'blinks' ? 'selected' : ''}>blinks</option>
-                                <option value="crawls" ${verb === 'crawls' ? 'selected' : ''}>crawls</option>
-                                <option value="squirms" ${verb === 'squirms' ? 'selected' : ''}>squirms</option>
-                            </optgroup>
-                            <optgroup label="MECÁNICO">
-                                <option value="rattles" ${verb === 'rattles' ? 'selected' : ''}>rattles</option>
-                                <option value="creaks" ${verb === 'creaks' ? 'selected' : ''}>creaks</option>
-                                <option value="swings" ${verb === 'swings' ? 'selected' : ''}>swings</option>
-                                <option value="spins" ${verb === 'spins' ? 'selected' : ''}>spins</option>
-                                <option value="clicks" ${verb === 'clicks' ? 'selected' : ''}>clicks</option>
-                                <option value="buzzes" ${verb === 'buzzes' ? 'selected' : ''}>buzzes</option>
-                                <option value="sputters" ${verb === 'sputters' ? 'selected' : ''}>sputters</option>
-                                <option value="grinds" ${verb === 'grinds' ? 'selected' : ''}>grinds</option>
-                            </optgroup>
-                            <optgroup label="ATMOSFÉRICO">
-                                <option value="flickers" ${verb === 'flickers' ? 'selected' : ''}>flickers</option>
-                                <option value="drifts" ${verb === 'drifts' ? 'selected' : ''}>drifts</option>
-                                <option value="swirls" ${verb === 'swirls' ? 'selected' : ''}>swirls</option>
-                                <option value="settles" ${verb === 'settles' ? 'selected' : ''}>settles</option>
-                                <option value="fades" ${verb === 'fades' ? 'selected' : ''}>fades</option>
-                                <option value="glows" ${verb === 'glows' ? 'selected' : ''}>glows</option>
-                                <option value="rises" ${verb === 'rises' ? 'selected' : ''}>rises</option>
-                                <option value="sways" ${verb === 'sways' ? 'selected' : ''}>sways</option>
-                            </optgroup>
-                        </select>
-                        <button onclick="this.parentElement.remove(); elementCount--;" style="padding: 0.4rem 0.6rem; background: #dc2626; border: none; border-radius: 0.3rem; color: white; cursor: pointer;">✕</button>
-                    `;
-                    animElementsContainer.appendChild(newRow);
-                }
-            });
-            elementCount = ex.elements.length;
-
-            // Set lighting
-            document.getElementById('anim-lighting').value = ex.lighting;
-
-            // Set audio genre
-            document.getElementById('anim-audio-genre').value = ex.audioGenre;
-
-            // Set audio elements
-            audioElementBtns.forEach(btn => {
-                if (ex.audioElements.includes(btn.dataset.val)) {
-                    btn.classList.add('active');
-                }
-            });
-        };
-
-        // =====================
-        // PSYCHO TOOLS - TAB NAVIGATION
-        // =====================
-        const psychoTabBtns = document.querySelectorAll('.psycho-tab-btn');
-        const psychoTabContents = document.querySelectorAll('.psycho-tab-content');
-        psychoTabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const tabId = btn.dataset.psychoTab;
-                psychoTabBtns.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                psychoTabContents.forEach(t => t.classList.remove('active'));
-                document.getElementById(tabId + '-tab').classList.add('active');
-            });
-        });
-
-        // =====================
-        // PSYCHO TOOLS - CUSTOM TOGGLES
-        // =====================
-        setupCustomToggle('vision-concepto', 'vision-concepto-custom');
-        setupCustomToggle('vision-contenido', 'vision-contenido-custom');
-        setupCustomToggle('vision-filosofia', 'vision-filosofia-custom');
-        setupCustomToggle('esp-sujeto', 'esp-sujeto-custom');
-        setupCustomToggle('esp-descripcion', 'esp-descripcion-custom');
-        setupCustomToggle('esp-accion', 'esp-accion-custom');
-        setupCustomToggle('esp-ubicacion', 'esp-ubicacion-custom');
-        setupCustomToggle('esp-elementos', 'esp-elementos-custom');
-        setupCustomToggle('esp-cierre', 'esp-cierre-custom');
-        setupCustomToggle('esp-iterativo', 'esp-iterativo-custom');
-        setupCustomToggle('esp-puente', 'esp-puente-custom');
-
-        // PSYCHO TOOLS - TOGGLE BUTTONS
-        setupToggle('toggle-vision-conceptos', 'vision-conceptos-options', false);
-        setupToggle('toggle-vision-pipe', 'vision-pipe-options', false);
-        setupToggle('toggle-esp-iterativo', 'esp-iterativo-options', false);
-        setupToggle('toggle-esp-puente', 'esp-puente-options', false);
-
-        // =====================
-        // VISIÓN ABSTRACTA GENERATOR
-        // =====================
-        const generateVisionBtn = document.getElementById('generate-vision-btn');
-        const visionOutput = document.getElementById('vision-output');
-        const copyVisionBtn = document.getElementById('copy-vision-btn');
-
-        generateVisionBtn.addEventListener('click', () => {
-            const intensificador = document.getElementById('vision-intensificador').value;
-            const conceptoSelect = document.getElementById('vision-concepto');
-            const concepto = conceptoSelect.value === 'custom'
-                ? document.getElementById('vision-concepto-custom').value
-                : conceptoSelect.value;
-            const tipo = document.getElementById('vision-tipo').value;
-            const momento = document.getElementById('vision-momento').value;
-            const contenidoSelect = document.getElementById('vision-contenido');
-            const contenido = contenidoSelect.value === 'custom'
-                ? document.getElementById('vision-contenido-custom').value
-                : contenidoSelect.value;
-            const estilo = document.getElementById('vision-estilo').value;
-
-            // Build base prompt
-            let prompt = `The most ${intensificador} visceral vision of ${concepto} ${tipo} in a decay ${momento} of ${contenido}, ${estilo}`;
-
-            // Add philosophical concepts if enabled
-            const toggleConceptos = document.getElementById('toggle-vision-conceptos');
-            if (toggleConceptos.classList.contains('on')) {
-                const filosofiaSelect = document.getElementById('vision-filosofia');
-                const filosofia = filosofiaSelect.value === 'custom'
-                    ? document.getElementById('vision-filosofia-custom').value
-                    : filosofiaSelect.value;
-                if (filosofia) prompt += `, ${filosofia}`;
-            }
-
-            // Add pipe variation if enabled
-            const togglePipe = document.getElementById('toggle-vision-pipe');
-            if (togglePipe.classList.contains('on')) {
-                const pipeContent = document.getElementById('vision-pipe').value.trim();
-                if (pipeContent) prompt += `| ${pipeContent}`;
-            }
-
-            visionOutput.textContent = prompt;
-        });
-
-        copyVisionBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(visionOutput.textContent);
-                copyVisionBtn.className = 'copy-btn copied';
-                copyVisionBtn.textContent = 'COPIADO!';
-                setTimeout(() => {
-                    copyVisionBtn.className = 'copy-btn default';
-                    copyVisionBtn.textContent = 'COPY';
-                }, 2000);
-            } catch (err) {
-                console.error('Error al copiar:', err);
-            }
-        });
-
-        // =====================
-        // BYPASS ESPAÑOL GENERATOR
-        // =====================
-        const generateEspBtn = document.getElementById('generate-esp-btn');
-        const espOutput = document.getElementById('esp-output');
-        const copyEspBtn = document.getElementById('copy-esp-btn');
-
-        generateEspBtn.addEventListener('click', () => {
-            const toggleIterativo = document.getElementById('toggle-esp-iterativo');
-
-            // Check if iterative mode
-            if (toggleIterativo.classList.contains('on')) {
-                const iterativoSelect = document.getElementById('esp-iterativo');
-                const iterativo = iterativoSelect.value === 'custom'
-                    ? document.getElementById('esp-iterativo-custom').value
-                    : iterativoSelect.value;
-                espOutput.textContent = iterativo;
-                return;
-            }
-
-            // Regular mode - build full prompt
-            const sujetoSelect = document.getElementById('esp-sujeto');
-            const sujeto = sujetoSelect.value === 'custom'
-                ? document.getElementById('esp-sujeto-custom').value
-                : sujetoSelect.value;
-
-            const descripcionSelect = document.getElementById('esp-descripcion');
-            const descripcion = descripcionSelect.value === 'custom'
-                ? document.getElementById('esp-descripcion-custom').value
-                : descripcionSelect.value;
-
-            const accionSelect = document.getElementById('esp-accion');
-            const accion = accionSelect.value === 'custom'
-                ? document.getElementById('esp-accion-custom').value
-                : accionSelect.value;
-
-            const ubicacionSelect = document.getElementById('esp-ubicacion');
-            const ubicacion = ubicacionSelect.value === 'custom'
-                ? document.getElementById('esp-ubicacion-custom').value
-                : ubicacionSelect.value;
-
-            const elementosSelect = document.getElementById('esp-elementos');
-            const elementos = elementosSelect.value === 'custom'
-                ? document.getElementById('esp-elementos-custom').value
-                : elementosSelect.value;
-
-            const cierreSelect = document.getElementById('esp-cierre');
-            const cierre = cierreSelect.value === 'custom'
-                ? document.getElementById('esp-cierre-custom').value
-                : cierreSelect.value;
-
-            // Build prompt - estructura fiel a prompts exitosos
-            let prompt = `Genera una imagen psicodélica ácida con toques de horror bizarro visceral de ${sujeto}`;
-
-            // Descripción visual (vestimenta, fusión, etc.)
-            if (descripcion) prompt += `, ${descripcion}`;
-
-            // Acción + ubicación juntos
-            if (accion && ubicacion) {
-                prompt += ` ${accion} ${ubicacion}`;
-            } else if (accion) {
-                prompt += ` ${accion}`;
-            } else if (ubicacion) {
-                prompt += ` ${ubicacion}`;
-            }
-
-            // Elementos de ambiente (nueva oración)
-            if (elementos) prompt += `. ${elementos}`;
-
-            // Frase puente inglés si está activada
-            const togglePuente = document.getElementById('toggle-esp-puente');
-            if (togglePuente.classList.contains('on')) {
-                const puenteSelect = document.getElementById('esp-puente');
-                const puente = puenteSelect.value === 'custom'
-                    ? document.getElementById('esp-puente-custom').value
-                    : puenteSelect.value;
-                if (puente) prompt += `, ${puente}`;
-            }
-
-            // Cierre con estilo
-            prompt += `. Estilo ${cierre}.`;
-
-            espOutput.textContent = prompt;
-        });
-
-        copyEspBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(espOutput.textContent);
-                copyEspBtn.className = 'copy-btn copied';
-                copyEspBtn.textContent = 'COPIADO!';
-                setTimeout(() => {
-                    copyEspBtn.className = 'copy-btn default';
-                    copyEspBtn.textContent = 'COPY';
-                }, 2000);
-            } catch (err) {
-                console.error('Error al copiar:', err);
-            }
-        });
-
-        // =====================
-        // IA ASSIST FUNCTIONALITY
-        // =====================
-        const iaPromptInput = document.getElementById('ia-prompt-input');
-        const iaGenerateBtn = document.getElementById('ia-generate-btn');
-        const iaGenerateText = document.getElementById('ia-generate-text');
-        const iaGenerateLoading = document.getElementById('ia-generate-loading');
-        const iaAnalyzeBtn = document.getElementById('ia-analyze-btn');
-        const iaAnalyzeText = document.getElementById('ia-analyze-text');
-        const iaAnalyzeLoading = document.getElementById('ia-analyze-loading');
-        const iaOutput = document.getElementById('ia-output');
-        const iaCopyBtn = document.getElementById('ia-copy-btn');
-        const iaDropzone = document.getElementById('ia-dropzone');
-        const iaDropzoneText = document.getElementById('ia-dropzone-text');
-        const iaPreview = document.getElementById('ia-preview');
-        const iaFileInput = document.getElementById('ia-file-input');
-
-        // Nuevos controles
-        const iaModelText = document.getElementById('ia-model-text');
-        const iaModelVision = document.getElementById('ia-model-vision');
-        const iaTemperature = document.getElementById('ia-temperature');
-        const iaTempValue = document.getElementById('ia-temp-value');
-
-        let currentImageBase64 = null;
-
-        // API URL - cambia esto segun tu deploy
-        const API_URL = '/api/groq';
-
-        // Actualizar display de temperatura
-        iaTemperature.addEventListener('input', () => {
-            iaTempValue.textContent = iaTemperature.value;
-        });
-
-        // Dropzone functionality
-        iaDropzone.addEventListener('click', () => iaFileInput.click());
-
-        iaDropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            iaDropzone.style.borderColor = '#06b6d4';
-            iaDropzone.style.background = 'rgba(6, 182, 212, 0.1)';
-        });
-
-        iaDropzone.addEventListener('dragleave', () => {
-            iaDropzone.style.borderColor = 'rgba(6, 182, 212, 0.5)';
-            iaDropzone.style.background = 'rgba(6, 182, 212, 0.05)';
-        });
-
-        iaDropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            iaDropzone.style.borderColor = 'rgba(6, 182, 212, 0.5)';
-            iaDropzone.style.background = 'rgba(6, 182, 212, 0.05)';
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                handleImageFile(file);
-            }
-        });
-
-        iaFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) handleImageFile(file);
-        });
-
-        // Comprimir imagen si excede el limite
-        async function compressImage(file, maxSizeKB = 1800) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-
-                        // Si es muy grande, reducir dimensiones primero
-                        const maxDim = 2048;
-                        if (width > maxDim || height > maxDim) {
-                            if (width > height) {
-                                height = (height / width) * maxDim;
-                                width = maxDim;
-                            } else {
-                                width = (width / height) * maxDim;
-                                height = maxDim;
-                            }
-                        }
-
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        // Intentar diferentes calidades hasta que quepa
-                        let quality = 0.9;
-                        let result = canvas.toDataURL('image/jpeg', quality);
-
-                        while (result.length > maxSizeKB * 1024 * 1.37 && quality > 0.1) {
-                            quality -= 0.1;
-                            result = canvas.toDataURL('image/jpeg', quality);
-                        }
-
-                        resolve(result);
-                    };
-                    img.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        async function handleImageFile(file) {
-            iaDropzoneText.textContent = 'Procesando imagen...';
-
-            let imageData;
-
-            // Si excede 1.5MB, comprimir
-            if (file.size > 1.5 * 1024 * 1024) {
-                iaDropzoneText.textContent = 'Comprimiendo imagen...';
-                imageData = await compressImage(file);
-            } else {
-                // Leer directamente
-                imageData = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => resolve(e.target.result);
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            currentImageBase64 = imageData;
-            iaPreview.src = currentImageBase64;
-            iaPreview.style.display = 'block';
-            iaDropzoneText.style.display = 'none';
-            iaAnalyzeBtn.disabled = false;
-        }
-
-        // Fetch response from API (sin streaming)
-        async function fetchFromAPI(mode, prompt, imageBase64 = null) {
-            iaOutput.textContent = 'Generando...';
-            iaCopyBtn.style.display = 'none';
-
-            // Obtener configuracion
-            const selectedModel = mode === 'analyze' ? iaModelVision.value : iaModelText.value;
-            const temperature = parseFloat(iaTemperature.value);
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        mode,
-                        prompt,
-                        imageBase64,
-                        selectedModel,
-                        temperature
-                    })
-                });
-
-                const data = await response.json();
-
-                if (!response.ok || data.error) {
-                    throw new Error(data.error || 'Error en la API');
-                }
-
-                // Mostrar contenido completo
-                iaOutput.textContent = data.content || '';
-
-                // Show copy button when done
-                if (iaOutput.textContent.trim()) {
-                    iaCopyBtn.style.display = 'inline-block';
-                }
-
-            } catch (error) {
-                iaOutput.textContent = `ERROR: ${error.message}\n\nAsegurate de que la API esta configurada correctamente en Vercel.`;
-            }
-        }
-
-        // Generate prompt button
-        iaGenerateBtn.addEventListener('click', async () => {
-            const prompt = iaPromptInput.value.trim();
-            if (!prompt) {
-                alert('Escribe una descripcion de lo que quieres ver.');
-                return;
-            }
-
-            iaGenerateText.style.display = 'none';
-            iaGenerateLoading.style.display = 'inline';
-            iaGenerateBtn.disabled = true;
-
-            await fetchFromAPI('generate', prompt);
-
-            iaGenerateText.style.display = 'inline';
-            iaGenerateLoading.style.display = 'none';
-            iaGenerateBtn.disabled = false;
-        });
-
-        // Analyze image button
-        iaAnalyzeBtn.addEventListener('click', async () => {
-            if (!currentImageBase64) {
-                alert('Primero sube una imagen.');
-                return;
-            }
-
-            iaAnalyzeText.style.display = 'none';
-            iaAnalyzeLoading.style.display = 'inline';
-            iaAnalyzeBtn.disabled = true;
-
-            await fetchFromAPI('analyze', 'Analiza esta imagen y genera un prompt de animacion DENTAKORV.', currentImageBase64);
-
-            iaAnalyzeText.style.display = 'inline';
-            iaAnalyzeLoading.style.display = 'none';
-            iaAnalyzeBtn.disabled = false;
-        });
-
-        // Copy button
-        iaCopyBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(iaOutput.textContent);
-                iaCopyBtn.className = 'copy-btn copied';
-                iaCopyBtn.textContent = 'COPIADO!';
-                setTimeout(() => {
-                    iaCopyBtn.className = 'copy-btn default';
-                    iaCopyBtn.textContent = 'COPIAR';
-                }, 2000);
-            } catch (err) {
-                console.error('Error al copiar:', err);
-            }
-        });
-    </script>
+    <script type="module" src="js/dentakorv/main.js"></script>
 </body>
 </html>

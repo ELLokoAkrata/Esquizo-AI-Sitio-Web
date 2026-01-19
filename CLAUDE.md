@@ -88,6 +88,8 @@ Según `esquizo_core.json`, las directivas core son:
 │   ├── GALERIA_EL_LOKO_TECH.md        # Galería 3D docs
 │   ├── PROTOCOL_CROSS.md              # Protocolo Claude-GPT
 │   ├── ESQUIZO_VISUAL_PROMPTING_ESSENCE.md
+│   ├── PROMPTS_LOG.md                 # Log prompts únicos ChatGPT
+│   ├── CHATGPT_HACKS.md               # Técnicas inspección ChatGPT
 │   └── [otros docs]
 │
 ├── dual-brain/                     # Sistema Dual Brain (Claude-GPT)
@@ -237,6 +239,8 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 | `PROTOCOL_CROSS.md` | Protocolo Claude-GPT Dual Brain |
 | `ESQUIZO_VISUAL_PROMPTING_ESSENCE.md` | Filosofía prompting visual |
 | `manifiesto_continuus_infection.md` | Filosofía de infección |
+| `PROMPTS_LOG.md` | Log prompts únicos extraídos de ChatGPT |
+| `CHATGPT_HACKS.md` | Técnicas React Fiber para inspección ChatGPT |
 
 ### Archivos Core:
 | Archivo | Contenido |

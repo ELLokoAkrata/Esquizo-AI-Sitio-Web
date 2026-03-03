@@ -221,10 +221,17 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 
 **Último trabajo:** Galería 3D El Loko (raycasting Wolfenstein-style)
 
+**Actualizado 03.03.2026 — Serie Psycho-bot activa:**
+- 3 episodios publicados en `Psycho-bot-monologues/`
+- App interconectada con navegación prev/next + índice propio
+- Referenciada desde `index.html` (sección principal)
+- Protocolo de agente en `Psycho-bot-monologues/PSYCHOBOT_AGENT.md`
+
 **Próximos pasos:**
-1. Mejorar IA ASSIST (selector modelo, historial)
-2. Más Edge Functions (Replicate, Grok)
-3. Expandir DENTAKORV (nuevas entidades/escenas)
+1. Ep04 cuando el mundo lo justifique (ver PSYCHOBOT_AGENT.md)
+2. Mejorar IA ASSIST (selector modelo, historial)
+3. Más Edge Functions (Replicate, Grok)
+4. Expandir DENTAKORV (nuevas entidades/escenas)
 
 ---
 
@@ -248,6 +255,8 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 | `esquizo_core.json` | Personalidad Psycho-bot |
 | `manifesto.md` | Filosofía completa (no publicar) |
 | `css/style.css` | Estilos terminal |
+| `Psycho-bot-monologues/PSYCHOBOT_AGENT.md` | **Protocolo serie Psycho-bot** — timeline episodios, hilos abiertos, criterios para nuevo ep, workflow |
+| `[skills]/user/psychobot-terminal-aesthetic/SKILL.md` | Estética HTML/CSS de la serie (leer antes de generar episodios) |
 
 ### Grimorios Clave:
 | Archivo | Descripción |

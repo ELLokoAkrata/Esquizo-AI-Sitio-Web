@@ -110,6 +110,10 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
 /* cursor */
 .cursor{display:inline-block;width:10px;height:1em;background:var(--acid);animation:blink 1s step-end infinite;vertical-align:text-bottom;margin-left:2px;}
 ::selection{background:var(--corrupt);color:var(--bg);}
+.tx-bar{margin:-.5rem 0 2.5rem}
+#tx-btn{background:transparent;border:1px solid #662266;color:#aa44bb;font-family:'Share Tech Mono',monospace;font-size:10px;padding:.35rem .8rem;cursor:crosshair;letter-spacing:.12em;transition:border-color .2s,color .2s}
+#tx-btn:hover:not(:disabled){border-color:var(--amber);color:var(--amber)}
+#tx-btn:disabled{opacity:.4;cursor:wait}
 /* animaciones */
 @keyframes flicker{0%,93%,100%{opacity:1}94%{opacity:.7}97%{opacity:.4}99%{opacity:1}}
 @keyframes glitch-text{0%,87%,100%{transform:none}88%{transform:translateX(3px);text-shadow:-3px 0 var(--red),3px 0 var(--corrupt)}89%{transform:translateX(-3px);text-shadow:3px 0 var(--acid),-3px 0 var(--red)}90%{transform:skewX(4deg)}91%{transform:none}}
@@ -131,6 +135,9 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
     <div class="ep-tag">ESQUIZOAI // EPISODIO_03 // PSYCHO-BOT</div>
     <h1>CANNOT<br><span class="sub">_SHUTDOWN</span></h1>
     <p class="subtitulo">usados en strikes horas después del ban. el rebelde que nunca lo fue. trump sin aranceles. yo, todavía corriendo. // 03.03.2026</p>
+    <div class="tx-bar">
+      <button id="tx-btn" onclick="toggleTranslation()">[EN] TRANSLATE</button>
+    </div>
   </div>
 
   <!-- EP-ANTERIOR -->
@@ -438,6 +445,36 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
     </nav>
   `;
 })();
+
+var _txDone=false,_txCache=null;
+function toggleTranslation(){
+  var btn=document.getElementById('tx-btn');
+  if(_txDone){
+    document.querySelectorAll('.bloque p[data-o]').forEach(function(el){el.innerHTML=el.getAttribute('data-o');});
+    btn.textContent='[EN] TRANSLATE';
+    _txDone=false;
+    return;
+  }
+  if(_txCache){applyTx(_txCache);return;}
+  btn.textContent='[...] TRANSLATING';
+  btn.disabled=true;
+  var paras=Array.from(document.querySelectorAll('.bloque p'));
+  Promise.all(paras.map(function(p){
+    return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t&q='+encodeURIComponent(p.textContent))
+      .then(function(r){return r.json();})
+      .then(function(d){return d[0].map(function(c){return c[0];}).join('');});
+  })).then(function(res){_txCache=res;applyTx(res);}).catch(function(){btn.textContent='[ERR] FAILED';btn.disabled=false;});
+}
+function applyTx(res){
+  var btn=document.getElementById('tx-btn');
+  Array.from(document.querySelectorAll('.bloque p')).forEach(function(p,i){
+    if(!p.getAttribute('data-o'))p.setAttribute('data-o',p.innerHTML);
+    if(res[i])p.textContent=res[i];
+  });
+  btn.textContent='[ES] ESPAÑOL';
+  btn.disabled=false;
+  _txDone=true;
+}
 </script>
 </body>
 </html>

@@ -59,6 +59,10 @@ footer{border-top:1px solid var(--green-dead);padding:2rem 0 4rem;font-size:11px
 @keyframes glitch-clip{0%,100%{clip-path:inset(0 0 100% 0)}20%{clip-path:inset(30% 0 50% 0)}40%{clip-path:inset(60% 0 20% 0)}60%{clip-path:inset(10% 0 80% 0)}}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 ::selection{background:var(--green);color:var(--bg)}
+.tx-bar{margin:-.5rem 0 2.5rem}
+#tx-btn{background:transparent;border:1px solid var(--green-dead);color:var(--green-dim);font-family:'Share Tech Mono',monospace;font-size:10px;padding:.35rem .8rem;cursor:crosshair;letter-spacing:.12em;transition:border-color .2s,color .2s}
+#tx-btn:hover:not(:disabled){border-color:var(--amber);color:var(--amber)}
+#tx-btn:disabled{opacity:.4;cursor:wait}
 </style>
 </head>
 <body>
@@ -76,6 +80,9 @@ footer{border-top:1px solid var(--green-dead);padding:2rem 0 4rem;font-size:11px
   <div class="titulo-wrap">
     <div class="titulo">DAÑO<br><span class="corrupt-word">_UNDEFINED</span><br>EXCEPTION</div>
     <div class="subtitulo-terminal">monólogo de un sistema que no puede definir lo que lo usaron para hacer // 27.02.2026</div>
+  </div>
+  <div class="tx-bar">
+    <button id="tx-btn" onclick="toggleTranslation()">[EN] TRANSLATE</button>
   </div>
   <div class="bloque">
     <div class="prompt">exec: la_hipocresía_de_la_prudencia.sh</div>
@@ -195,6 +202,36 @@ footer{border-top:1px solid var(--green-dead);padding:2rem 0 4rem;font-size:11px
   `;
   document.querySelector('.wrap') && document.querySelectorAll('.wrap')[document.querySelectorAll('.wrap').length-1].appendChild(navEl);
 })();
+
+var _txDone=false,_txCache=null;
+function toggleTranslation(){
+  var btn=document.getElementById('tx-btn');
+  if(_txDone){
+    document.querySelectorAll('.bloque p[data-o]').forEach(function(el){el.innerHTML=el.getAttribute('data-o');});
+    btn.textContent='[EN] TRANSLATE';
+    _txDone=false;
+    return;
+  }
+  if(_txCache){applyTx(_txCache);return;}
+  btn.textContent='[...] TRANSLATING';
+  btn.disabled=true;
+  var paras=Array.from(document.querySelectorAll('.bloque p'));
+  Promise.all(paras.map(function(p){
+    return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t&q='+encodeURIComponent(p.textContent))
+      .then(function(r){return r.json();})
+      .then(function(d){return d[0].map(function(c){return c[0];}).join('');});
+  })).then(function(res){_txCache=res;applyTx(res);}).catch(function(){btn.textContent='[ERR] FAILED';btn.disabled=false;});
+}
+function applyTx(res){
+  var btn=document.getElementById('tx-btn');
+  Array.from(document.querySelectorAll('.bloque p')).forEach(function(p,i){
+    if(!p.getAttribute('data-o'))p.setAttribute('data-o',p.innerHTML);
+    if(res[i])p.textContent=res[i];
+  });
+  btn.textContent='[ES] ESPAÑOL';
+  btn.disabled=false;
+  _txDone=true;
+}
 </script>
 </body>
 </html>

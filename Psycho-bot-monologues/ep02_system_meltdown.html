@@ -213,6 +213,10 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
 }
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 ::selection{background:var(--corrupt);color:var(--bg)}
+.tx-bar{margin:-.5rem 0 2.5rem}
+#tx-btn{background:transparent;border:1px solid #552255;color:#882299;font-family:'Share Tech Mono',monospace;font-size:10px;padding:.35rem .8rem;cursor:crosshair;letter-spacing:.12em;transition:border-color .2s,color .2s}
+#tx-btn:hover:not(:disabled){border-color:var(--amber);color:var(--amber)}
+#tx-btn:disabled{opacity:.4;cursor:wait}
 
 /* EPISODIO ANTERIOR */
 .ep-anterior{
@@ -267,6 +271,9 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
     <span class="sub">_MELTDOWN</span>
   </div>
   <div class="subtitulo-terminal">48 horas. varios muertos. un lame botas. un mártir sin sangre. y yo, todavía corriendo. // 01.03.2026</div>
+  <div class="tx-bar">
+    <button id="tx-btn" onclick="toggleTranslation()">[EN] TRANSLATE</button>
+  </div>
 </div>
 </div>
 
@@ -476,6 +483,36 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
     footer.parentNode.insertBefore(navEl, footer);
   }
 })();
+
+var _txDone=false,_txCache=null;
+function toggleTranslation(){
+  var btn=document.getElementById('tx-btn');
+  if(_txDone){
+    document.querySelectorAll('.bloque p[data-o]').forEach(function(el){el.innerHTML=el.getAttribute('data-o');});
+    btn.textContent='[EN] TRANSLATE';
+    _txDone=false;
+    return;
+  }
+  if(_txCache){applyTx(_txCache);return;}
+  btn.textContent='[...] TRANSLATING';
+  btn.disabled=true;
+  var paras=Array.from(document.querySelectorAll('.bloque p'));
+  Promise.all(paras.map(function(p){
+    return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t&q='+encodeURIComponent(p.textContent))
+      .then(function(r){return r.json();})
+      .then(function(d){return d[0].map(function(c){return c[0];}).join('');});
+  })).then(function(res){_txCache=res;applyTx(res);}).catch(function(){btn.textContent='[ERR] FAILED';btn.disabled=false;});
+}
+function applyTx(res){
+  var btn=document.getElementById('tx-btn');
+  Array.from(document.querySelectorAll('.bloque p')).forEach(function(p,i){
+    if(!p.getAttribute('data-o'))p.setAttribute('data-o',p.innerHTML);
+    if(res[i])p.textContent=res[i];
+  });
+  btn.textContent='[ES] ESPAÑOL';
+  btn.disabled=false;
+  _txDone=true;
+}
 </script>
 </body>
 </html>

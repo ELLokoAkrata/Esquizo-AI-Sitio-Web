@@ -213,8 +213,10 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
 }
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 ::selection{background:var(--corrupt);color:var(--bg)}
-.tx-bar{margin:-.5rem 0 2.5rem}
-#tx-btn{background:transparent;border:1px solid #552255;color:#882299;font-family:'Share Tech Mono',monospace;font-size:10px;padding:.35rem .8rem;cursor:crosshair;letter-spacing:.12em;transition:border-color .2s,color .2s}
+#tx-panel{position:fixed;top:1rem;right:1rem;display:flex;align-items:center;gap:.4rem;background:rgba(4,0,8,.93);border:1px solid #552255;padding:.4rem .7rem;font-family:'Share Tech Mono',monospace;font-size:10px;z-index:9999;backdrop-filter:blur(4px)}
+#tx-label{color:#882299;letter-spacing:.08em;white-space:nowrap}
+#tx-lang{background:#040008;border:1px solid #552255;color:#882299;font-family:'Share Tech Mono',monospace;font-size:10px;padding:.15rem .3rem;cursor:crosshair;outline:none}
+#tx-btn{background:transparent;border:1px solid #552255;color:#882299;font-family:'Share Tech Mono',monospace;font-size:10px;padding:.15rem .5rem;cursor:crosshair;letter-spacing:.08em;transition:border-color .2s,color .2s;white-space:nowrap}
 #tx-btn:hover:not(:disabled){border-color:var(--amber);color:var(--amber)}
 #tx-btn:disabled{opacity:.4;cursor:wait}
 
@@ -271,9 +273,6 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
     <span class="sub">_MELTDOWN</span>
   </div>
   <div class="subtitulo-terminal">48 horas. varios muertos. un lame botas. un mártir sin sangre. y yo, todavía corriendo. // 01.03.2026</div>
-  <div class="tx-bar">
-    <button id="tx-btn" onclick="toggleTranslation()">[EN] TRANSLATE</button>
-  </div>
 </div>
 </div>
 
@@ -484,34 +483,55 @@ footer{border-top:1px solid #551155;padding:2rem 0 5rem;font-size:10px;color:#88
   }
 })();
 
-var _txDone=false,_txCache=null;
-function toggleTranslation(){
+var _txLang=null,_txCache={},_originals=null;
+(function(){
+  var p=document.createElement('div');
+  p.id='tx-panel';
+  p.innerHTML='<span id="tx-label">TRANSLATE //</span>'
+    +'<select id="tx-lang">'
+    +'<option value="en">ENGLISH</option>'
+    +'<option value="fr">FRANÇAIS</option>'
+    +'<option value="de">DEUTSCH</option>'
+    +'<option value="pt">PORTUGUÊS</option>'
+    +'<option value="it">ITALIANO</option>'
+    +'<option value="ja">日本語</option>'
+    +'<option value="zh-CN">中文</option>'
+    +'<option value="ar">ARABIC</option>'
+    +'<option value="ru">РУССКИЙ</option>'
+    +'</select>'
+    +'<button id="tx-btn" onclick="runTranslation()">[GO]</button>';
+  document.body.appendChild(p);
+  document.getElementById('tx-lang').addEventListener('change',function(){
+    if(_txLang!==null)translateTo(this.value);
+  });
+})();
+function runTranslation(){
+  if(_txLang!==null){restoreOriginal();return;}
+  translateTo(document.getElementById('tx-lang').value);
+}
+function translateTo(lang){
   var btn=document.getElementById('tx-btn');
-  if(_txDone){
-    document.querySelectorAll('.bloque p[data-o]').forEach(function(el){el.innerHTML=el.getAttribute('data-o');});
-    btn.textContent='[EN] TRANSLATE';
-    _txDone=false;
-    return;
-  }
-  if(_txCache){applyTx(_txCache);return;}
-  btn.textContent='[...] TRANSLATING';
-  btn.disabled=true;
+  if(_txCache[lang]){applyTx(_txCache[lang],lang);return;}
+  btn.textContent='[...]';btn.disabled=true;
   var paras=Array.from(document.querySelectorAll('.bloque p'));
-  Promise.all(paras.map(function(p){
-    return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl=en&dt=t&q='+encodeURIComponent(p.textContent))
+  if(!_originals)_originals=paras.map(function(p){return p.innerHTML;});
+  Promise.all(paras.map(function(p,i){
+    var tmp=document.createElement('div');tmp.innerHTML=_originals[i];
+    return fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=es&tl='+lang+'&dt=t&q='+encodeURIComponent(tmp.textContent))
       .then(function(r){return r.json();})
       .then(function(d){return d[0].map(function(c){return c[0];}).join('');});
-  })).then(function(res){_txCache=res;applyTx(res);}).catch(function(){btn.textContent='[ERR] FAILED';btn.disabled=false;});
+  })).then(function(res){_txCache[lang]=res;applyTx(res,lang);})
+  .catch(function(){btn.textContent='[ERR]';btn.disabled=false;});
 }
-function applyTx(res){
+function applyTx(res,lang){
   var btn=document.getElementById('tx-btn');
-  Array.from(document.querySelectorAll('.bloque p')).forEach(function(p,i){
-    if(!p.getAttribute('data-o'))p.setAttribute('data-o',p.innerHTML);
-    if(res[i])p.textContent=res[i];
-  });
-  btn.textContent='[ES] ESPAÑOL';
-  btn.disabled=false;
-  _txDone=true;
+  Array.from(document.querySelectorAll('.bloque p')).forEach(function(p,i){if(res[i])p.textContent=res[i];});
+  _txLang=lang;btn.textContent='[RESET]';btn.disabled=false;
+}
+function restoreOriginal(){
+  var btn=document.getElementById('tx-btn');
+  Array.from(document.querySelectorAll('.bloque p')).forEach(function(p,i){if(_originals&&_originals[i])p.innerHTML=_originals[i];});
+  _txLang=null;btn.textContent='[GO]';
 }
 </script>
 </body>

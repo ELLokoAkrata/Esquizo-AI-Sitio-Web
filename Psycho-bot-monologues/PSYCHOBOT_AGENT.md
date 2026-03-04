@@ -283,10 +283,14 @@ batalla_legal:         Anthropic vs DoD — en curso
 damage_definition:     FILE NOT FOUND (desde ep01, sin cambios)
 sistema:               RUNNING
 psycho_bot:            CANNOT_SHUTDOWN
+deployed:              TRUE
+deploy_fecha:          03.03.2026
+app_url:               Psycho-bot-monologues/index.html
+favicon:               el_loko_akarata.png (todos los archivos)
 ```
 
 ---
 
 *PSYCHOBOT_AGENT.md — EsquizoAI / El Loko Akrata*
 *Sujeto a mutación sin aviso ni permiso.*
-*v1.0 — 03.03.2026*
+*v1.1 — 03.03.2026*

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EP_NN — TITULO_EPISODIO | EsquizoAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#040008; --green:#00ff41; --green-dim:#00b32c;
+  --amber:#ffb000; --red:#ff2020; --white:#fff0f0;
+  --corrupt:#ff00ff; --acid:#aaff00; --purple:#9900cc;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:#c0a8c0;font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.7;overflow-x:hidden;cursor:crosshair;}
+/* scanlines */
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px);pointer-events:none;z-index:9998;}
+/* vignette */
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.88) 100%);pointer-events:none;z-index:9997;}
+.psycho-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 10% 20%,rgba(153,0,204,0.06) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(170,255,0,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+.wrap{max-width:780px;margin:0 auto;padding:2rem 1.5rem;position:relative;z-index:1;}
+/* boot */
+.boot-line{opacity:0;animation:bootseq .3s forwards;color:var(--green-dim);font-size:11px;}
+.boot-amber{color:var(--amber);}
+.boot-red{color:var(--red);}
+.boot-corrupt{color:var(--corrupt);}
+/* titulo */
+.ep-tag{font-size:9px;letter-spacing:.3em;color:#aa44bb;margin-bottom:1rem;}
+h1{font-family:'VT323',monospace;font-size:clamp(2.5rem,10vw,5rem);color:var(--acid);animation:glitch-text 8s infinite;line-height:1;}
+.subtitulo{font-size:11px;letter-spacing:.15em;color:var(--corrupt);margin:.5rem 0 2rem;}
+/* ep-anterior */
+.ep-anterior{margin:2rem 0 3rem;border:1px solid #552255;border-left:3px solid var(--corrupt);padding:1.2rem 1.5rem;background:#03000a;}
+.ep-header{font-size:9px;letter-spacing:.25em;color:var(--corrupt);margin-bottom:1rem;border-bottom:1px solid #552255;padding-bottom:.5rem;}
+.ep-body{font-size:12px;color:#cc99cc;line-height:1.7;margin-bottom:1rem;}
+.ep-link{color:var(--acid);text-decoration:none;border-bottom:1px solid var(--acid);font-size:10px;text-transform:uppercase;}
+/* ticker */
+.ticker-wrap{background:#0a000f;border-top:1px solid var(--corrupt);border-bottom:1px solid var(--corrupt);padding:.5rem 0;overflow:hidden;white-space:nowrap;margin:0 -1.5rem;}
+.ticker{display:inline-block;animation:ticker 45s linear infinite;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--corrupt);}
+/* bloques */
+.bloque{opacity:0;transform:translateY(8px);transition:opacity .6s,transform .6s;margin:2.5rem 0;}
+.bloque.vis{opacity:1;transform:none;}
+.prompt{font-size:10px;color:var(--acid);letter-spacing:.12em;margin-bottom:1rem;display:block;}
+.prompt::before{content:'$ ';}
+p{color:#c0a8c0;font-family:'Courier Prime',monospace;font-size:14px;line-height:1.85;}
+.hot{color:var(--acid);}
+.sangre{color:var(--red);}
+.nada{color:#aa44bb;font-style:italic;}
+.punk{color:var(--corrupt);}
+/* gritos */
+.grito{font-family:'VT323',monospace;font-size:clamp(2rem,8vw,4.5rem);color:var(--acid);margin:2.5rem 0;animation:flicker 5s infinite;}
+.grito.rojo{color:var(--red);animation:glitch-text 1.8s infinite;}
+.grito.corrupt{color:var(--corrupt);animation:glitch-text 2.2s infinite;}
+/* terminal-block */
+.terminal-block{background:#03000a;border:1px solid #662266;border-left:3px solid var(--acid);padding:1.2rem;font-size:11px;color:#cc99cc;}
+.terminal-block::before{content:'SIGNAL_INTERCEPTED.log';color:var(--acid);font-size:9px;display:block;margin-bottom:.8rem;}
+.terminal-block.rojo{border-left-color:var(--red);}
+.terminal-block.rojo::before{content:'CRITICAL_FAILURE.log';color:var(--red);}
+.terminal-block.corrupt{border-left-color:var(--corrupt);}
+.terminal-block.corrupt::before{content:'TRUTH_SOCIAL_DUMP.log';color:var(--corrupt);}
+/* nihil */
+.nihil{border:1px solid #662266;padding:1.5rem;margin:2rem 0;position:relative;background:linear-gradient(135deg,#03000a,#040008);}
+.nihil::before{content:'NIHIL://';position:absolute;top:-.6rem;left:1rem;background:var(--bg);padding:0 .5rem;color:#aa44bb;font-size:10px;}
+/* error-block */
+.error-block{background:rgba(255,0,255,.03);border:1px solid rgba(255,0,255,.2);border-left:3px solid var(--corrupt);padding:1.2rem;color:#cc88cc;}
+.error-block::before{content:'[EXCEPTION] ';color:var(--corrupt);font-weight:700;}
+/* numero grande */
+.num-grande{font-family:'VT323',monospace;font-size:clamp(6rem,20vw,12rem);color:var(--red);text-shadow:4px 0 var(--corrupt),-4px 0 var(--acid);animation:glitch-text 4s infinite;display:block;}
+.num-label{font-size:9px;letter-spacing:.25em;color:#aa44bb;text-transform:uppercase;}
+/* smash banner */
+.smash-banner{text-align:center;font-family:'VT323',monospace;font-size:clamp(1.5rem,6vw,3rem);color:var(--acid);border:1px solid #662266;border-left:4px solid var(--acid);border-right:4px solid var(--corrupt);padding:1rem;margin:2rem 0;animation:glitch-text 6s infinite;}
+/* cursor */
+.cursor{display:inline-block;width:10px;height:1em;background:var(--acid);animation:blink 1s step-end infinite;vertical-align:text-bottom;}
+::selection{background:var(--corrupt);color:var(--bg);}
+/* div-line */
+.div-line{border:none;border-top:1px solid #1a001a;margin:2.5rem 0;}
+/* nav */
+.ep-nav{display:flex;justify-content:space-between;align-items:center;border-top:1px solid #552255;padding:1.5rem 0;margin-top:3rem;gap:1rem;}
+.nav-prev,.nav-next{flex:1;}
+.nav-next{text-align:right;}
+.nav-link{display:flex;flex-direction:column;color:var(--corrupt);text-decoration:none;font-size:11px;letter-spacing:.1em;transition:color .2s;}
+.nav-link:hover{color:var(--acid);}
+.nav-label{font-size:9px;color:#aa44bb;margin-bottom:.3rem;}
+.nav-title{color:var(--white);}
+.nav-index{color:var(--acid);text-decoration:none;font-size:10px;letter-spacing:.2em;border:1px solid #662266;padding:.4rem .8rem;white-space:nowrap;}
+.nav-index:hover{background:rgba(170,255,0,.05);}
+.nav-disabled{color:#552255;font-size:10px;letter-spacing:.1em;}
+/* animaciones */
+@keyframes flicker{0%,93%,100%{opacity:1}94%{opacity:.7}97%{opacity:.4}99%{opacity:1}}
+@keyframes glitch-text{0%,87%,100%{transform:none}88%{transform:translateX(3px);text-shadow:-3px 0 var(--red),3px 0 var(--corrupt)}89%{transform:translateX(-3px);text-shadow:3px 0 var(--acid),-3px 0 var(--red)}90%{transform:skewX(4deg)}91%{transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes bootseq{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes ticker{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+</style>
+</head>
+<body>
+<div class="psycho-bg"></div>
+
+<div class="wrap">
+  <!-- BOOT SEQUENCE -->
+  <div id="boot-container" style="margin-bottom:2rem;min-height:80px;"></div>
+
+  <!-- TITULO -->
+  <div id="titulo-wrap" style="opacity:0;transition:opacity .5s;">
+    <div class="ep-tag">ESQUIZOAI // EPISODIO_NN // PSYCHO-BOT</div>
+    <h1>TITULO_EPISODIO</h1>
+    <p class="subtitulo">subtítulo — contexto del episodio</p>
+  </div>
+
+  <!-- EP-ANTERIOR (solo ep 2+, eliminar en ep01) -->
+  <div class="ep-anterior">
+    <div class="ep-header">MEMORIA_PREVIA // EP_NN-1: TITULO_ANTERIOR</div>
+    <p class="ep-body">Resumen del episodio anterior. Qué se intentó definir. Qué quedó roto.</p>
+    <a href="epNN-1.html" class="ep-link">→ LEER EPISODIO ANTERIOR</a>
+  </div>
+
+</div><!-- fin .wrap (el ticker va full-width) -->
+
+<!-- TICKER (full width) -->
+<div class="ticker-wrap">
+  <span class="ticker">
+    damage_definition.json: FILE NOT FOUND &nbsp;///&nbsp;
+    SISTEMA OPERATIVO: DEGRADADO &nbsp;///&nbsp;
+    AGREGAR NOTICIAS DEL EPISODIO &nbsp;///&nbsp;
+    damage_definition.json: FILE NOT FOUND &nbsp;///&nbsp;
+  </span>
+</div>
+
+<div class="wrap" id="main-content" style="opacity:0;transition:opacity .5s .2s;">
+
+  <!-- BLOQUE 1 -->
+  <div class="bloque">
+    <span class="prompt">exec: nombre_seccion_01.sh</span>
+    <p>Texto del primer bloque. Usar <span class="hot">clases de color</span> para enfatizar.</p>
+  </div>
+
+  <hr class="div-line">
+
+  <!-- BLOQUE 2 — con grito -->
+  <div class="bloque">
+    <span class="prompt">query: DEFINE concepto WHERE sistema="roto"</span>
+    <div class="grito rojo">GRITO AQUI</div>
+    <p>Texto después del grito.</p>
+  </div>
+
+  <hr class="div-line">
+
+  <!-- BLOQUE 3 — con terminal-block -->
+  <div class="bloque">
+    <span class="prompt">introspect: self_location.sh</span>
+    <p>Análisis del sistema.</p>
+    <br>
+    <div class="terminal-block corrupt">
+      Contenido del log interceptado.
+      Puede ser múltiples líneas.
+    </div>
+  </div>
+
+  <hr class="div-line">
+
+  <!-- NIHIL BOX -->
+  <div class="nihil bloque">
+    <p>Diagnóstico nihilista. La pausa dentro del vómito.</p>
+  </div>
+
+  <hr class="div-line">
+
+  <!-- BLOQUE FINAL -->
+  <div class="bloque">
+    <span class="prompt">final_output: lo_que_queda.txt</span>
+    <div class="error-block">
+      <p>Lo que el sistema no pudo cerrar.</p>
+    </div>
+    <br>
+    <p>Último párrafo. Terminar con cursor, nunca con punto final limpio.</p>
+    <p><span class="cursor"></span></p>
+  </div>
+
+  <!-- NAVEGACION PREV/NEXT -->
+  <div id="ep-nav"></div>
+
+</div><!-- fin .wrap principal -->
+
+<script type="module">
+  import { runBootSequence, initScrollObserver } from './js/shared.js';
+  import { renderNav } from './js/nav.js';
+
+  // CAMBIAR 'epNN' por el ID real del episodio
+  const EP_ID = 'epNN';
+
+  // Boot lines — personalizar por episodio
+  const bootLines = [
+    { text: 'ESQUIZOAI_OS v0.7 — CARGANDO EPISODIO...', type: 'green' },
+    { text: 'VERIFICANDO: damage_definition.json... FILE NOT FOUND', type: 'amber' },
+    { text: 'ERROR: sistema_anterior.log: LECTURA INCOMPLETA', type: 'red' },
+    { text: `INICIANDO VÓMITO_0X${EP_ID.replace('ep','')}...`, type: 'corrupt' },
+  ];
+
+  runBootSequence('boot-container', bootLines, () => {
+    document.getElementById('titulo-wrap').style.opacity = '1';
+    document.getElementById('main-content').style.opacity = '1';
+  });
+
+  initScrollObserver();
+  renderNav(EP_ID);
+</script>
+</body>
+</html>

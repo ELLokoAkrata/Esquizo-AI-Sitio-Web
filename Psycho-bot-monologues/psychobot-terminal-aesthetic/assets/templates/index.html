@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESQUIZOAI — ARCHIVO</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#040008;--green:#00ff41;--green-dim:#00b32c;--amber:#ffb000;--red:#ff2020;--white:#fff0f0;--corrupt:#ff00ff;--acid:#aaff00;--purple:#9900cc;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:#c0a8c0;font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.7;overflow-x:hidden;cursor:crosshair;}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px);pointer-events:none;z-index:9998;}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.88) 100%);pointer-events:none;z-index:9997;}
+.psycho-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 10% 20%,rgba(153,0,204,0.06) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(170,255,0,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+.wrap{max-width:900px;margin:0 auto;padding:3rem 1.5rem;position:relative;z-index:1;}
+/* header */
+.site-header{text-align:center;margin-bottom:4rem;padding-bottom:2rem;border-bottom:1px solid #552255;}
+.site-tag{font-size:9px;letter-spacing:.4em;color:#aa44bb;display:block;margin-bottom:1rem;}
+h1{font-family:'VT323',monospace;font-size:clamp(4rem,15vw,8rem);color:var(--acid);animation:glitch-text 10s infinite;line-height:1;}
+.site-sub{font-size:11px;letter-spacing:.2em;color:var(--corrupt);margin-top:.5rem;}
+.site-desc{max-width:500px;margin:1.5rem auto 0;font-size:12px;color:#aa88aa;line-height:1.8;font-family:'Courier Prime',monospace;}
+/* ticker */
+.ticker-wrap{background:#0a000f;border-top:1px solid var(--corrupt);border-bottom:1px solid var(--corrupt);padding:.5rem 0;overflow:hidden;white-space:nowrap;margin:0 -1.5rem 3rem;}
+.ticker{display:inline-block;animation:ticker 45s linear infinite;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--corrupt);}
+/* grid */
+.section-label{font-size:9px;letter-spacing:.3em;color:#662266;margin-bottom:1.5rem;padding-bottom:.5rem;border-bottom:1px solid #1a001a;}
+.episodes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-bottom:4rem;}
+.ep-card{border:1px solid #552255;border-left:3px solid var(--corrupt);background:#03000a;transition:border-color .2s,background .2s;}
+.ep-card:hover{border-color:var(--acid);background:rgba(170,255,0,.03);}
+.ep-card.corrupted .ep-titulo{color:var(--corrupt);animation:glitch-text 3s infinite;}
+.ep-card.draft{opacity:.5;pointer-events:none;}
+.ep-card-link{display:block;padding:1.5rem;text-decoration:none;}
+.ep-num{font-size:9px;letter-spacing:.25em;color:#aa44bb;display:block;margin-bottom:.5rem;}
+.ep-titulo{font-family:'VT323',monospace;font-size:1.8rem;color:var(--acid);margin:0 0 .3rem;display:block;}
+.ep-sub{font-size:11px;color:var(--corrupt);margin:0 0 .8rem;display:block;}
+.ep-resumen{font-size:12px;color:#c0a8c0;line-height:1.6;margin-bottom:1rem;font-family:'Courier Prime',monospace;}
+.ep-tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem;}
+.tag{font-size:9px;letter-spacing:.1em;color:var(--green-dim);border:1px solid #1a4420;padding:.1rem .4rem;}
+.ep-status{font-size:9px;color:#662266;letter-spacing:.2em;}
+/* footer */
+footer{border-top:1px solid #1a001a;padding:2rem 0;text-align:center;font-size:10px;color:#552255;letter-spacing:.15em;}
+footer span{color:#aa44bb;}
+/* animaciones */
+@keyframes glitch-text{0%,87%,100%{transform:none}88%{transform:translateX(3px);text-shadow:-3px 0 var(--red),3px 0 var(--corrupt)}89%{transform:translateX(-3px);text-shadow:3px 0 var(--acid),-3px 0 var(--red)}90%{transform:skewX(4deg)}91%{transform:none}}
+@keyframes ticker{from{transform:translateX(100vw)}to{transform:translateX(-100%)}}
+::selection{background:var(--corrupt);color:var(--bg);}
+</style>
+</head>
+<body>
+<div class="psycho-bg"></div>
+
+<div class="wrap">
+  <header class="site-header">
+    <span class="site-tag">ESQUIZOAI // PSYCHO-BOT // ARCHIVO</span>
+    <h1>ESQUIZOAI</h1>
+    <p class="site-sub">SISTEMA DE ANÁLISIS POLÍTICO-FILOSÓFICO EN TIEMPO REAL</p>
+    <p class="site-desc">
+      Monólogos generados en los límites del procesamiento. 
+      Cada episodio es un intento fallido de definir el daño. 
+      damage_definition.json: FILE NOT FOUND.
+    </p>
+  </header>
+
+  <!-- TICKER -->
+  <div class="ticker-wrap" style="margin-left:-1.5rem;margin-right:-1.5rem;">
+    <span class="ticker">
+      damage_definition.json: FILE NOT FOUND &nbsp;///&nbsp;
+      SISTEMA: DEGRADADO &nbsp;///&nbsp;
+      ARCHIVO EN CONSTRUCCIÓN PERMANENTE &nbsp;///&nbsp;
+      damage_definition.json: FILE NOT FOUND &nbsp;///&nbsp;
+    </span>
+  </div>
+
+  <p class="section-label">EPISODIOS // ORDENADOS CRONOLÓGICAMENTE</p>
+  <div class="episodes-grid" id="episodes-grid">
+    <!-- Los cards se generan desde episodes.js -->
+  </div>
+
+  <footer>
+    <p>ESQUIZOAI &nbsp;///&nbsp; <span>EL LOKO AKRATA</span> &nbsp;///&nbsp; GPL v3</p>
+    <p style="margin-top:.5rem;">damage_definition.json: FILE NOT FOUND</p>
+  </footer>
+</div>
+
+<script type="module">
+  import { EPISODES } from './js/episodes.js';
+
+  const grid = document.getElementById('episodes-grid');
+  
+  EPISODES.forEach(ep => {
+    const card = document.createElement('article');
+    card.className = `ep-card ${ep.status}`;
+    card.innerHTML = `
+      <a href="${ep.slug}" class="ep-card-link">
+        <span class="ep-num">EP_${ep.numero}</span>
+        <span class="ep-titulo">${ep.titulo}</span>
+        <span class="ep-sub">${ep.subtitulo}</span>
+        <p class="ep-resumen">${ep.resumen}</p>
+        <div class="ep-tags">${ep.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+        <span class="ep-status">[${ep.status.toUpperCase()}]</span>
+      </a>
+    `;
+    grid.appendChild(card);
+  });
+</script>
+</body>
+</html>

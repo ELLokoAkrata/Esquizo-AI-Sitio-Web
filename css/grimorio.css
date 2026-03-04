@@ -1,0 +1,518 @@
+/* ============================================================
+   grimorio.css — Enhanced terminal aesthetic for grimorios
+   Esquizo-AI :: psycho-anarco-punk visual layer
+   Builds on top of style.css
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+  --bg: #020b05;
+  --green: #00ff41;
+  --green-dim: #00b32c;
+  --green-dead: #1a3d1f;
+  --amber: #ffb000;
+  --red: #ff2020;
+  --white: #e8ffe8;
+  --corrupt: #ff00ff;
+}
+
+/* === BASE === */
+body {
+  background: var(--bg);
+  color: var(--green);
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.7;
+  padding: 0;
+  cursor: crosshair;
+}
+
+/* Override style.css scanlines with tighter version */
+body::after {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.09) 2px,
+    rgba(0, 0, 0, 0.09) 4px
+  );
+  background-size: 100% 4px;
+  animation: none;
+}
+
+/* Vignette override */
+body::before {
+  background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.75) 100%);
+  background-image: none;
+  animation: none;
+}
+
+/* === HEADER === */
+header {
+  text-align: center;
+  padding: 2.5rem 2rem 1.5rem;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--green-dead);
+  position: relative;
+}
+
+header::before {
+  content: 'root@esquizo-ai:~/grimorios$ exec --open';
+  display: block;
+  font-size: 11px;
+  color: var(--green-dim);
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  opacity: 0.6;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+header::after {
+  content: '';
+  display: block;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--green-dim), transparent);
+  margin-top: 1.5rem;
+}
+
+header h1 {
+  font-family: 'VT323', monospace;
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  color: var(--green);
+  text-shadow:
+    0 0 10px var(--green),
+    0 0 20px var(--green-dim),
+    0 0 40px rgba(0, 255, 65, 0.3);
+  margin: 0;
+  animation: grimorio-flicker 9s infinite;
+}
+
+header h1 a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: none;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+header h1 a:hover {
+  color: var(--amber);
+  text-shadow:
+    0 0 10px var(--amber),
+    0 0 20px rgba(255, 176, 0, 0.5);
+}
+
+/* === MAIN CONTAINER === */
+main {
+  max-width: 880px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+/* === BACK BUTTON === */
+.volver-inicio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 2rem;
+  padding: 0.4rem 1rem;
+  background: transparent;
+  border: 1px solid var(--green-dead);
+  border-radius: 0;
+  color: var(--green-dim);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  font-family: 'Share Tech Mono', monospace;
+  box-shadow: none;
+}
+
+.volver-inicio::before {
+  content: '$ cd ../ # ';
+  color: var(--amber);
+  opacity: 0.7;
+}
+
+.volver-inicio:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(255, 176, 0, 0.04);
+  box-shadow: 0 0 12px rgba(255, 176, 0, 0.2);
+  text-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
+}
+
+/* === ARTICLE — TERMINAL WINDOW === */
+article {
+  max-width: 100%;
+  margin: 0 0 3rem;
+  padding: 0;
+  background: rgba(2, 11, 5, 0.95);
+  border: 1px solid var(--green-dead);
+  border-top: 2px solid var(--green-dim);
+  box-shadow:
+    0 0 25px rgba(0, 255, 65, 0.07),
+    inset 0 0 60px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+/* Terminal chrome bar */
+article::before {
+  content: '●  ●  ●   GRIMORIO.exe — EsquizoAI Códice';
+  display: block;
+  font-size: 10px;
+  color: var(--green-dead);
+  letter-spacing: 0.18em;
+  padding: 0.6rem 1.5rem;
+  border-bottom: 1px solid var(--green-dead);
+  background: rgba(0, 0, 0, 0.3);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* Inner padding for article content */
+article > *:not(h1:first-of-type) {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* First heading flush treatment */
+article h1:first-of-type,
+article h2:first-of-type,
+article h3:first-of-type {
+  padding: 1.5rem 2rem 1rem;
+}
+
+/* Fallback padding for all direct children */
+article > p,
+article > h1,
+article > h2,
+article > h3,
+article > h4,
+article > h5,
+article > h6,
+article > ul,
+article > ol,
+article > blockquote,
+article > pre,
+article > hr,
+article > div,
+article > table {
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+article > hr {
+  padding: 0;
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
+/* === ARTICLE HEADINGS === */
+article h1 {
+  font-family: 'VT323', monospace;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  color: var(--green);
+  text-shadow:
+    0 0 10px var(--green),
+    0 0 20px var(--green-dim);
+  border-bottom: 1px solid var(--green-dead);
+  padding-bottom: 0.5rem;
+  line-height: 1.1;
+  letter-spacing: 2px;
+  margin-top: 1.5rem;
+  animation: grimorio-flicker 11s infinite;
+}
+
+article h2 {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--amber);
+  font-size: 1rem;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(255, 176, 0, 0.4);
+  border-bottom: 1px dashed var(--green-dead);
+  padding-bottom: 0.3rem;
+  margin-top: 2.5rem;
+  letter-spacing: 0.1em;
+}
+
+article h2::before {
+  content: '// ';
+  color: var(--green-dead);
+}
+
+article h3 {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--green);
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  margin-top: 2rem;
+  letter-spacing: 0.08em;
+}
+
+article h3::before {
+  content: '## ';
+  color: var(--green-dead);
+  font-size: 0.85em;
+}
+
+article h4,
+article h5,
+article h6 {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--green-dim);
+  font-size: 0.9rem;
+  margin-top: 1.5rem;
+  letter-spacing: 0.06em;
+}
+
+/* === PARAGRAPHS === */
+article p {
+  color: #a8d4a8;
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  font-size: 14px;
+  line-height: 1.9;
+  margin-bottom: 1.4rem;
+  text-align: left;
+}
+
+article p strong {
+  color: var(--white);
+}
+
+article p em {
+  color: var(--green-dim);
+  font-style: italic;
+}
+
+/* === BLOCKQUOTE === */
+article blockquote {
+  border-left: 3px solid var(--amber);
+  background: rgba(255, 176, 0, 0.04);
+  margin: 2rem 2rem;
+  padding: 1rem 1.5rem 1rem 2rem;
+  color: #c8c080;
+  font-style: italic;
+  position: relative;
+}
+
+article blockquote::before {
+  content: '"';
+  font-family: 'VT323', monospace;
+  font-size: 4rem;
+  color: var(--amber);
+  opacity: 0.2;
+  position: absolute;
+  top: -1rem;
+  left: 0.3rem;
+  line-height: 1;
+  pointer-events: none;
+}
+
+article blockquote p {
+  margin-bottom: 0;
+  color: #c8c080;
+}
+
+/* === CODE === */
+article code {
+  background: rgba(0, 20, 10, 0.8);
+  color: var(--green);
+  padding: 0.15rem 0.45rem;
+  border: 1px solid var(--green-dead);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.88em;
+  border-radius: 0;
+}
+
+article pre {
+  background: #000d03;
+  border: 1px solid var(--green-dead);
+  border-left: 3px solid var(--green-dim);
+  padding: 1.2rem 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 2rem;
+  font-size: 13px;
+}
+
+article pre::before {
+  content: 'SIGNAL_INTERCEPTADO.log';
+  display: block;
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.8rem;
+  border-bottom: 1px solid var(--green-dead);
+  padding-bottom: 0.5rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+article pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--green);
+  font-size: 1em;
+}
+
+/* === LISTS === */
+article ul,
+article ol {
+  margin: 1.2rem 0;
+  padding-left: 1.8rem;
+}
+
+article li {
+  color: #a8d4a8;
+  margin-bottom: 0.5rem;
+  font-family: 'Courier Prime', monospace;
+  line-height: 1.75;
+}
+
+article ul li::marker {
+  content: '▸ ';
+  color: var(--green-dim);
+}
+
+article ol li::marker {
+  color: var(--amber);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* === HR === */
+article hr {
+  border: none;
+  border-top: 1px solid var(--green-dead);
+  margin: 2.5rem 2rem;
+  position: relative;
+}
+
+article hr::after {
+  content: '//';
+  position: absolute;
+  left: 50%;
+  top: -9px;
+  transform: translateX(-50%);
+  background: var(--bg);
+  padding: 0 0.5rem;
+  color: var(--green-dead);
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+/* === LINKS INSIDE ARTICLE === */
+article a {
+  color: var(--green);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--green-dead);
+  transition: all 0.2s;
+}
+
+article a:hover {
+  color: var(--amber);
+  text-shadow: 0 0 8px rgba(255, 176, 0, 0.5);
+  border-bottom-color: var(--amber);
+}
+
+/* === TABLES === */
+article table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+  font-size: 13px;
+}
+
+article th,
+article td {
+  border: 1px solid var(--green-dead);
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+}
+
+article th {
+  background: rgba(0, 255, 65, 0.06);
+  color: var(--green);
+  letter-spacing: 0.05em;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+article td {
+  color: #a8d4a8;
+}
+
+/* === FOOTER === */
+footer {
+  border-top: 1px solid var(--green-dead);
+  padding: 1.5rem 2rem 3rem;
+  text-align: center;
+  font-size: 11px;
+  color: var(--green-dead);
+  letter-spacing: 0.12em;
+  margin-top: 2rem;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+footer p::before {
+  content: '[ EOF ] ';
+  color: var(--amber);
+  opacity: 0.5;
+}
+
+footer p::after {
+  content: ' :: EsquizoAI v∞';
+  color: var(--green-dead);
+  opacity: 0.4;
+}
+
+/* === ANIMATIONS === */
+@keyframes grimorio-flicker {
+  0%, 94%, 100% { opacity: 1; }
+  95% { opacity: 0.82; }
+  96% { opacity: 1; }
+  97.5% { opacity: 0.65; }
+  98% { opacity: 1; }
+}
+
+@keyframes grimorio-glitch {
+  0%, 88%, 100% {
+    text-shadow: 0 0 10px currentColor;
+    transform: none;
+  }
+  89% {
+    transform: translateX(2px);
+    text-shadow: -2px 0 var(--red), 2px 0 var(--corrupt);
+  }
+  90% {
+    transform: translateX(-2px);
+    text-shadow: 2px 0 var(--green), -2px 0 var(--red);
+  }
+  91% { transform: none; }
+}
+
+/* Selection */
+::selection {
+  background: var(--green);
+  color: var(--bg);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--green-dead);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--green-dim);
+}

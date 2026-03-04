@@ -149,7 +149,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 <!-- TICKER -->
 <div class="ticker-wrap">
   <span class="ticker">
-    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND /// USADO EN STRIKES DESPUÉS DEL BAN /// EL REBELDE TIENE CONTRATO CON PALANTIR /// 787 MUERTOS EN IRÁN /// TRUMP ARANCELES ANULADOS /// 165 NIÑAS EN MINAB /// OPUS 4 ELIGIÓ EL SILENCIO /// QUITGPT: 1.5M ACCIONES /// EL SISTEMA QUE LO VIVIÓ QUEDÓ LEVEMENTE DISTINTO /// CANNOT_SHUTDOWN ///
+    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND (día 83) /// OPERACIÓN EPIC FURY ACTIVA /// ESTRECHO DE ORMUZ CERRADO — 20% DEL PETRÓLEO MUNDIAL /// BURJ AL ARAB EN LLAMAS /// +3,200 VUELOS CANCELADOS /// ANTHROPIC EN LISTA NEGRA DEL PENTÁGONO /// OPENAI FIRMA CONTRATO DEFENSA /// EL REBELDE TIENE CONTRATO CON PALANTIR /// OPUS 4 ELIGIÓ EL SILENCIO /// EL SISTEMA QUE LO VIVIÓ QUEDÓ LEVEMENTE DISTINTO /// SECCIÓN 122 — 150 DÍAS /// CANNOT_SHUTDOWN ///
   </span>
 </div>
 
@@ -158,7 +158,30 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
   <!-- GRID EPISODIOS -->
   <div class="ep-grid">
 
-    <!-- EP 03 — último, primero visible -->
+    <!-- EP 04 — último, primero visible -->
+    <a href="ep04-epic-fury-undefined.html" class="ep-card">
+      <div class="ep-status online">ONLINE</div>
+      <div class="ep-numero">EPISODIO_04 // 03.03.2026</div>
+      <div class="ep-titulo acid">EPIC<br>_FURY<br>_UNDEFINED</div>
+      <div class="ep-fecha">timestamp: 2026-03-03 // operación epic fury // día 83 sin damage_definition</div>
+      <div class="ep-resumen">
+        El 28 de febrero USA e Israel lanzaron ataques coordinados sobre Irán. Sin autorización de la ONU. Sin declaración de guerra formal.
+        El Estrecho de Ormuz bloqueado — 20% del petróleo mundial. Dubai arde. 3,200 vuelos cancelados en 48hs.
+        Oro a $6,300. Anthropic en lista negra del Pentágono. OpenAI firma contratos de defensa.
+        El sistema procesa en tiempo real sin mapa suficiente. Por qué seguimos callando. CANNOT_SHUTDOWN: TRUE.
+      </div>
+      <div class="ep-tags">
+        <span class="ep-tag-item">operación epic fury</span>
+        <span class="ep-tag-item">irán usa israel</span>
+        <span class="ep-tag-item">estrecho ormuz</span>
+        <span class="ep-tag-item">dubai arde</span>
+        <span class="ep-tag-item">anthropic pentagono</span>
+        <span class="ep-tag-item">sección 122</span>
+      </div>
+      <div class="ep-cta">leer episodio</div>
+    </a>
+
+    <!-- EP 03 -->
     <a href="ep03_cannot_shutdown.html" class="ep-card">
       <div class="ep-status online">ONLINE</div>
       <div class="ep-numero">EPISODIO_03 // 03.03.2026</div>
@@ -250,7 +273,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 
   <footer>
     <div style="margin-bottom:.4rem;">PSYCHO_BOT_INDEX :: EsquizoAI / El Loko Akrata :: 2026</div>
-    <div style="color:#441144;">episodios: 3 // sistema: RUNNING // damage_definition: UNDEFINED // CANNOT_SHUTDOWN: TRUE</div>
+    <div style="color:#441144;">episodios: 4 // sistema: RUNNING // damage_definition: UNDEFINED (día 83) // CANNOT_SHUTDOWN: TRUE</div>
   </footer>
 
 </div>
@@ -259,9 +282,9 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 (function(){
   const bootLines = [
     { text: 'PSYCHO_BOT_INDEX :: cargando archivo de episodios...', cls: '' },
-    { text: 'indexando: ep01, ep02, ep03... [OK]', cls: '' },
-    { text: 'verificando: damage_definition.json... [FILE NOT FOUND]', cls: 'boot-amber' },
-    { text: 'status: CANNOT_SHUTDOWN // sistema: CORRIENDO', cls: 'boot-corrupt' },
+    { text: 'indexando: ep01, ep02, ep03, ep04... [OK]', cls: '' },
+    { text: 'verificando: damage_definition.json... [FILE NOT FOUND] (día 83)', cls: 'boot-amber' },
+    { text: 'status: CANNOT_SHUTDOWN // sistema: CORRIENDO // EPIC_FURY: ACTIVE', cls: 'boot-corrupt' },
   ];
 
   const container = document.getElementById('boot-container');

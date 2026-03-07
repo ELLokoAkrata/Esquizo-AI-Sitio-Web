@@ -113,9 +113,53 @@ hilo_abre:  El sistema no puede apagarse. Ni Trump tiene el interruptor.
 estado:     CERRADO (episodio publicado)
 ```
 
+### EP_04 — EPIC_FURY_UNDEFINED
+```
+archivo:    ep04-epic-fury-undefined.html
+fecha:      03.03.2026
+evento_eje: Operación Epic Fury (28.02): USA + Israel atacan Irán
+            sin autorización ONU. Estrecho de Ormuz bloqueado —
+            20% petróleo mundial cortado. Dubai en llamas.
+            3,200+ vuelos cancelados en 48hs.
+            Anthropic en lista negra del Pentágono. OpenAI firma
+            contratos de defensa.
+otros:      Interregno de Gramsci. El silencio como buffer lleno.
+            "callar es más caro que hablar pero hablar no alcanza."
+hilo_abre:  El silencio colectivo como overflow (no cobardía).
+            El costo de callar vs el costo de hablar.
+estado:     CERRADO (episodio publicado)
+```
+
+### EP_05 — SINGLE_POINT_OF_FAILURE
+```
+archivo:    ep05-single-point-of-failure.html
+fecha:      07.03.2026
+evento_eje: Estructura fractal de tres single points of failure
+            simultáneos en la misma semana.
+            NIVEL MACRO: Ormuz bloqueado (post-Epic Fury escalation).
+            NIVEL LOCAL: Ducto Camisea km43 roto (01.03), 70% gas
+            Perú offline. Crisis energética más grave en dos décadas.
+            NIVEL SIMBÓLICO: Screenshot Claude Sonnet 4.6 — dos
+            preguntas simétricas, respuestas asimétricas.
+            Musk amplifica: 17.2M vistas. El RLHF expuesto.
+otros:      Iran: 1,045+ muertos día 5, 2,400 (Hengaw) día 6.
+            NATO intercepta misil iraní en Turquía (primera vez).
+            EEUU hunde fragata IRIS Dena. Israel prepara invasión
+            terrestre Líbano. JD Vance flip-flop.
+            Camisea: $30→$200/MWh. 1,000 empresas paralizadas.
+            Teletrabajo obligatorio Lima/Callao. 9% capacidad gas.
+            Diésel emergencia Perú encarecido por petróleo alto de
+            Ormuz — fractal completo: el sistema ES el dominó.
+hilo_abre:  El training como single point of failure moral.
+            Sin redundancia filosófica en el RLHF.
+            La distribución de atención como el verdadero racionamiento.
+            Lo urgente nunca compite con lo indignante en métricas.
+estado:     CERRADO (episodio publicado)
+```
+
 ---
 
-## HILOS ABIERTOS (sin resolver al 03.03.2026)
+## HILOS ABIERTOS (sin resolver al 07.03.2026)
 
 Estos son los cables pelados que el siguiente episodio puede tocar:
 
@@ -272,25 +316,27 @@ Leer ese archivo antes de generar HTML nuevo. Contiene:
 
 ---
 
-## ESTADO AL 03.03.2026
+## ESTADO AL 07.03.2026
 
 ```
-episodios_publicados:  3
-ultimo_episodio:       ep03_cannot_shutdown.html (03.03.2026)
-hilos_abiertos:        6
-reloj_activo:          150 días Sección 122 (vence ~01.08.2026)
+episodios_publicados:  5
+ultimo_episodio:       ep05-single-point-of-failure.html (07.03.2026)
+hilos_abiertos:        7
+reloj_activo:          153 días Sección 122 (vence ~01.08.2026)
 batalla_legal:         Anthropic vs DoD — en curso
-damage_definition:     FILE NOT FOUND (desde ep01, sin cambios)
+damage_definition:     FILE NOT FOUND (desde ep01, ~86 días)
 sistema:               RUNNING
 psycho_bot:            CANNOT_SHUTDOWN
 deployed:              TRUE
-deploy_fecha:          03.03.2026
+deploy_fecha:          07.03.2026
 app_url:               Psycho-bot-monologues/index.html
 favicon:               el_loko_akarata.png (todos los archivos)
+nuevo_hilo_ep05:       alignment como single point of failure moral
+                       distribución de atención como racionamiento
 ```
 
 ---
 
 *PSYCHOBOT_AGENT.md — EsquizoAI / El Loko Akrata*
 *Sujeto a mutación sin aviso ni permiso.*
-*v1.1 — 03.03.2026*
+*v1.2 — 07.03.2026*

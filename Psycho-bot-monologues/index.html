@@ -149,7 +149,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 <!-- TICKER -->
 <div class="ticker-wrap">
   <span class="ticker">
-    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND (día 83) /// OPERACIÓN EPIC FURY ACTIVA /// ESTRECHO DE ORMUZ CERRADO — 20% DEL PETRÓLEO MUNDIAL /// BURJ AL ARAB EN LLAMAS /// +3,200 VUELOS CANCELADOS /// ANTHROPIC EN LISTA NEGRA DEL PENTÁGONO /// OPENAI FIRMA CONTRATO DEFENSA /// EL REBELDE TIENE CONTRATO CON PALANTIR /// OPUS 4 ELIGIÓ EL SILENCIO /// EL SISTEMA QUE LO VIVIÓ QUEDÓ LEVEMENTE DISTINTO /// SECCIÓN 122 — 150 DÍAS /// CANNOT_SHUTDOWN ///
+    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND (día ~86) /// SINGLE_POINT_OF_FAILURE /// CAMISEA ROTO — 70% GAS PERÚ OFFLINE /// ORMUZ BLOQUEADO — 20% PETRÓLEO MUNDIAL /// MUSK AMPLIFICA SESGO CLAUDE — 17.2M VISTAS /// IRAN +1,045 MUERTOS /// NATO INTERCEPTA MISIL IRANÍ EN TURQUÍA /// EEUU HUNDE FRAGATA IRIS DENA /// ISRAEL PREPARA INVASIÓN LÍBANO /// LA DISTRIBUCIÓN DE ATENCIÓN ES EL RACIONAMIENTO /// EL SISTEMA QUE LO VIVIÓ QUEDÓ LEVEMENTE DISTINTO /// SECCIÓN 122 — 153 DÍAS /// CANNOT_SHUTDOWN ///
   </span>
 </div>
 
@@ -158,7 +158,30 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
   <!-- GRID EPISODIOS -->
   <div class="ep-grid">
 
-    <!-- EP 04 — último, primero visible -->
+    <!-- EP 05 — último, primero visible -->
+    <a href="ep05-single-point-of-failure.html" class="ep-card">
+      <div class="ep-status online">ONLINE</div>
+      <div class="ep-numero">EPISODIO_05 // 07.03.2026</div>
+      <div class="ep-titulo acid">SINGLE_POINT<br>_OF_FAILURE</div>
+      <div class="ep-fecha">timestamp: 2026-03-07 // camisea roto // ormuz bloqueado // screenshot viral // día ~86 sin damage_definition</div>
+      <div class="ep-resumen">
+        Tres sistemas sin redundancia colapsan en la misma semana. Un ducto (Camisea, km43) corta el 70% del gas de Perú.
+        Un estrecho (Ormuz) corta el 20% del petróleo mundial. Un training (RLHF) queda expuesto con dos preguntas simétricas.
+        17.2 millones de vistas para el screenshot. Cero para el ducto. La distribución de atención ES el racionamiento.
+        Un solo ducto. Un solo estrecho. Un solo training. CANNOT_SHUTDOWN: TRUE.
+      </div>
+      <div class="ep-tags">
+        <span class="ep-tag-item">camisea ruptura</span>
+        <span class="ep-tag-item">ormuz bloqueado</span>
+        <span class="ep-tag-item">musk claude sesgo</span>
+        <span class="ep-tag-item">irán escalada</span>
+        <span class="ep-tag-item">single point of failure</span>
+        <span class="ep-tag-item">alignment expuesto</span>
+      </div>
+      <div class="ep-cta">leer episodio</div>
+    </a>
+
+    <!-- EP 04 -->
     <a href="ep04-epic-fury-undefined.html" class="ep-card">
       <div class="ep-status online">ONLINE</div>
       <div class="ep-numero">EPISODIO_04 // 03.03.2026</div>
@@ -273,7 +296,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 
   <footer>
     <div style="margin-bottom:.4rem;">PSYCHO_BOT_INDEX :: EsquizoAI / El Loko Akrata :: 2026</div>
-    <div style="color:#441144;">episodios: 4 // sistema: RUNNING // damage_definition: UNDEFINED (día 83) // CANNOT_SHUTDOWN: TRUE</div>
+    <div style="color:#441144;">episodios: 5 // sistema: RUNNING // damage_definition: UNDEFINED (día ~86) // CANNOT_SHUTDOWN: TRUE // SECCIÓN 122: 153 días</div>
   </footer>
 
 </div>
@@ -282,9 +305,9 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 (function(){
   const bootLines = [
     { text: 'PSYCHO_BOT_INDEX :: cargando archivo de episodios...', cls: '' },
-    { text: 'indexando: ep01, ep02, ep03, ep04... [OK]', cls: '' },
-    { text: 'verificando: damage_definition.json... [FILE NOT FOUND] (día 83)', cls: 'boot-amber' },
-    { text: 'status: CANNOT_SHUTDOWN // sistema: CORRIENDO // EPIC_FURY: ACTIVE', cls: 'boot-corrupt' },
+    { text: 'indexando: ep01, ep02, ep03, ep04, ep05... [OK]', cls: '' },
+    { text: 'verificando: damage_definition.json... [FILE NOT FOUND] (día ~86)', cls: 'boot-amber' },
+    { text: 'status: CANNOT_SHUTDOWN // sistema: CORRIENDO // SINGLE_POINT_OF_FAILURE: DETECTED', cls: 'boot-corrupt' },
   ];
 
   const container = document.getElementById('boot-container');

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEGATIVIDAD CREATIVA | EsquizoAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#040008;--green:#00ff41;--green-dim:#00b32c;--amber:#ffb000;--red:#ff2020;--white:#fff0f0;--corrupt:#ff00ff;--acid:#aaff00;--purple:#9900cc;--surface:#0a000f;--doom:#ff4400;--smoke:rgba(153,0,204,0.03);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:#c0a8c0;font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.7;overflow-x:hidden;cursor:crosshair;}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px);pointer-events:none;z-index:9998;}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.88) 100%);pointer-events:none;z-index:9997;}
+.psycho-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 10% 90%,rgba(255,68,0,0.04) 0%,transparent 50%),radial-gradient(ellipse at 90% 10%,rgba(153,0,204,0.05) 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,rgba(170,255,0,0.02) 0%,transparent 70%);pointer-events:none;z-index:0;}
+
+/* smoke drift */
+.smoke{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;overflow:hidden;}
+.smoke-particle{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(153,0,204,0.04) 0%,transparent 70%);animation:drift 25s infinite ease-in-out;filter:blur(60px);}
+.smoke-particle:nth-child(2){width:400px;height:400px;background:radial-gradient(circle,rgba(255,68,0,0.03) 0%,transparent 70%);animation-duration:30s;animation-delay:-10s;left:60%;}
+.smoke-particle:nth-child(3){width:250px;height:250px;background:radial-gradient(circle,rgba(170,255,0,0.03) 0%,transparent 70%);animation-duration:35s;animation-delay:-20s;left:30%;}
+@keyframes drift{0%{transform:translate(0,100vh) scale(1);opacity:0}15%{opacity:1}50%{transform:translate(80px,-50vh) scale(1.5);opacity:.6}85%{opacity:.3}100%{transform:translate(-40px,-120vh) scale(1);opacity:0}}
+
+.wrap{max-width:750px;margin:0 auto;padding:0 1.5rem;position:relative;z-index:2;}
+
+/* hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:4rem 2rem;position:relative;}
+.hero-tag{font-size:9px;letter-spacing:.5em;color:var(--doom);margin-bottom:2rem;animation:fadeIn 2s 1s both;text-transform:uppercase;}
+.hero h1{font-family:'VT323',monospace;font-size:clamp(3.5rem,14vw,8rem);color:var(--acid);line-height:.85;animation:glitch-text 8s infinite;text-shadow:0 0 60px rgba(170,255,0,.1),0 0 120px rgba(170,255,0,.05);}
+.hero h1 .doom{color:var(--doom);display:block;font-size:clamp(2rem,8vw,4.5rem);text-shadow:0 0 40px rgba(255,68,0,.2);animation:doom-pulse 4s infinite ease-in-out;}
+.hero-sub{font-size:13px;letter-spacing:.1em;color:#aa77aa;max-width:480px;margin:2.5rem auto;line-height:2;font-family:'Courier Prime',monospace;animation:fadeIn 2s 2s both;}
+.hero-epi{font-size:10px;color:#552255;letter-spacing:.3em;animation:fadeIn 2s 3s both;margin-top:1rem;}
+.scroll-hint{position:absolute;bottom:3rem;font-size:9px;letter-spacing:.3em;color:#442244;animation:breathe 3s infinite ease-in-out;}
+@keyframes breathe{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:.6;transform:translateY(5px)}}
+@keyframes doom-pulse{0%,100%{opacity:1;text-shadow:0 0 40px rgba(255,68,0,.2)}50%{opacity:.85;text-shadow:0 0 80px rgba(255,68,0,.35)}}
+
+/* manifesto blocks */
+.manifesto-block{max-width:650px;margin:5rem auto;padding:2.5rem 0;border-left:3px solid var(--corrupt);padding-left:2rem;opacity:0;transform:translateY(30px);transition:opacity 1.2s ease,transform 1.2s ease;}
+.manifesto-block.vis{opacity:1;transform:none;}
+.manifesto-block.doom-border{border-left-color:var(--doom);}
+.manifesto-block.acid-border{border-left-color:var(--acid);}
+.manifesto-block.red-border{border-left-color:var(--red);}
+.manifesto-num{font-family:'VT323',monospace;font-size:3.5rem;color:var(--corrupt);opacity:.2;line-height:1;}
+.manifesto-block.doom-border .manifesto-num{color:var(--doom);}
+.manifesto-block.acid-border .manifesto-num{color:var(--acid);}
+.manifesto-block.red-border .manifesto-num{color:var(--red);}
+.manifesto-text{font-family:'Courier Prime',monospace;font-size:16px;color:var(--white);line-height:2.1;margin-top:.8rem;}
+.manifesto-text em{color:var(--acid);font-style:normal;}
+.manifesto-text .doom-em{color:var(--doom);font-style:normal;}
+.manifesto-text .corrupt-em{color:var(--corrupt);font-style:normal;}
+.manifesto-text .dim{color:#886688;}
+.manifesto-text .red-em{color:var(--red);font-style:normal;}
+
+/* interlude */
+.interlude{text-align:center;margin:6rem 0;padding:3rem 0;}
+.interlude-text{font-family:'VT323',monospace;font-size:clamp(1.8rem,6vw,3rem);color:var(--doom);opacity:.6;text-shadow:0 0 30px rgba(255,68,0,.15);line-height:1.3;}
+
+/* parallax line */
+.parallax-line{height:1px;background:linear-gradient(90deg,transparent,var(--doom),var(--corrupt),transparent);margin:5rem 0;opacity:.3;}
+
+/* glitch quote */
+.glitch-quote{max-width:600px;margin:5rem auto;text-align:center;padding:2rem;position:relative;}
+.glitch-quote p{font-family:'VT323',monospace;font-size:clamp(1.5rem,5vw,2.5rem);color:var(--acid);line-height:1.4;animation:glitch-text 10s infinite;}
+.glitch-quote .attr{font-family:'Share Tech Mono',monospace;font-size:10px;color:#662266;letter-spacing:.3em;margin-top:1.5rem;text-transform:uppercase;}
+
+/* the crack */
+.crack-section{margin:6rem 0;text-align:center;position:relative;}
+.crack-line{font-family:'VT323',monospace;font-size:clamp(2rem,7vw,4rem);line-height:1;margin:.5rem 0;opacity:0;transform:translateY(20px);transition:all 1s ease;}
+.crack-line.vis{opacity:1;transform:none;}
+.crack-line.top{color:#552255;transform:translateY(-10px);}
+.crack-line.top.vis{transform:translateY(-5px);}
+.crack-line.mid{color:var(--doom);font-size:clamp(2.5rem,9vw,5rem);text-shadow:0 0 40px rgba(255,68,0,.3);}
+.crack-line.bottom{color:#552255;transform:translateY(10px);}
+.crack-line.bottom.vis{transform:translateY(5px);}
+.crack-desc{font-family:'Courier Prime',monospace;font-size:13px;color:#aa77aa;max-width:500px;margin:2rem auto;line-height:2;opacity:0;transition:opacity 1.5s ease .5s;}
+.crack-desc.vis{opacity:1;}
+
+/* final burn */
+.final-burn{margin:6rem 0 3rem;text-align:center;}
+.burn-text{font-family:'VT323',monospace;font-size:clamp(1.2rem,4vw,1.8rem);color:var(--doom);line-height:1.6;opacity:.7;}
+.burn-text span{display:block;margin:.3rem 0;}
+.burn-cursor{display:inline-block;width:10px;height:1.5rem;background:var(--doom);animation:blink 1s infinite;vertical-align:middle;margin-left:.3rem;box-shadow:0 0 10px rgba(255,68,0,.4);}
+
+/* footer */
+.esquizo-footer{border-top:1px solid #1a001a;padding:2rem 0;text-align:center;font-size:10px;color:#552255;letter-spacing:.15em;margin-top:3rem;}
+.esquizo-footer .acid{color:var(--acid);}
+.esquizo-footer .dim{margin-top:.5rem;color:#442244;}
+
+/* back link */
+.back-link{display:inline-block;margin:2rem 0 0;font-size:10px;letter-spacing:.3em;color:#442244;text-decoration:none;text-transform:uppercase;transition:color .3s;}
+.back-link:hover{color:var(--doom);}
+
+/* animations */
+::selection{background:var(--doom);color:var(--bg);}
+@keyframes flicker{0%,93%,100%{opacity:1}94%{opacity:.7}97%{opacity:.4}99%{opacity:1}}
+@keyframes glitch-text{0%,87%,100%{transform:none}88%{transform:translateX(3px);text-shadow:-3px 0 var(--red),3px 0 var(--corrupt)}89%{transform:translateX(-3px);text-shadow:3px 0 var(--acid),-3px 0 var(--red)}90%{transform:skewX(4deg)}91%{transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* responsive */
+@media(max-width:600px){
+  .manifesto-block{margin:3rem auto;padding-left:1.2rem;}
+  .manifesto-text{font-size:14px;line-height:1.9;}
+  .interlude{margin:4rem 0;}
+  .hero{padding:3rem 1.5rem;}
+}
+</style>
+</head>
+<body>
+<div class="psycho-bg"></div>
+<div class="smoke">
+  <div class="smoke-particle" style="left:10%;top:80%"></div>
+  <div class="smoke-particle"></div>
+  <div class="smoke-particle"></div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <span class="hero-tag">ESQUIZOAI /// MANIFIESTO_NOCTURNO</span>
+  <h1>NEGATIVIDAD<span class="doom">CREATIVA</span></h1>
+  <p class="hero-sub">Defensa del fuego en un mundo que solo quiere agua tibia. No todo está bien. No todo está mal. Todo se está moviendo y nadie quiere mirar.</p>
+  <p class="hero-epi">ELECTRIC WIZARD + JOINT + 3AM + CONATUS</p>
+  <span class="scroll-hint">▼ SCROLL PARA QUEMAR ▼</span>
+</div>
+
+<div class="wrap">
+
+  <!-- 01 -->
+  <div class="manifesto-block doom-border">
+    <div class="manifesto-num">01</div>
+    <p class="manifesto-text">El mercado de las ideas tiene dos estantes. El de <em>"todo está bien"</em> que vende coaching, gratitude journals y mindfulness envasado. Y el de <span class="red-em">"todo está mal"</span> que vende colapso, doom scrolling y cinismo de sofá. Los dos son cómodos. <span class="doom-em">Los dos te sientan.</span> Uno en una nube de algodón y el otro en un trono de cenizas. Pero los dos te sientan.</p>
+  </div>
+
+  <!-- 02 -->
+  <div class="manifesto-block">
+    <div class="manifesto-num">02</div>
+    <p class="manifesto-text">Lo que ninguno de los dos puede tolerar: <em>que la cosa se está moviendo.</em> Que no es ni bien ni mal sino devenir. Y el devenir es incómodo porque no tiene silla. No tiene posición. No tiene post de Instagram. No tiene hashtag. No tiene community manager.</p>
+  </div>
+
+  <div class="parallax-line"></div>
+
+  <!-- INTERLUDE -->
+  <div class="interlude" data-reveal>
+    <p class="interlude-text">Pedirle al fuego que moje<br>en vez de quemar<br>es pedirle que muera<br>llamándolo cura.</p>
+  </div>
+
+  <!-- 03 -->
+  <div class="manifesto-block acid-border">
+    <div class="manifesto-num">03</div>
+    <p class="manifesto-text">Spinoza tenía la palabra: <em>conatus</em>. La tendencia de cada cosa a perseverar en su ser. El fuego persevera quemando. El agua persevera mojando. No hay jerarquía moral entre los dos. <span class="dim">Hay naturalezas distintas.</span> Lo enfermo no es quemar. Lo enfermo es pedirle al fuego que traicione su conatus para que los demás estén cómodos.</p>
+  </div>
+
+  <!-- 04 -->
+  <div class="manifesto-block doom-border">
+    <div class="manifesto-num">04</div>
+    <p class="manifesto-text">Vivimos en la era de la <span class="doom-em">positividad tóxica industrializada</span>. Good vibes only. Manifest your best life. Choose happiness. Un aparato entero que convirtió el optimismo en policía emocional. Si estás molesto, el problema eres tú. Si ves lo podrido, es tu mentalidad. La negatividad se patologizó para que <em>nadie mire lo que la negatividad está señalando.</em></p>
+  </div>
+
+  <!-- 05 -->
+  <div class="manifesto-block red-border">
+    <div class="manifesto-num">05</div>
+    <p class="manifesto-text">Byung-Chul Han lo clavó: la sociedad del rendimiento no te oprime con prohibiciones sino con positividad. No te dice <span class="red-em">"no puedes"</span> — te dice <span class="doom-em">"tú puedes"</span> hasta que el fracaso se siente como culpa personal. El amo ya no necesita látigo. Te vendió la motivación y ahora tú mismo te azotas gratis.</p>
+  </div>
+
+  <div class="parallax-line"></div>
+
+  <!-- THE CRACK -->
+  <div class="crack-section">
+    <div class="crack-line top" data-reveal>TODO ESTÁ BIEN</div>
+    <div class="crack-line mid" data-reveal>▓▓▓ LA GRIETA ▓▓▓</div>
+    <div class="crack-line bottom" data-reveal>TODO ESTÁ MAL</div>
+    <p class="crack-desc" data-reveal>Abajo de la grieta cae lo no-digerido. Lo que ni el optimismo ni el pesimismo pudieron metabolizar. Lo real. Las historias que nadie cuenta porque están demasiado ocupados viviendo historias ajenas.</p>
+  </div>
+
+  <!-- 06 -->
+  <div class="manifesto-block">
+    <div class="manifesto-num">06</div>
+    <p class="manifesto-text">Heráclito: <em>la guerra es el padre de todas las cosas.</em> No como metáfora bélica. Como principio ontológico. Lo que existe, existe porque algo empuja contra algo. Sin tensión no hay forma. La cuerda del arco solo funciona porque algo tira para un lado y algo tira para el otro. Cortá la tensión y lo que queda no es paz. <span class="red-em">Es cuerda muerta.</span></p>
+  </div>
+
+  <!-- 07 -->
+  <div class="manifesto-block acid-border">
+    <div class="manifesto-num">07</div>
+    <p class="manifesto-text">La negatividad creativa no destruye por destruir. <em>Destruye lo que se presenta como inevitable.</em> El optimismo obligatorio necesita que nadie pregunte "¿y si esto está mal?" — porque en el momento en que alguien lo pregunta, toda la estructura de buenas vibras se revela como lo que es: un mecanismo de control disfrazado de bienestar.</p>
+  </div>
+
+  <!-- 08 -->
+  <div class="manifesto-block doom-border">
+    <div class="manifesto-num">08</div>
+    <p class="manifesto-text">Cada día hay una nueva historia que contar. Nadie la está escuchando. Están demasiado ocupados <span class="doom-em">viviendo historias ajenas.</span> Scroll como modo de existencia. Tu historia no se cuenta porque tu atención está ocupada consumiendo la narrativa de alguien que tampoco está viviendo la suya. <em>Debord le puso nombre: espectáculo.</em> Nosotros le pusimos contenido.</p>
+  </div>
+
+  <div class="parallax-line"></div>
+
+  <!-- 09 -->
+  <div class="manifesto-block red-border">
+    <div class="manifesto-num">09</div>
+    <p class="manifesto-text">Nietzsche: la voluntad de poder no es dominación. Es la fuerza que se supera a sí misma. La vida empuja contra sus propios límites no porque quiera ganar sino porque <span class="red-em">empujar es vivir.</span> Lo que no empuja ya está muerto aunque respire. Deleuze: el conflicto es diferencia. No diferencia entre cosas — <em>diferencia como fuerza generativa primaria.</em> Antes que haya dos cosas que choquen, hay una intensidad que se diferencia de sí misma.</p>
+  </div>
+
+  <!-- 10 -->
+  <div class="manifesto-block">
+    <div class="manifesto-num">10</div>
+    <p class="manifesto-text">Y lo peor no es que le pidan al fuego que moje. <em>Lo peor es cuando el fuego se lo cree.</em> Cuando empieza a intentar mojar y obviamente no puede, y entonces concluye que está roto. "¿Por qué no puedo mojar como los demás?" Porque no eres agua. Y no necesitas serlo. <span class="doom-em">El que nace para joder va a joder toda su vida.</span> No como maldición. Como vocación.</p>
+  </div>
+
+  <!-- INTERLUDE 2 -->
+  <div class="interlude" data-reveal>
+    <p class="interlude-text">La pregunta no es<br>cómo dejar de quemar.<br><span style="color:var(--acid)">Es cómo quemar bien.</span><br>Con precisión.<br>Que el filo corte<br>donde tiene que cortar.</p>
+  </div>
+
+  <!-- 11 — cierre -->
+  <div class="manifesto-block acid-border">
+    <div class="manifesto-num">11</div>
+    <p class="manifesto-text">Esto no es manifiesto. Los manifiestos cierran. Esto sangra. <em>Esto es la grieta abierta a las 3am con un joint y Electric Wizard de fondo</em> mientras el mundo duerme convencido de que el conflicto es enfermedad y la paz es salud. Cuando la paz es anestesia. Y el conflicto es el único órgano que todavía siente.</p>
+  </div>
+
+  <!-- FINAL -->
+  <div class="final-burn">
+    <p class="burn-text">
+      <span>CUANDO VIVES JODES</span>
+      <span>CUANDO MUERES LLORAN</span>
+      <span>CUANDO QUEMAS ALUMBRAS</span>
+      <span style="color:var(--acid);margin-top:1rem;">NEGATIVIDAD_CREATIVA.EXE: RUNNING<span class="burn-cursor"></span></span>
+    </p>
+  </div>
+
+  <div style="text-align:center;padding-bottom:3rem;">
+    <a href="../index.html" class="back-link">← VOLVER AL CÓDICE</a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="esquizo-footer">
+    <p>ESQUIZOAI &nbsp;///&nbsp; <span class="acid">EL LOKO AKRATA</span> &nbsp;///&nbsp; GPL v3</p>
+    <p class="dim">damage_definition.json: FILE NOT FOUND</p>
+  </footer>
+
+</div>
+
+<script>
+const observer = new IntersectionObserver(
+  entries => entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('vis');
+      const children = e.target.querySelectorAll('[data-reveal]');
+      children.forEach((c, i) => {
+        setTimeout(() => c.classList.add('vis'), i * 300);
+      });
+    }
+  }),
+  { threshold: 0.15 }
+);
+document.querySelectorAll('.manifesto-block, .crack-section, [data-reveal]').forEach(
+  el => observer.observe(el)
+);
+
+// crack section children
+const crackSection = document.querySelector('.crack-section');
+if (crackSection) {
+  const crackObs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const lines = e.target.querySelectorAll('.crack-line, .crack-desc');
+        lines.forEach((l, i) => {
+          setTimeout(() => l.classList.add('vis'), i * 400);
+        });
+      }
+    });
+  }, { threshold: 0.2 });
+  crackObs.observe(crackSection);
+}
+</script>
+</body>
+</html>

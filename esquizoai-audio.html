@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESQUIZOAI :: AUDIO WORKSTATION</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/esquizo-audio.css">
+</head>
+<body>
+<div class="psycho-bg"></div>
+<div class="wrap">
+
+<!-- HEADER -->
+<div class="header">
+  <h1>ESQUIZOAI_AUDIO</h1>
+  <div class="sub">DRUMS // BASS_SYNTH // LEAD_SYNTH // FM_SYNTH // NOISE_GLITCH // SSB_SHIFT // FX_CHAIN // MIXER // LOOPS</div>
+</div>
+
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <span>CTX:<span id="stCtx" class="off">INIT</span></span>
+  <span>BPM:<span id="stBpm" class="warn">120</span></span>
+  <span>STEP:<span id="stStep" class="off">--</span></span>
+  <span>PAT:<span id="stPat" class="warn">A</span></span>
+  <span>LOOPS:<span id="stLoop" class="off">0</span></span>
+  <span>SR:<span id="stSr">--</span></span>
+  <span>FX:<span id="stFx" class="off">0</span></span>
+  <span>CH:<span id="stCh" class="on">11</span></span>
+</div>
+
+<!-- TRANSPORT + SOURCE -->
+<div class="source-panel">
+  <div class="seq-transport">
+    <button class="transport" id="btnPlay" onclick="togglePlay()">PLAY</button>
+    <button class="transport rec" id="btnRec" onclick="toggleRec()" style="color:var(--red);border-color:var(--red)">REC</button>
+    <button onclick="stopSeq()">STOP</button>
+    <span class="bpm-display" id="bpmDisplay">120</span>
+    <div class="param c-amber" style="flex:1;min-width:100px;margin:0">
+      <input type="range" id="sBpm" min="40" max="300" value="120" step="1" oninput="updBpm()">
+    </div>
+    <span style="font-size:7px;color:#885588">SWG:</span>
+    <div style="width:60px"><input type="range" id="sSwing" min="0" max="75" value="0" step="1" style="width:100%"></div>
+    <span style="font-size:7px;color:#885588">|</span>
+    <button id="bOsc" onclick="srcOsc('sawtooth')" style="font-size:7px">SAW</button>
+    <button id="bMic" onclick="srcMic()" style="font-size:7px">MIC</button>
+    <button id="bFile" onclick="document.getElementById('aFile').click()" style="font-size:7px">FILE</button>
+    <button class="kill" onclick="killSrc()" style="font-size:7px">KILL</button>
+    <input type="file" id="aFile" accept="audio/*" onchange="srcFile(this)">
+  </div>
+  <span class="file-name" id="fName"></span>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('drums',this)">DRUMS</div>
+  <div class="tab" onclick="switchTab('bass',this)">BASS</div>
+  <div class="tab" onclick="switchTab('synth',this)">SYNTH</div>
+  <div class="tab" onclick="switchTab('fm',this)">FM</div>
+  <div class="tab" onclick="switchTab('glitch',this)">GLITCH</div>
+  <div class="tab" onclick="switchTab('shifter',this)">SSB</div>
+  <div class="tab" onclick="switchTab('fx',this)">FX</div>
+  <div class="tab" onclick="switchTab('mixer',this)">MIXER</div>
+  <div class="tab" onclick="switchTab('loops',this)">LOOPS</div>
+</div>
+
+<!-- ======== TAB: DRUMS ======== -->
+<div class="tab-content active" id="tab-drums">
+  <div class="module m-green" data-mod="sequencer // all_tracks">
+    <div class="seq-grid" id="seqGrid"></div>
+    <div style="margin-top:.3rem;display:flex;gap:.3rem;align-items:center;flex-wrap:wrap">
+      <div class="label" style="margin:0">PATTERNS:</div>
+      <div class="pattern-slots" id="patSlots"></div>
+      <button class="mini-btn" onclick="clearPattern()">CLR</button>
+      <button class="mini-btn" onclick="randomPattern()">RND</button>
+      <button class="mini-btn" onclick="euclidPattern()">EUCLID</button>
+      <button class="mini-btn" onclick="copyPattern()">CPY</button>
+      <button class="mini-btn" onclick="pastePattern()">PST</button>
+    </div>
+  </div>
+  <div class="dsp-grid">
+    <div class="module m-red" data-mod="kick_synth">
+      <div class="param c-red"><div class="param-head"><span class="param-name">PITCH</span><span class="param-val" id="vKP">55</span></div><input type="range" id="sKP" min="20" max="120" value="55" step="1" oninput="V('vKP',this.value)"></div>
+      <div class="param c-red"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vKD">300</span></div><input type="range" id="sKD" min="50" max="800" value="300" step="1" oninput="V('vKD',this.value)"></div>
+      <div class="param c-red"><div class="param-head"><span class="param-name">SWEEP</span><span class="param-val" id="vKS">150</span></div><input type="range" id="sKS" min="50" max="500" value="150" step="1" oninput="V('vKS',this.value)"></div>
+      <div class="param c-red"><div class="param-head"><span class="param-name">CLICK</span><span class="param-val" id="vKC">30</span></div><input type="range" id="sKC" min="0" max="100" value="30" step="1" oninput="V('vKC',this.value)"></div>
+    </div>
+    <div class="module m-amber" data-mod="snare_synth">
+      <div class="param c-amber"><div class="param-head"><span class="param-name">TONE</span><span class="param-val" id="vST">200</span></div><input type="range" id="sST" min="80" max="400" value="200" step="1" oninput="V('vST',this.value)"></div>
+      <div class="param c-amber"><div class="param-head"><span class="param-name">NOISE</span><span class="param-val" id="vSN">70</span></div><input type="range" id="sSN" min="0" max="100" value="70" step="1" oninput="V('vSN',this.value)"></div>
+      <div class="param c-amber"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vSD">200</span></div><input type="range" id="sSD" min="30" max="600" value="200" step="1" oninput="V('vSD',this.value)"></div>
+    </div>
+    <div class="module m-cyan" data-mod="hihat">
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">FREQ</span><span class="param-val" id="vHF">8000</span></div><input type="range" id="sHF" min="2000" max="16000" value="8000" step="100" oninput="V('vHF',this.value)"></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vHD">80</span></div><input type="range" id="sHD" min="10" max="500" value="80" step="1" oninput="V('vHD',this.value)"></div>
+    </div>
+    <div class="module m-corrupt" data-mod="clap+perc">
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">CLAP_DEC</span><span class="param-val" id="vCD">150</span></div><input type="range" id="sCD" min="30" max="500" value="150" step="1" oninput="V('vCD',this.value)"></div>
+      <div class="param c-acid"><div class="param-head"><span class="param-name">PERC_F</span><span class="param-val" id="vPF">800</span></div><input type="range" id="sPF" min="100" max="4000" value="800" step="10" oninput="V('vPF',this.value)"></div>
+    </div>
+  </div>
+  <div class="preset-btns">
+    <button class="preset-btn" onclick="drumPre('808')">808</button>
+    <button class="preset-btn" onclick="drumPre('909')">909</button>
+    <button class="preset-btn" onclick="drumPre('ind')">INDUSTRIAL</button>
+    <button class="preset-btn" onclick="drumPre('noise')">NOISE</button>
+  </div>
+</div>
+
+<!-- ======== TAB: BASS ======== -->
+<div class="tab-content" id="tab-bass">
+  <div class="module m-bass" data-mod="bass_synth // mono">
+    <div class="dsp-grid">
+      <div>
+        <div class="label">// oscillators</div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">OSC1_TYPE</span><span class="param-val" id="vBO1" style="font-size:10px">SAW</span></div>
+          <div class="mini-btns"><button class="mini-btn sel" onclick="setBP('bassOsc1','sawtooth',this)">SAW</button><button class="mini-btn" onclick="setBP('bassOsc1','square',this)">SQR</button><button class="mini-btn" onclick="setBP('bassOsc1','sine',this)">SIN</button><button class="mini-btn" onclick="setBP('bassOsc1','triangle',this)">TRI</button></div></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">DETUNE (cents)</span><span class="param-val" id="vBDet">0</span></div><input type="range" id="sBDet" min="0" max="50" value="0" step="1" oninput="V('vBDet',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">SUB_OSC (-1oct)</span><span class="param-val" id="vBSub">50</span></div><input type="range" id="sBSub" min="0" max="100" value="50" step="1" oninput="V('vBSub',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">SUB_TYPE</span><span class="param-val" id="vBO2" style="font-size:10px">SQUARE</span></div>
+          <div class="mini-btns"><button class="mini-btn" onclick="setBP('bassOsc2','sine',this)">SIN</button><button class="mini-btn sel" onclick="setBP('bassOsc2','square',this)">SQR</button><button class="mini-btn" onclick="setBP('bassOsc2','triangle',this)">TRI</button></div></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">GLIDE_MS</span><span class="param-val" id="vBGlide">30</span></div><input type="range" id="sBGlide" min="0" max="500" value="30" step="1" oninput="V('vBGlide',this.value)"></div>
+      </div>
+      <div>
+        <div class="label">// filter</div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">CUTOFF</span><span class="param-val" id="vBCut">800</span></div><input type="range" id="sBCut" min="20" max="16000" value="800" step="1" oninput="V('vBCut',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">RESONANCE</span><span class="param-val" id="vBRes">5</span></div><input type="range" id="sBRes" min="0" max="30" value="5" step="0.5" oninput="V('vBRes',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">ENV_AMOUNT</span><span class="param-val" id="vBEnvA">3000</span></div><input type="range" id="sBEnvA" min="0" max="10000" value="3000" step="100" oninput="V('vBEnvA',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">ENV_DECAY</span><span class="param-val" id="vBEnvD">200</span></div><input type="range" id="sBEnvD" min="10" max="2000" value="200" step="1" oninput="V('vBEnvD',this.value)"></div>
+      </div>
+    </div>
+    <div class="dsp-grid">
+      <div>
+        <div class="label">// amp + drive</div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">ATTACK</span><span class="param-val" id="vBA">5</span></div><input type="range" id="sBA" min="1" max="500" value="5" step="1" oninput="V('vBA',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vBDec">150</span></div><input type="range" id="sBDec" min="10" max="2000" value="150" step="1" oninput="V('vBDec',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">DRIVE</span><span class="param-val" id="vBDrv">0</span></div><input type="range" id="sBDrv" min="0" max="100" value="0" step="1" oninput="V('vBDrv',this.value)"></div>
+      </div>
+      <div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">SUSTAIN</span><span class="param-val" id="vBSus">60</span></div><input type="range" id="sBSus" min="0" max="100" value="60" step="1" oninput="V('vBSus',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">RELEASE</span><span class="param-val" id="vBRel">100</span></div><input type="range" id="sBRel" min="10" max="2000" value="100" step="1" oninput="V('vBRel',this.value)"></div>
+        <div class="param c-bass"><div class="param-head"><span class="param-name">OCTAVE</span><span class="param-val" id="vBOct">0</span></div>
+          <div class="mini-btns"><button class="mini-btn" onclick="bassP.octave=-1;V('vBOct','-1')">-1</button><button class="mini-btn sel" onclick="bassP.octave=0;V('vBOct','0')">0</button><button class="mini-btn" onclick="bassP.octave=1;V('vBOct','+1')">+1</button></div></div>
+      </div>
+    </div>
+    <div class="label">// bass_presets</div>
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="bassPre('acid')">ACID_303</button>
+      <button class="preset-btn" onclick="bassPre('sub')">SUB_BASS</button>
+      <button class="preset-btn" onclick="bassPre('reese')">REESE</button>
+      <button class="preset-btn" onclick="bassPre('pluck')">PLUCK</button>
+      <button class="preset-btn" onclick="bassPre('growl')">GROWL</button>
+      <button class="preset-btn" onclick="bassPre('dub')">DUB</button>
+      <button class="preset-btn" onclick="bassPre('dist')">DISTORTED</button>
+      <button class="preset-btn" onclick="bassPre('octave')">OCTAVE</button>
+      <button class="preset-btn" onclick="bassPre('wobble')">WOBBLE</button>
+      <button class="preset-btn" onclick="bassPre('fm')">FM_BASS</button>
+    </div>
+  </div>
+  <div class="label">// keyboard — click or keys Z-M = C2-B2</div>
+  <div class="keyboard" id="bassKeys"></div>
+</div>
+
+<!-- ======== TAB: SYNTH ======== -->
+<div class="tab-content" id="tab-synth">
+  <div class="module m-synth" data-mod="lead_synth // poly">
+    <div class="dsp-grid">
+      <div>
+        <div class="label">// oscillators</div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">OSC1_TYPE</span><span class="param-val" id="vLO1" style="font-size:10px">SAW</span></div>
+          <div class="mini-btns"><button class="mini-btn sel" onclick="setBP('synthOsc1','sawtooth',this)">SAW</button><button class="mini-btn" onclick="setBP('synthOsc1','square',this)">SQR</button><button class="mini-btn" onclick="setBP('synthOsc1','sine',this)">SIN</button><button class="mini-btn" onclick="setBP('synthOsc1','triangle',this)">TRI</button></div></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">OSC2_DETUNE</span><span class="param-val" id="vLDet">7</span></div><input type="range" id="sLDet" min="0" max="50" value="7" step="1" oninput="V('vLDet',this.value)"></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">OSC2_TYPE</span><span class="param-val" id="vLO2" style="font-size:10px">SAW</span></div>
+          <div class="mini-btns"><button class="mini-btn sel" onclick="setBP('synthOsc2','sawtooth',this)">SAW</button><button class="mini-btn" onclick="setBP('synthOsc2','square',this)">SQR</button><button class="mini-btn" onclick="setBP('synthOsc2','sine',this)">SIN</button></div></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">OSC_MIX</span><span class="param-val" id="vLMix">50</span></div><input type="range" id="sLMix" min="0" max="100" value="50" step="1" oninput="V('vLMix',this.value)"></div>
+      </div>
+      <div>
+        <div class="label">// filter</div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">CUTOFF</span><span class="param-val" id="vLCut">4000</span></div><input type="range" id="sLCut" min="20" max="16000" value="4000" step="1" oninput="V('vLCut',this.value)"></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">RESONANCE</span><span class="param-val" id="vLRes">2</span></div><input type="range" id="sLRes" min="0" max="30" value="2" step="0.5" oninput="V('vLRes',this.value)"></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">FLT_ENV</span><span class="param-val" id="vLFEnv">2000</span></div><input type="range" id="sLFEnv" min="0" max="10000" value="2000" step="100" oninput="V('vLFEnv',this.value)"></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">FLT_DEC</span><span class="param-val" id="vLFDec">400</span></div><input type="range" id="sLFDec" min="10" max="3000" value="400" step="1" oninput="V('vLFDec',this.value)"></div>
+      </div>
+    </div>
+    <div class="dsp-grid">
+      <div>
+        <div class="label">// amp adsr</div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">ATK</span><span class="param-val" id="vLA">10</span></div><input type="range" id="sLA" min="1" max="2000" value="10" step="1" oninput="V('vLA',this.value)"></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">DEC</span><span class="param-val" id="vLDc">300</span></div><input type="range" id="sLDc" min="10" max="3000" value="300" step="1" oninput="V('vLDc',this.value)"></div>
+      </div>
+      <div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">SUS</span><span class="param-val" id="vLS">70</span></div><input type="range" id="sLS" min="0" max="100" value="70" step="1" oninput="V('vLS',this.value)"></div>
+        <div class="param c-synth"><div class="param-head"><span class="param-name">REL</span><span class="param-val" id="vLR">200</span></div><input type="range" id="sLR" min="10" max="3000" value="200" step="1" oninput="V('vLR',this.value)"></div>
+      </div>
+    </div>
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="synthPre('lead')">LEAD</button>
+      <button class="preset-btn" onclick="synthPre('pad')">PAD</button>
+      <button class="preset-btn" onclick="synthPre('stab')">STAB</button>
+      <button class="preset-btn" onclick="synthPre('pluck')">PLUCK</button>
+      <button class="preset-btn" onclick="synthPre('brass')">BRASS</button>
+      <button class="preset-btn" onclick="synthPre('strings')">STRINGS</button>
+      <button class="preset-btn" onclick="synthPre('organ')">ORGAN</button>
+      <button class="preset-btn" onclick="synthPre('bell')">BELL</button>
+      <button class="preset-btn" onclick="synthPre('keys')">KEYS</button>
+      <button class="preset-btn" onclick="synthPre('choir')">CHOIR</button>
+      <button class="preset-btn" onclick="synthPre('acid')">ACID_LEAD</button>
+      <button class="preset-btn" onclick="synthPre('ambient')">AMBIENT</button>
+      <button class="preset-btn" onclick="synthPre('perc')">PERC_SYNTH</button>
+      <button class="preset-btn" onclick="synthPre('noise')">NOISE_TEX</button>
+    </div>
+  </div>
+  <div class="label">// keyboard — click or keys Z-M = C3-B3</div>
+  <div class="keyboard" id="synthKeys"></div>
+</div>
+
+<!-- ======== TAB: FM ======== -->
+<div class="tab-content" id="tab-fm">
+  <div class="module m-fm" data-mod="fm_synth">
+    <div class="dsp-grid">
+      <div>
+        <div class="label">// carrier + modulator</div>
+        <div class="param c-fm">
+          <div class="param-head"><span class="param-name">CARRIER_TYPE</span><span class="param-val" id="vFMCt" style="font-size:10px">SIN</span></div>
+          <div class="mini-btns">
+            <button class="mini-btn sel" onclick="setFMP('carrierType','sine',this)">SIN</button>
+            <button class="mini-btn" onclick="setFMP('carrierType','sawtooth',this)">SAW</button>
+            <button class="mini-btn" onclick="setFMP('carrierType','square',this)">SQR</button>
+            <button class="mini-btn" onclick="setFMP('carrierType','triangle',this)">TRI</button>
+          </div>
+        </div>
+        <div class="param c-fm">
+          <div class="param-head"><span class="param-name">OCTAVE</span><span class="param-val" id="vFMOct">0</span></div>
+          <div class="mini-btns">
+            <button class="mini-btn" onclick="fmP.octave=-1;V('vFMOct','-1')">-1</button>
+            <button class="mini-btn sel" onclick="fmP.octave=0;V('vFMOct','0')">0</button>
+            <button class="mini-btn" onclick="fmP.octave=1;V('vFMOct','+1')">+1</button>
+          </div>
+        </div>
+        <div class="param c-fm">
+          <div class="param-head"><span class="param-name">MOD_TYPE</span><span class="param-val" id="vFMMt" style="font-size:10px">SIN</span></div>
+          <div class="mini-btns">
+            <button class="mini-btn sel" onclick="setFMP('modType','sine',this)">SIN</button>
+            <button class="mini-btn" onclick="setFMP('modType','sawtooth',this)">SAW</button>
+            <button class="mini-btn" onclick="setFMP('modType','square',this)">SQR</button>
+          </div>
+        </div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">RATIO</span><span class="param-val" id="vFMRatio">2</span></div><input type="range" id="sFMRatio" min="0.1" max="16" value="2" step="0.1" oninput="fmP.ratio=+this.value;V('vFMRatio',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">FM_INDEX</span><span class="param-val" id="vFMIdx">100</span></div><input type="range" id="sFMIdx" min="0" max="2000" value="100" step="1" oninput="fmP.index=+this.value;V('vFMIdx',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">FEEDBACK</span><span class="param-val" id="vFMFb">0</span></div><input type="range" id="sFMFb" min="0" max="100" value="0" step="1" oninput="fmP.feedback=+this.value;V('vFMFb',this.value)"></div>
+      </div>
+      <div>
+        <div class="label">// filter + adsr</div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">CUTOFF</span><span class="param-val" id="vFMCut">6000</span></div><input type="range" id="sFMCut" min="20" max="20000" value="6000" step="1" oninput="fmP.cut=+this.value;V('vFMCut',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">RESONANCE</span><span class="param-val" id="vFMRes">1</span></div><input type="range" id="sFMRes" min="0" max="30" value="1" step="0.5" oninput="fmP.res=+this.value;V('vFMRes',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">FLT_ENV</span><span class="param-val" id="vFMFEnv">3000</span></div><input type="range" id="sFMFEnv" min="0" max="15000" value="3000" step="100" oninput="fmP.fEnv=+this.value;V('vFMFEnv',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">FLT_DEC</span><span class="param-val" id="vFMFDec">300</span></div><input type="range" id="sFMFDec" min="10" max="3000" value="300" step="1" oninput="fmP.fDec=+this.value;V('vFMFDec',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">ATK</span><span class="param-val" id="vFMA">5</span></div><input type="range" id="sFMA" min="1" max="2000" value="5" step="1" oninput="fmP.atk=+this.value;V('vFMA',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">DEC</span><span class="param-val" id="vFMDec">200</span></div><input type="range" id="sFMDec" min="10" max="3000" value="200" step="1" oninput="fmP.dec=+this.value;V('vFMDec',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">SUS</span><span class="param-val" id="vFMSus">50</span></div><input type="range" id="sFMSus" min="0" max="100" value="50" step="1" oninput="fmP.sus=+this.value;V('vFMSus',this.value)"></div>
+        <div class="param c-fm"><div class="param-head"><span class="param-name">REL</span><span class="param-val" id="vFMRel">300</span></div><input type="range" id="sFMRel" min="10" max="3000" value="300" step="1" oninput="fmP.rel=+this.value;V('vFMRel',this.value)"></div>
+      </div>
+    </div>
+    <div class="label">// fm_presets</div>
+    <div class="preset-btns">
+      <button class="preset-btn" onclick="fmPre('bell')">BELL</button>
+      <button class="preset-btn" onclick="fmPre('brass')">BRASS</button>
+      <button class="preset-btn" onclick="fmPre('epiano')">E_PIANO</button>
+      <button class="preset-btn" onclick="fmPre('metallic')">METALLIC</button>
+      <button class="preset-btn" onclick="fmPre('organ')">ORGAN</button>
+      <button class="preset-btn" onclick="fmPre('bassfm')">BASS_FM</button>
+      <button class="preset-btn" onclick="fmPre('drone')">DRONE</button>
+      <button class="preset-btn" onclick="fmPre('perc')">PERC_FM</button>
+    </div>
+  </div>
+  <div class="label">// keyboard — click or keys Z-M = C3-B3</div>
+  <div class="keyboard" id="fmKeys"></div>
+</div>
+
+<!-- ======== TAB: GLITCH ======== -->
+<div class="tab-content" id="tab-glitch">
+  <div class="module m-noise" data-mod="noise_glitch_engine">
+    <div class="dsp-grid">
+      <div>
+        <div class="label">// noise engine</div>
+        <div class="tog-wrap">
+          <div class="tog" id="togNoise" onclick="toggleNoise(this)"><div class="dot"></div></div>
+          <span class="tog-label" id="noiseTogLabel">OFFLINE</span>
+        </div>
+        <div class="noise-state" id="noiseStateDisplay">// SILENT</div>
+        <div class="param c-noise">
+          <div class="param-head"><span class="param-name">NOISE_TYPE</span><span class="param-val" id="vNType">WHITE</span></div>
+          <div class="mini-btns">
+            <button class="mini-btn sel" onclick="setNoiseType('white',this)">WHITE</button>
+            <button class="mini-btn" onclick="setNoiseType('pink',this)">PINK</button>
+            <button class="mini-btn" onclick="setNoiseType('brown',this)">BROWN</button>
+            <button class="mini-btn" onclick="setNoiseType('electric',this)">ELEC</button>
+          </div>
+        </div>
+        <div class="param c-noise"><div class="param-head"><span class="param-name">DENSITY</span><span class="param-val" id="vNDen">100</span></div><input type="range" id="sNDen" min="1" max="100" value="100" step="1" oninput="V('vNDen',this.value)"></div>
+        <div class="param c-noise"><div class="param-head"><span class="param-name">VOLUME</span><span class="param-val" id="vNVol">70</span></div><input type="range" id="sNVol" min="0" max="100" value="70" step="1" oninput="updNoiseVol(this.value)"></div>
+      </div>
+      <div>
+        <div class="label">// filter + glitch</div>
+        <div class="param c-noise"><div class="param-head"><span class="param-name">FREQ_TILT LPF</span><span class="param-val" id="vNTilt">8000</span></div><input type="range" id="sNTilt" min="80" max="20000" value="8000" step="1" oninput="updNoiseTilt(this.value)"></div>
+        <div class="param c-noise"><div class="param-head"><span class="param-name">RESONANCE</span><span class="param-val" id="vNRes">1</span></div><input type="range" id="sNRes" min="0" max="20" value="1" step="0.5" oninput="updNoiseRes(this.value)"></div>
+        <div class="param c-noise"><div class="param-head"><span class="param-name">GLITCH_AMT</span><span class="param-val" id="vNGlitch">0</span></div><input type="range" id="sNGlitch" min="0" max="100" value="0" step="1" oninput="noiseS.glitchAmt=+this.value/100;V('vNGlitch',this.value)"></div>
+        <div class="param c-noise"><div class="param-head"><span class="param-name">PULSE_RATE Hz</span><span class="param-val" id="vNPulse">0</span></div><input type="range" id="sNPulse" min="0" max="30" value="0" step="0.5" oninput="updNoisePulse(this.value)"></div>
+        <div class="param c-noise"><div class="param-head"><span class="param-name">HPF_CUTOFF</span><span class="param-val" id="vNHpf">20</span></div><input type="range" id="sNHpf" min="20" max="8000" value="20" step="1" oninput="updNoiseHpf(this.value)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB: SSB (shifter) ======== -->
+<div class="tab-content" id="tab-shifter">
+  <div class="dsp-grid">
+    <div class="module m-cyan" data-mod="hilbert_ssb">
+      <div class="tog-wrap"><div class="tog on" id="togSSB" onclick="togMod('ssb')"><div class="dot"></div></div><span class="tog-label">SSB ACTIVE</span></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">SHIFT_HZ</span><span class="param-val" id="vSSB">0</span></div><input type="range" id="sSSB" min="-1000" max="1000" value="0" step="0.5" oninput="updSSB()"></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">SIDEBAND</span><span class="param-val" id="vSide" style="font-size:9px">USB</span></div>
+        <div class="mini-btns"><button class="mini-btn sel" onclick="setSide(0,this)">USB</button><button class="mini-btn" onclick="setSide(1,this)">LSB</button><button class="mini-btn" onclick="setSide(2,this)">BOTH</button></div></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">MIX</span><span class="param-val" id="vSSBM">100</span></div><input type="range" id="sSSBM" min="0" max="100" value="100" step="1" oninput="updSSB()"></div>
+    </div>
+    <div class="module m-acid" data-mod="ring_mod">
+      <div class="tog-wrap"><div class="tog" id="togRing" onclick="togMod('ring')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-acid"><div class="param-head"><span class="param-name">CARRIER</span><span class="param-val" id="vRHz">0</span></div><input type="range" id="sRHz" min="-2000" max="2000" value="0" step="1" oninput="updRing()"></div>
+      <div class="param c-acid"><div class="param-head"><span class="param-name">DEPTH</span><span class="param-val" id="vRD">100</span></div><input type="range" id="sRD" min="0" max="100" value="100" step="1" oninput="updRing()"></div>
+      <div class="param c-acid"><div class="param-head"><span class="param-name">LFO</span><span class="param-val" id="vLFO">0</span></div><input type="range" id="sLFO" min="0" max="20" value="0" step="0.1" oninput="updRing()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB: FX ======== -->
+<div class="tab-content" id="tab-fx">
+  <div class="dsp-grid">
+    <!-- WAVESHAPER -->
+    <div class="module m-red" data-mod="waveshaper">
+      <div class="tog-wrap"><div class="tog" id="togDist" onclick="togMod('dist')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-red"><div class="param-head"><span class="param-name">DRIVE</span><span class="param-val" id="vDrv">0</span></div><input type="range" id="sDrv" min="0" max="100" value="0" step="1" oninput="updFX()"></div>
+      <div class="mini-btns"><button class="mini-btn sel" onclick="setCurve('soft',this)">SOFT</button><button class="mini-btn" onclick="setCurve('hard',this)">HARD</button><button class="mini-btn" onclick="setCurve('fold',this)">FOLD</button></div>
+    </div>
+    <!-- DELAY -->
+    <div class="module m-corrupt" data-mod="delay">
+      <div class="tog-wrap"><div class="tog" id="togDel" onclick="togMod('del')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">TIME</span><span class="param-val" id="vDT">300</span></div><input type="range" id="sDT" min="10" max="2000" value="300" step="1" oninput="updFX()"></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">FB</span><span class="param-val" id="vDFB">30</span></div><input type="range" id="sDFB" min="0" max="95" value="30" step="1" oninput="updFX()"></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">WET</span><span class="param-val" id="vDW">50</span></div><input type="range" id="sDW" min="0" max="100" value="50" step="1" oninput="updFX()"></div>
+    </div>
+    <!-- REVERB -->
+    <div class="module m-cyan" data-mod="reverb">
+      <div class="tog-wrap"><div class="tog" id="togRev" onclick="togMod('rev')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">SIZE_ms</span><span class="param-val" id="vRevSz">2000</span></div><input type="range" id="sRevSz" min="100" max="8000" value="2000" step="100" oninput="updReverb()"></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vRevDec">3</span></div><input type="range" id="sRevDec" min="0.1" max="12" value="3" step="0.1" oninput="updReverb()"></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">PRE_DLY_ms</span><span class="param-val" id="vRevPre">0</span></div><input type="range" id="sRevPre" min="0" max="100" value="0" step="1" oninput="updReverb()"></div>
+      <div class="param c-cyan"><div class="param-head"><span class="param-name">WET</span><span class="param-val" id="vRevW">40</span></div><input type="range" id="sRevW" min="0" max="100" value="40" step="1" oninput="updReverb()"></div>
+    </div>
+    <!-- CHORUS/FLANGER -->
+    <div class="module m-synth" data-mod="chorus_flanger">
+      <div class="tog-wrap"><div class="tog" id="togCho" onclick="togMod('cho')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-synth">
+        <div class="param-head"><span class="param-name">MODE</span><span class="param-val" id="vChoMode" style="font-size:10px">CHORUS</span></div>
+        <div class="mini-btns">
+          <button class="mini-btn sel" onclick="setChoMode('chorus',this)">CHORUS</button>
+          <button class="mini-btn" onclick="setChoMode('flanger',this)">FLANG</button>
+        </div>
+      </div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">RATE_Hz</span><span class="param-val" id="vChoRate">0.5</span></div><input type="range" id="sChoRate" min="0.05" max="10" value="0.5" step="0.05" oninput="updChorus()"></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">DEPTH</span><span class="param-val" id="vChoDep">50</span></div><input type="range" id="sChoDep" min="0" max="100" value="50" step="1" oninput="updChorus()"></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">FEEDBACK</span><span class="param-val" id="vChoFb">20</span></div><input type="range" id="sChoFb" min="0" max="90" value="20" step="1" oninput="updChorus()"></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">WET</span><span class="param-val" id="vChoW">50</span></div><input type="range" id="sChoW" min="0" max="100" value="50" step="1" oninput="updChorus()"></div>
+    </div>
+    <!-- BITCRUSHER -->
+    <div class="module m-amber" data-mod="bitcrusher">
+      <div class="tog-wrap"><div class="tog" id="togBit" onclick="togMod('bit')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-amber"><div class="param-head"><span class="param-name">BITS</span><span class="param-val" id="vBits">16</span></div><input type="range" id="sBits" min="1" max="16" value="16" step="1" oninput="bitS.bits=+this.value;V('vBits',this.value)"></div>
+      <div class="param c-amber"><div class="param-head"><span class="param-name">SR_REDUX</span><span class="param-val" id="vSRRed">1</span></div><input type="range" id="sSRRed" min="1" max="32" value="1" step="1" oninput="bitS.srRedux=+this.value;V('vSRRed',this.value)"></div>
+      <div class="tog-wrap" style="margin-top:.4rem">
+        <div class="tog" id="togPsycho" onclick="togglePsycho(this)"><div class="dot"></div></div>
+        <span class="tog-label">PSYCHO_MODE</span>
+      </div>
+    </div>
+    <!-- COMPRESSOR -->
+    <div class="module m-green" data-mod="compressor">
+      <div class="tog-wrap"><div class="tog" id="togComp" onclick="togMod('comp')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-green"><div class="param-head"><span class="param-name">THRESHOLD_dB</span><span class="param-val" id="vCompThr">-24</span></div><input type="range" id="sCompThr" min="-60" max="0" value="-24" step="1" oninput="updComp()"></div>
+      <div class="param c-green"><div class="param-head"><span class="param-name">RATIO</span><span class="param-val" id="vCompRat">4</span></div><input type="range" id="sCompRat" min="1" max="20" value="4" step="0.5" oninput="updComp()"></div>
+      <div class="param c-green"><div class="param-head"><span class="param-name">ATTACK_ms</span><span class="param-val" id="vCompAtk">20</span></div><input type="range" id="sCompAtk" min="0" max="1000" value="20" step="1" oninput="updComp()"></div>
+      <div class="param c-green"><div class="param-head"><span class="param-name">RELEASE_ms</span><span class="param-val" id="vCompRel">250</span></div><input type="range" id="sCompRel" min="10" max="2000" value="250" step="1" oninput="updComp()"></div>
+      <div class="param c-green"><div class="param-head"><span class="param-name">MAKEUP_dB</span><span class="param-val" id="vCompMak">0</span></div><input type="range" id="sCompMak" min="0" max="30" value="0" step="0.5" oninput="updComp()"></div>
+      <div class="comp-meter-wrap">
+        <div class="comp-meter-label"><span>GR</span><span id="vCompGR">0.0dB</span></div>
+        <div class="comp-meter"><div class="comp-meter-bar" id="compGRBar"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB: MIXER ======== -->
+<div class="tab-content" id="tab-mixer">
+  <div class="module m-amber" data-mod="mixer // routing">
+    <div class="label">// vol + mute + DSP route per channel</div>
+    <div id="mixerRows"></div>
+    <div class="param c-amber" style="margin-top:.5rem"><div class="param-head"><span class="param-name">MASTER</span><span class="param-val" id="vMst">70</span></div><input type="range" id="sMst" min="0" max="100" value="70" step="1" oninput="V('vMst',this.value);if(masterGain)masterGain.gain.value=this.value/100"></div>
+  </div>
+</div>
+
+<!-- ======== TAB: LOOPS ======== -->
+<div class="tab-content" id="tab-loops">
+  <div class="module m-green" data-mod="loop_recorder">
+    <div class="source-btns" style="margin-bottom:.4rem">
+      <button onclick="startLoopRec()" id="btnLR">REC</button>
+      <button onclick="stopLoopRec()">STOP_REC</button>
+      <button onclick="playLoop()">PLAY_ALL</button>
+      <button onclick="stopLoop()">STOP_ALL</button>
+      <button onclick="clearLoops()">CLEAR</button>
+    </div>
+    <div class="param c-green"><div class="param-head"><span class="param-name">BARS</span><span class="param-val" id="vLB">4</span></div><input type="range" id="sLB" min="1" max="16" value="4" step="1" oninput="V('vLB',this.value)"></div>
+    <div id="loopList"></div>
+    <div class="loop-info" id="loopInfo">No loops</div>
+  </div>
+</div>
+
+<!-- VIZ -->
+<div class="viz-panel">
+  <div class="viz-grid">
+    <div class="viz-box"><span class="viz-label">WAVE</span><canvas id="cWave" width="450" height="90"></canvas></div>
+    <div class="viz-box"><span class="viz-label">FFT</span><canvas id="cFFT" width="450" height="90"></canvas></div>
+    <div class="viz-box spectro-box" style="grid-column:1/-1"><span class="viz-label">SPECTROGRAM</span><canvas id="cSpec" width="900" height="100"></canvas></div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>damage_definition.json: FILE NOT FOUND</span>
+  <span class="sig">EsquizoAI // El Loko Akrata</span>
+</div>
+
+</div><!-- /wrap -->
+<script src="js/esquizo-audio.js" defer></script>
+</body>
+</html>

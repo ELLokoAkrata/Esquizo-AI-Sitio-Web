@@ -46,10 +46,55 @@ let bitcrushProc = null, bitStep = 0, bitHeld = 0;
 // Compressor
 let compNode = null, compMakeup = null;
 
+// Tape FX nodes
+let tapeDelay = null, tapeWowLFO = null, tapeWowGain = null;
+let tapeFlutterLFO = null, tapeFlutterGain = null;
+let tapeCrackleGain = null, tapeCrackleSource = null, tapeCrackleBuf = null;
+const tapeState = { active: false, stopping: false };
+
+// Sampler state
+const samplerSlots = [
+  { buffer: null, name: '', pitch: 0, atk: 5, dec: 500, vol: 80 },
+  { buffer: null, name: '', pitch: 0, atk: 5, dec: 500, vol: 80 },
+  { buffer: null, name: '', pitch: 0, atk: 5, dec: 500, vol: 80 },
+  { buffer: null, name: '', pitch: 0, atk: 5, dec: 500, vol: 80 }
+];
+
+// Arpeggiator state
+const arpState = {
+  active: false, target: 'synth', pattern: 'up', rate: 8,
+  octaves: 2, gate: 70, hold: false, notes: [],
+  step: 0, direction: 1, intervalId: null
+};
+
+// Scale Lock state
+const scaleState = { active: false, root: 0, type: 'chromatic', intervals: [0,1,2,3,4,5,6,7,8,9,10,11] };
+const SCALES = {
+  chromatic:  [0,1,2,3,4,5,6,7,8,9,10,11],
+  major:      [0,2,4,5,7,9,11],
+  minor:      [0,2,3,5,7,8,10],
+  dorian:     [0,2,3,5,7,9,10],
+  phrygian:   [0,1,3,5,7,8,10],
+  blues:      [0,3,5,6,7,10],
+  penta_min:  [0,3,5,7,10],
+  penta_maj:  [0,2,4,7,9],
+  harmonic:   [0,2,3,5,7,8,11],
+  whole_tone: [0,2,4,6,8,10]
+};
+
+// Song mode state
+const songState = { chain: [], playing: false, currentIdx: 0, loop: true, stepsPlayed: 0 };
+
+// Sidechain state
+const scState = { active: false, trigger: 'kick', target: 'bass', amount: 80, attack: 5, release: 200 };
+
+// Export state
+let exportRecorder = null, exportChunks = [], exportStartTime = 0;
+
 // ─── CHANNELS ───
 const channels = {};
 const DRUMS = ['kick', 'snare', 'hat', 'clap', 'perc'];
-const ALL_CH = ['kick', 'snare', 'hat', 'clap', 'perc', 'bass', 'synth', 'fm', 'noise', 'source', 'loops'];
+const ALL_CH = ['kick', 'snare', 'hat', 'clap', 'perc', 'bass', 'synth', 'fm', 'sampler', 'noise', 'source', 'loops'];
 
 // ─── SEQUENCER STATE ───
 const STEPS = 16, NUM_PAT = 8;
@@ -63,6 +108,10 @@ function initPatterns() {
     pat.bass  = new Array(STEPS).fill(0);
     pat.synth = new Array(STEPS).fill(0);
     pat.fm    = new Array(STEPS).fill(0);
+    pat.smp0  = new Array(STEPS).fill(0);
+    pat.smp1  = new Array(STEPS).fill(0);
+    pat.smp2  = new Array(STEPS).fill(0);
+    pat.smp3  = new Array(STEPS).fill(0);
     patterns.push(pat);
   }
 }
@@ -102,7 +151,7 @@ let loopRecording = false, loopRecorder, loopBuffers = [], currentLoopBuf = [], 
 let spectroCol = 0;
 
 // FX module toggles
-const mods = { ssb: true, ring: false, dist: false, del: false, rev: false, cho: false, bit: false, comp: false };
+const mods = { ssb: true, ring: false, dist: false, del: false, rev: false, cho: false, bit: false, comp: false, tape: false, sc: false };
 
 // ─── INIT AUDIO ───
 function initAudio() {
@@ -205,6 +254,24 @@ function initAudio() {
   compMakeup = ctx.createGain(); compMakeup.gain.value = 1;
   compNode.connect(compMakeup);
 
+  // Tape FX
+  tapeDelay = ctx.createDelay(0.05); tapeDelay.delayTime.value = 0.01;
+  tapeWowLFO = ctx.createOscillator(); tapeWowLFO.type = 'sine'; tapeWowLFO.frequency.value = 0.5;
+  tapeWowGain = ctx.createGain(); tapeWowGain.gain.value = 0;
+  tapeWowLFO.connect(tapeWowGain); tapeWowGain.connect(tapeDelay.delayTime);
+  tapeWowLFO.start();
+  tapeFlutterLFO = ctx.createOscillator(); tapeFlutterLFO.type = 'sine'; tapeFlutterLFO.frequency.value = 6;
+  tapeFlutterGain = ctx.createGain(); tapeFlutterGain.gain.value = 0;
+  tapeFlutterLFO.connect(tapeFlutterGain); tapeFlutterGain.connect(tapeDelay.delayTime);
+  tapeFlutterLFO.start();
+  // Vinyl crackle
+  tapeCrackleGain = ctx.createGain(); tapeCrackleGain.gain.value = 0;
+  tapeCrackleBuf = generateCrackle();
+  tapeCrackleSource = ctx.createBufferSource(); tapeCrackleSource.buffer = tapeCrackleBuf;
+  tapeCrackleSource.loop = true; tapeCrackleSource.connect(tapeCrackleGain);
+  tapeCrackleGain.connect(analyser);
+  tapeCrackleSource.start();
+
   // Noise channel gain node
   noiseGain = ctx.createGain(); noiseGain.gain.value = noiseVolume;
   noiseGain.connect(channels.noise.gain);
@@ -238,6 +305,22 @@ function buildImpulse(sizeMs, decay) {
   return buf;
 }
 
+// ─── CRACKLE BUFFER ───
+function generateCrackle() {
+  const sr = ctx.sampleRate, len = sr * 4;
+  const buf = ctx.createBuffer(1, len, sr);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) {
+    d[i] = (Math.random() * 2 - 1) * 0.02;
+    if (Math.random() < 0.0003) d[i] += (Math.random() - 0.5) * 0.8;
+    if (Math.random() < 0.001) {
+      const burstLen = Math.floor(Math.random() * 40) + 5;
+      for (let j = 0; j < burstLen && i + j < len; j++) d[i + j] += (Math.random() - 0.5) * 0.3;
+    }
+  }
+  return buf;
+}
+
 // ─── ROUTING ───
 function buildRouting() {
   if (!ctx) return;
@@ -246,7 +329,7 @@ function buildRouting() {
   const safeDisconnect = n => { try { if (n) n.disconnect(); } catch(e) {} };
   [ssbProc, ringMod, bitcrushProc, distNode, chorusDry, chorusDelay,
    delDry, delayNode, delWet, reverbPreDel, reverbDry, reverbOut,
-   compNode, compMakeup, analyser].forEach(safeDisconnect);
+   compNode, compMakeup, tapeDelay, analyser].forEach(safeDisconnect);
 
   // Reconnect delay internal feedback loop
   try { delayNode.connect(fbGain); fbGain.connect(delayNode); delayNode.connect(delWet); } catch(e) {}
@@ -296,6 +379,10 @@ function buildRouting() {
   if (mods.comp) {
     if (cur) { cur.connect(compNode); cur = compMakeup; }
     else { analyser.disconnect(); const tmp = ctx.createGain(); tmp.gain.value = 1; analyser.connect(tmp); tmp.connect(compNode); compMakeup.connect(ctx.createGain()); }
+  }
+
+  if (mods.tape && tapeDelay) {
+    if (cur) { cur.connect(tapeDelay); cur = tapeDelay; }
   }
 
   if (cur) cur.connect(analyser);
@@ -383,11 +470,14 @@ function playDrum(inst, vel = 1, t = null) {
     g.gain.setValueAtTime(vel * 0.7, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
     o.connect(g); g.connect(ch.gain); o.start(t); o.stop(t + 0.2);
   }
+  // Sidechain trigger
+  if (scState.active && inst === scState.trigger) triggerSidechain(t);
 }
 
 // ─── BASS SYNTH ───
 function playBass(midi, vel = 1, t = null) {
   if (!ctx || !midi) return;
+  midi = snapToScale(midi);
   t = t || ctx.currentTime;
   const ch = channels.bass; if (!ch || ch.muted) return;
   const p = bassP;
@@ -449,6 +539,7 @@ function playBass(midi, vel = 1, t = null) {
 // ─── LEAD SYNTH ───
 function playSynth(midi, vel = 1, t = null) {
   if (!ctx || !midi) return;
+  midi = snapToScale(midi);
   t = t || ctx.currentTime;
   const ch = channels.synth; if (!ch || ch.muted) return;
   const freq = midiToFreq(midi); const p = synthP;
@@ -480,6 +571,7 @@ function playSynth(midi, vel = 1, t = null) {
 // ─── FM SYNTH ───
 function playFM(midi, vel = 1, t = null) {
   if (!ctx || !midi) return;
+  midi = snapToScale(midi);
   t = t || ctx.currentTime;
   const ch = channels.fm; if (!ch || ch.muted) return;
   const p = fmP;
@@ -683,9 +775,9 @@ function updNoisePulse(val) {
 }
 
 // ─── SEQUENCER LOGIC ───
-const SEQ_ROWS = [...DRUMS, 'bass', 'synth', 'fm'];
-const ROW_LABELS = { kick:'KICK', snare:'SNRE', hat:'HHAT', clap:'CLAP', perc:'PERC', bass:'BASS', synth:'SYNT', fm:'FM__' };
-const ROW_COLORS = { kick:'kick-c', snare:'snare-c', hat:'hat-c', clap:'clap-c', perc:'perc-c', bass:'bass-c', synth:'synth-c', fm:'fm-c' };
+const SEQ_ROWS = [...DRUMS, 'bass', 'synth', 'fm', 'smp0', 'smp1', 'smp2', 'smp3'];
+const ROW_LABELS = { kick:'KICK', snare:'SNRE', hat:'HHAT', clap:'CLAP', perc:'PERC', bass:'BASS', synth:'SYNT', fm:'FM__', smp0:'SMP0', smp1:'SMP1', smp2:'SMP2', smp3:'SMP3' };
+const ROW_COLORS = { kick:'kick-c', snare:'snare-c', hat:'hat-c', clap:'clap-c', perc:'perc-c', bass:'bass-c', synth:'synth-c', fm:'fm-c', smp0:'smp-c', smp1:'smp-c', smp2:'smp-c', smp3:'smp-c' };
 const BASS_SCALE  = [36,38,40,41,43,45,47,48];
 const SYNTH_SCALE = [60,62,64,65,67,69,71,72];
 const FM_SCALE    = [60,62,64,65,67,69,71,72];
@@ -715,6 +807,9 @@ function buildSeqGrid() {
             else if (inst === 'synth') playSynth(pat[inst][s]);
             else playFM(pat[inst][s]);
           }
+        } else if (inst.startsWith('smp')) {
+          pat[inst][s] = pat[inst][s] ? 0 : 1;
+          if (pat[inst][s]) playSample(+inst[3]);
         } else {
           pat[inst][s] = pat[inst][s] ? 0 : 1;
           if (pat[inst][s]) playDrum(inst);
@@ -815,6 +910,22 @@ function scheduleStep() {
     if (pat.bass[currentStep]  > 0) playBass(pat.bass[currentStep], 1, t);
     if (pat.synth[currentStep] > 0) playSynth(pat.synth[currentStep], 1, t);
     if (pat.fm[currentStep]    > 0) playFM(pat.fm[currentStep], 1, t);
+    for (let si = 0; si < 4; si++) { if (pat['smp'+si] && pat['smp'+si][currentStep]) playSample(si, 1, t); }
+    // Song mode: advance chain when pattern wraps
+    if (songState.playing && currentStep === 0) {
+      songState.stepsPlayed++;
+      if (songState.stepsPlayed > 1) {
+        songState.currentIdx++;
+        if (songState.currentIdx >= songState.chain.length) {
+          if (songState.loop) { songState.currentIdx = 0; }
+          else { stopSong(); }
+        }
+        if (songState.playing) {
+          currentPat = songState.chain[songState.currentIdx];
+          refreshGrid(); buildPatternSlots(); renderChain();
+        }
+      }
+    }
     nextStepTime += stepDur;
   }
   V('stStep', currentStep);
@@ -835,6 +946,7 @@ function randomPattern() {
     p.bass[s]  = Math.random() < 0.4 ? BASS_SCALE[Math.floor(Math.random() * BASS_SCALE.length)] : 0;
     p.synth[s] = Math.random() < 0.25 ? SYNTH_SCALE[Math.floor(Math.random() * SYNTH_SCALE.length)] : 0;
     p.fm[s]    = Math.random() < 0.2  ? FM_SCALE[Math.floor(Math.random() * FM_SCALE.length)] : 0;
+    for (let si = 0; si < 4; si++) p['smp'+si][s] = Math.random() < 0.15 ? 1 : 0;
   }
   refreshGrid();
 }
@@ -846,6 +958,7 @@ function euclidPattern() {
     p.bass[s]  = s % 4 === 0 ? BASS_SCALE[(s / 4) % BASS_SCALE.length] : 0;
     p.synth[s] = s % 6 === 0 ? SYNTH_SCALE[(s / 6) % SYNTH_SCALE.length] : 0;
     p.fm[s]    = s % 8 === 0 ? FM_SCALE[(s / 8) % FM_SCALE.length] : 0;
+    for (let si = 0; si < 4; si++) { const smpCnt = 3 - si; p['smp'+si][s] = 0; for (let j = 0; j < smpCnt; j++) { if (s === Math.floor(j * STEPS / smpCnt)) p['smp'+si][s] = 1; } }
   }
   refreshGrid();
 }
@@ -876,11 +989,26 @@ document.addEventListener('keydown', e => {
   if (KEY_MAP[k] !== undefined) {
     initAudio();
     const activeTab = document.querySelector('.tab-content.active');
-    if (activeTab && activeTab.id === 'tab-bass') playBass(36 + KEY_MAP[k]);
-    else if (activeTab && activeTab.id === 'tab-synth') playSynth(48 + KEY_MAP[k]);
-    else if (activeTab && activeTab.id === 'tab-fm') playFM(48 + KEY_MAP[k]);
+    const midi = (activeTab && activeTab.id === 'tab-bass') ? 36 + KEY_MAP[k] : 48 + KEY_MAP[k];
+    if (arpState.active) {
+      arpNoteOn(midi);
+    } else if (activeTab && activeTab.id === 'tab-bass') {
+      playBass(midi);
+    } else if (activeTab && activeTab.id === 'tab-synth') {
+      playSynth(midi);
+    } else if (activeTab && activeTab.id === 'tab-fm') {
+      playFM(midi);
+    }
   }
   if (k === ' ') { e.preventDefault(); togglePlay(); }
+});
+document.addEventListener('keyup', e => {
+  const k = e.key.toLowerCase();
+  if (KEY_MAP[k] !== undefined && arpState.active) {
+    const activeTab = document.querySelector('.tab-content.active');
+    const midi = (activeTab && activeTab.id === 'tab-bass') ? 36 + KEY_MAP[k] : 48 + KEY_MAP[k];
+    arpNoteOff(midi);
+  }
 });
 
 // ─── PARAM HELPERS ───
@@ -909,6 +1037,7 @@ setInterval(() => {
   fmP.ratio = +E('sFMRatio'); fmP.index = +E('sFMIdx'); fmP.feedback = +E('sFMFb');
   fmP.cut = +E('sFMCut'); fmP.res = +E('sFMRes'); fmP.fEnv = +E('sFMFEnv'); fmP.fDec = +E('sFMFDec');
   fmP.atk = +E('sFMA'); fmP.dec = +E('sFMDec'); fmP.sus = +E('sFMSus'); fmP.rel = +E('sFMRel');
+  syncSamplerParams();
 }, 200);
 
 // ─── PRESETS ───
@@ -1095,7 +1224,7 @@ function updateCompGR() {
 }
 
 // ─── MOD TOGGLES ───
-const togMap = { ssb:'togSSB', ring:'togRing', dist:'togDist', del:'togDel', rev:'togRev', cho:'togCho', bit:'togBit', comp:'togComp' };
+const togMap = { ssb:'togSSB', ring:'togRing', dist:'togDist', del:'togDel', rev:'togRev', cho:'togCho', bit:'togBit', comp:'togComp', tape:'togTape', sc:'togSC' };
 
 function togMod(m) {
   mods[m] = !mods[m];
@@ -1156,7 +1285,7 @@ function buildMixer() {
   const cols = {
     kick:'var(--green)', snare:'var(--amber)', hat:'var(--cyan)', clap:'var(--corrupt)',
     perc:'var(--acid)', bass:'var(--bass)', synth:'var(--synth)',
-    fm:'var(--fm)', noise:'var(--noise)', source:'var(--white)', loops:'var(--green)'
+    fm:'var(--fm)', sampler:'var(--amber)', noise:'var(--noise)', source:'var(--white)', loops:'var(--green)'
   };
   ALL_CH.forEach(ch => {
     const row = document.createElement('div'); row.className = 'mixer-row';
@@ -1288,9 +1417,377 @@ function startViz() {
   draw();
 }
 
+// ─── SAMPLER ───
+function loadSample(idx, input) {
+  const file = input.files[0]; if (!file) return;
+  initAudio();
+  samplerSlots[idx].name = file.name;
+  V('smpName' + idx, file.name);
+  const reader = new FileReader();
+  reader.onload = e => {
+    ctx.decodeAudioData(e.target.result, buf => {
+      samplerSlots[idx].buffer = buf;
+      drawSampleWaveform(idx, buf);
+    });
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function drawSampleWaveform(idx, buf) {
+  const canvas = document.getElementById('smpCanvas' + idx);
+  if (!canvas) return;
+  const c = canvas.getContext('2d'), data = buf.getChannelData(0);
+  const w = canvas.width, h = canvas.height;
+  c.fillStyle = '#02000a'; c.fillRect(0, 0, w, h);
+  c.strokeStyle = '#ffb000'; c.lineWidth = 1; c.beginPath();
+  const step = Math.floor(data.length / w);
+  for (let i = 0; i < w; i++) {
+    const y = (data[i * step] * 0.5 + 0.5) * h;
+    i === 0 ? c.moveTo(i, y) : c.lineTo(i, y);
+  }
+  c.stroke();
+}
+
+function playSample(idx, vel = 1, t = null) {
+  if (!ctx) return; t = t || ctx.currentTime;
+  const slot = samplerSlots[idx]; if (!slot.buffer) return;
+  const ch = channels.sampler; if (!ch || ch.muted) return;
+  const src = ctx.createBufferSource();
+  src.buffer = slot.buffer;
+  src.playbackRate.value = Math.pow(2, slot.pitch / 12);
+  const g = ctx.createGain();
+  const a = slot.atk / 1000, d = slot.dec / 1000, v = slot.vol / 100 * vel;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(v, t + a);
+  g.gain.exponentialRampToValueAtTime(0.001, t + a + d);
+  src.connect(g); g.connect(ch.gain);
+  src.start(t); src.stop(t + a + d + 0.01);
+}
+
+function syncSamplerParams() {
+  for (let i = 0; i < 4; i++) {
+    const p = document.getElementById('smpPitch' + i);
+    const a = document.getElementById('smpAtk' + i);
+    const d = document.getElementById('smpDec' + i);
+    const v = document.getElementById('smpVol' + i);
+    if (p) samplerSlots[i].pitch = +p.value;
+    if (a) samplerSlots[i].atk = +a.value;
+    if (d) samplerSlots[i].dec = +d.value;
+    if (v) samplerSlots[i].vol = +v.value;
+  }
+}
+
+// ─── SCALE LOCK ───
+function snapToScale(midi) {
+  if (!scaleState.active) return midi;
+  const noteInOctave = midi % 12;
+  const octave = Math.floor(midi / 12);
+  const intervals = scaleState.intervals;
+  const root = scaleState.root;
+  let minDist = 99, best = noteInOctave;
+  for (const interval of intervals) {
+    const scaleNote = (root + interval) % 12;
+    const dist = Math.min(Math.abs(noteInOctave - scaleNote), 12 - Math.abs(noteInOctave - scaleNote));
+    if (dist < minDist) { minDist = dist; best = scaleNote; }
+  }
+  return octave * 12 + best;
+}
+
+function setScaleRoot(root, btn) {
+  scaleState.root = root;
+  V('vScaleRoot', NOTES[root]);
+  if (btn) { btn.parentElement.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+  updateScaleDisplay();
+}
+
+function setScaleType(type, btn) {
+  scaleState.type = type;
+  scaleState.intervals = SCALES[type] || SCALES.chromatic;
+  V('vScaleType', type.toUpperCase());
+  if (btn) { btn.parentElement.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+  updateScaleDisplay();
+}
+
+function toggleScale(el) {
+  scaleState.active = !scaleState.active;
+  el.classList.toggle('on');
+  if (el.nextElementSibling) el.nextElementSibling.textContent = scaleState.active ? 'LOCKED' : 'OFF';
+  const stKey = document.getElementById('stKey');
+  if (stKey) { stKey.textContent = scaleState.active ? NOTES[scaleState.root] : '--'; stKey.className = scaleState.active ? 'on' : 'off'; }
+}
+
+function updateScaleDisplay() {
+  const el = document.getElementById('scaleDisplay');
+  if (!el) return;
+  const notes = scaleState.intervals.map(i => NOTES[(scaleState.root + i) % 12]);
+  el.textContent = notes.join(' ');
+  const stKey = document.getElementById('stKey');
+  if (stKey && scaleState.active) stKey.textContent = NOTES[scaleState.root];
+}
+
+// ─── ARPEGGIATOR ───
+function toggleArp(el) {
+  arpState.active = !arpState.active;
+  el.classList.toggle('on');
+  if (el.nextElementSibling) el.nextElementSibling.textContent = arpState.active ? 'ACTIVE' : 'OFF';
+  const stArp = document.getElementById('stArp');
+  if (stArp) { stArp.textContent = arpState.active ? 'ON' : 'OFF'; stArp.className = arpState.active ? 'on' : 'off'; }
+  if (arpState.active) startArp(); else stopArp();
+}
+
+function setArpTarget(target, btn) {
+  arpState.target = target;
+  V('vArpTarget', target.toUpperCase());
+  if (btn) { btn.parentElement.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+}
+
+function setArpPattern(pat, btn) {
+  arpState.pattern = pat;
+  V('vArpPat', pat.toUpperCase());
+  if (btn) { btn.parentElement.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+}
+
+function setArpRate(rate, btn) {
+  arpState.rate = rate;
+  if (btn) { btn.parentElement.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+  if (arpState.active) { stopArp(); startArp(); }
+}
+
+function startArp() {
+  stopArp();
+  if (!arpState.active) return;
+  const bpm = +E('sBpm');
+  const intervalMs = (60000 / bpm) / (arpState.rate / 4);
+  arpState.step = 0; arpState.direction = 1;
+  arpState.intervalId = setInterval(() => {
+    if (!arpState.active || arpState.notes.length === 0) return;
+    initAudio();
+    const pool = buildArpNotes();
+    if (pool.length === 0) return;
+    const idx = getArpIndex(pool.length);
+    const midi = pool[idx];
+    const playFn = arpState.target === 'bass' ? playBass : arpState.target === 'fm' ? playFM : playSynth;
+    playFn(midi, 0.8);
+    arpState.step++;
+  }, intervalMs);
+}
+
+function stopArp() {
+  if (arpState.intervalId) { clearInterval(arpState.intervalId); arpState.intervalId = null; }
+}
+
+function buildArpNotes() {
+  const base = [...arpState.notes].sort((a, b) => a - b);
+  const pool = [];
+  for (let oct = 0; oct < arpState.octaves; oct++) {
+    base.forEach(n => pool.push(n + oct * 12));
+  }
+  return pool;
+}
+
+function getArpIndex(len) {
+  if (len === 0) return 0;
+  switch (arpState.pattern) {
+    case 'up': return arpState.step % len;
+    case 'down': return (len - 1) - (arpState.step % len);
+    case 'up_down': {
+      const cycle = Math.max(1, (len - 1) * 2);
+      const pos = arpState.step % cycle;
+      return pos < len ? pos : cycle - pos;
+    }
+    case 'random': return Math.floor(Math.random() * len);
+    default: return 0;
+  }
+}
+
+function arpNoteOn(midi) {
+  if (!arpState.notes.includes(midi)) arpState.notes.push(midi);
+}
+function arpNoteOff(midi) {
+  if (!arpState.hold) arpState.notes = arpState.notes.filter(n => n !== midi);
+}
+function toggleArpHold(el) {
+  arpState.hold = !arpState.hold;
+  el.classList.toggle('on');
+  if (!arpState.hold) arpState.notes = [];
+}
+
+// ─── SONG MODE ───
+function addToChain() {
+  songState.chain.push(currentPat);
+  renderChain();
+}
+function removeFromChain() {
+  songState.chain.pop();
+  renderChain();
+}
+function clearChain() {
+  songState.chain = [];
+  songState.playing = false;
+  renderChain();
+}
+
+function renderChain() {
+  const el = document.getElementById('songChain'); if (!el) return;
+  el.innerHTML = '';
+  if (songState.chain.length === 0) {
+    el.innerHTML = '<span style="font-size:7px;color:#553366">EMPTY</span>';
+    V('songDisplay', 'NO CHAIN');
+    return;
+  }
+  songState.chain.forEach((patIdx, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'pat-slot' + (songState.playing && i === songState.currentIdx ? ' active' : '');
+    chip.textContent = 'ABCDEFGH'[patIdx];
+    chip.onclick = () => { songState.chain.splice(i, 1); renderChain(); };
+    el.appendChild(chip);
+    if (i < songState.chain.length - 1) {
+      const arrow = document.createElement('span');
+      arrow.style.cssText = 'font-size:7px;color:#553366;margin:0 2px';
+      arrow.textContent = '\u2192';
+      el.appendChild(arrow);
+    }
+  });
+  V('songDisplay', songState.chain.map(i => 'ABCDEFGH'[i]).join('\u2192'));
+}
+
+function playSong() {
+  if (songState.chain.length === 0) return;
+  initAudio();
+  songState.playing = true;
+  songState.currentIdx = 0;
+  songState.stepsPlayed = 0;
+  currentPat = songState.chain[0];
+  refreshGrid(); buildPatternSlots(); renderChain();
+  if (!playing) togglePlay();
+}
+
+function stopSong() {
+  songState.playing = false;
+  renderChain();
+}
+
+function toggleSongLoop(el) {
+  songState.loop = !songState.loop;
+  el.classList.toggle('on');
+}
+
+// ─── EXPORT ───
+function startExport() {
+  initAudio();
+  const dest = ctx.createMediaStreamDestination();
+  masterGain.connect(dest);
+  exportRecorder = new MediaRecorder(dest.stream);
+  exportChunks = [];
+  exportRecorder.ondataavailable = e => { if (e.data.size > 0) exportChunks.push(e.data); };
+  exportRecorder.onstop = () => {
+    try { masterGain.disconnect(dest); } catch(e) {}
+    const blob = new Blob(exportChunks, { type: 'audio/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'esquizoai_session_' + Date.now() + '.webm';
+    a.click(); URL.revokeObjectURL(url);
+    V('exportStatus', 'EXPORTED');
+  };
+  exportRecorder.start(100);
+  exportStartTime = Date.now();
+  V('exportStatus', 'REC...');
+  window._exportTimer = setInterval(() => {
+    const elapsed = ((Date.now() - exportStartTime) / 1000).toFixed(1);
+    V('exportStatus', 'REC... ' + elapsed + 's');
+  }, 200);
+}
+
+function stopExport() {
+  if (exportRecorder && exportRecorder.state === 'recording') {
+    exportRecorder.stop();
+    clearInterval(window._exportTimer);
+  }
+}
+
+// ─── TAPE FX ───
+function updTape() {
+  if (!tapeWowLFO) return;
+  tapeWowLFO.frequency.value = +E('sTapeWowR');
+  tapeWowGain.gain.value = +E('sTapeWowD') / 100 * 0.005;
+  tapeFlutterLFO.frequency.value = +E('sTapeFlutR');
+  tapeFlutterGain.gain.value = +E('sTapeFlutD') / 100 * 0.002;
+  V('vTapeWowD', E('sTapeWowD')); V('vTapeWowR', E('sTapeWowR'));
+  V('vTapeFlutD', E('sTapeFlutD')); V('vTapeFlutR', E('sTapeFlutR'));
+  const crackleVol = +E('sTapeCrackle') / 100;
+  V('vTapeCrackle', E('sTapeCrackle'));
+  if (tapeCrackleGain) tapeCrackleGain.gain.value = crackleVol * 0.15;
+}
+
+function tapeStop() {
+  if (!ctx || !masterGain || tapeState.stopping) return;
+  tapeState.stopping = true;
+  const now = ctx.currentTime;
+  const curVol = masterGain.gain.value;
+  masterGain.gain.cancelScheduledValues(now);
+  masterGain.gain.setValueAtTime(curVol, now);
+  masterGain.gain.linearRampToValueAtTime(0, now + 2);
+  if (tapeDelay) {
+    tapeDelay.delayTime.cancelScheduledValues(now);
+    tapeDelay.delayTime.setValueAtTime(tapeDelay.delayTime.value, now);
+    tapeDelay.delayTime.linearRampToValueAtTime(0.05, now + 2);
+  }
+  setTimeout(() => {
+    stopSeq();
+    masterGain.gain.value = +E('sMst') / 100;
+    if (tapeDelay) tapeDelay.delayTime.value = 0.01;
+    tapeState.stopping = false;
+  }, 2200);
+}
+
+// ─── SIDECHAIN ───
+function triggerSidechain(t) {
+  if (!scState.active || !ctx) return;
+  t = t || ctx.currentTime;
+  const amount = scState.amount / 100;
+  const atk = scState.attack / 1000;
+  const rel = scState.release / 1000;
+  const targets = scState.target === 'all' ? ['bass', 'synth', 'fm'] : [scState.target];
+  targets.forEach(ch => {
+    if (!channels[ch]) return;
+    const g = channels[ch].gain;
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(channels[ch].vol, t);
+    g.gain.linearRampToValueAtTime(channels[ch].vol * (1 - amount), t + atk);
+    g.gain.linearRampToValueAtTime(channels[ch].vol, t + atk + rel);
+  });
+}
+
+function toggleSC(el) {
+  scState.active = !scState.active;
+  el.classList.toggle('on');
+  if (el.nextElementSibling) el.nextElementSibling.textContent = scState.active ? 'ACTIVE' : 'OFF';
+}
+
+function setSCTrigger(trig, btn) {
+  scState.trigger = trig;
+  V('vSCTrig', trig.toUpperCase());
+  if (btn) { btn.parentElement.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+}
+
+function setSCTarget(targ, btn) {
+  scState.target = targ;
+  V('vSCTarget', targ.toUpperCase());
+  if (btn) { btn.parentElement.querySelectorAll('.mini-btn').forEach(b => b.classList.remove('sel')); btn.classList.add('sel'); }
+}
+
+function updSCParams() {
+  scState.amount = +E('sSCAmount');
+  scState.attack = +E('sSCAtk');
+  scState.release = +E('sSCRel');
+  V('vSCAmount', E('sSCAmount')); V('vSCAtk', E('sSCAtk')); V('vSCRel', E('sSCRel'));
+}
+
 // ─── BOOT ───
 buildSeqGrid();
 buildPatternSlots();
 buildKeyboard('bassKeys', 3, m => { initAudio(); playBass(m); });
 buildKeyboard('synthKeys', 4, m => { initAudio(); playSynth(m); });
 buildKeyboard('fmKeys', 4, m => { initAudio(); playFM(m); });
+renderChain();
+updateScaleDisplay();

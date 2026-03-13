@@ -14,7 +14,7 @@
 <!-- HEADER -->
 <div class="header">
   <h1>ESQUIZOAI_AUDIO</h1>
-  <div class="sub">DRUMS // BASS_SYNTH // LEAD_SYNTH // FM_SYNTH // NOISE_GLITCH // SSB_SHIFT // FX_CHAIN // MIXER // LOOPS</div>
+  <div class="sub">DRUMS // BASS_SYNTH // LEAD_SYNTH // FM_SYNTH // SAMPLER // NOISE_GLITCH // SSB_SHIFT // FX_CHAIN // ARP // MIXER // SONG_MODE</div>
 </div>
 
 <!-- STATUS BAR -->
@@ -26,7 +26,9 @@
   <span>LOOPS:<span id="stLoop" class="off">0</span></span>
   <span>SR:<span id="stSr">--</span></span>
   <span>FX:<span id="stFx" class="off">0</span></span>
-  <span>CH:<span id="stCh" class="on">11</span></span>
+  <span>ARP:<span id="stArp" class="off">OFF</span></span>
+  <span>KEY:<span id="stKey" class="off">--</span></span>
+  <span>CH:<span id="stCh" class="on">12</span></span>
 </div>
 
 <!-- TRANSPORT + SOURCE -->
@@ -57,11 +59,13 @@
   <div class="tab" onclick="switchTab('bass',this)">BASS</div>
   <div class="tab" onclick="switchTab('synth',this)">SYNTH</div>
   <div class="tab" onclick="switchTab('fm',this)">FM</div>
+  <div class="tab" onclick="switchTab('sampler',this)">SAMPLER</div>
   <div class="tab" onclick="switchTab('glitch',this)">GLITCH</div>
   <div class="tab" onclick="switchTab('shifter',this)">SSB</div>
   <div class="tab" onclick="switchTab('fx',this)">FX</div>
+  <div class="tab" onclick="switchTab('arp',this)">ARP</div>
   <div class="tab" onclick="switchTab('mixer',this)">MIXER</div>
-  <div class="tab" onclick="switchTab('loops',this)">LOOPS</div>
+  <div class="tab" onclick="switchTab('song',this)">SONG</div>
 </div>
 
 <!-- ======== TAB: DRUMS ======== -->
@@ -277,6 +281,68 @@
   <div class="keyboard" id="fmKeys"></div>
 </div>
 
+<!-- ======== TAB: SAMPLER ======== -->
+<div class="tab-content" id="tab-sampler">
+  <div class="module m-amber" data-mod="sampler // 4_slots">
+    <div class="dsp-grid">
+      <div>
+        <div class="label">// slot_0</div>
+        <div style="display:flex;gap:.3rem;align-items:center;margin-bottom:.2rem">
+          <button class="mini-btn smp-pad" onclick="document.getElementById('smpFile0').click()">LOAD</button>
+          <input type="file" id="smpFile0" accept="audio/*" onchange="loadSample(0,this)" style="display:none">
+          <span class="smp-name" id="smpName0">no_file</span>
+        </div>
+        <canvas class="smp-canvas" id="smpCanvas0" width="200" height="30"></canvas>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">PITCH (st)</span><span class="param-val" id="vSmpPitch0">0</span></div><input type="range" id="smpPitch0" min="-24" max="24" value="0" step="1" oninput="V('vSmpPitch0',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">ATTACK</span><span class="param-val" id="vSmpAtk0">5</span></div><input type="range" id="smpAtk0" min="0" max="500" value="5" step="1" oninput="V('vSmpAtk0',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vSmpDec0">500</span></div><input type="range" id="smpDec0" min="50" max="2000" value="500" step="1" oninput="V('vSmpDec0',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">VOLUME</span><span class="param-val" id="vSmpVol0">80</span></div><input type="range" id="smpVol0" min="0" max="100" value="80" step="1" oninput="V('vSmpVol0',this.value)"></div>
+        <button class="mini-btn smp-pad" onclick="initAudio();playSample(0)">PAD</button>
+
+        <div class="label" style="margin-top:.6rem">// slot_1</div>
+        <div style="display:flex;gap:.3rem;align-items:center;margin-bottom:.2rem">
+          <button class="mini-btn smp-pad" onclick="document.getElementById('smpFile1').click()">LOAD</button>
+          <input type="file" id="smpFile1" accept="audio/*" onchange="loadSample(1,this)" style="display:none">
+          <span class="smp-name" id="smpName1">no_file</span>
+        </div>
+        <canvas class="smp-canvas" id="smpCanvas1" width="200" height="30"></canvas>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">PITCH (st)</span><span class="param-val" id="vSmpPitch1">0</span></div><input type="range" id="smpPitch1" min="-24" max="24" value="0" step="1" oninput="V('vSmpPitch1',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">ATTACK</span><span class="param-val" id="vSmpAtk1">5</span></div><input type="range" id="smpAtk1" min="0" max="500" value="5" step="1" oninput="V('vSmpAtk1',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vSmpDec1">500</span></div><input type="range" id="smpDec1" min="50" max="2000" value="500" step="1" oninput="V('vSmpDec1',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">VOLUME</span><span class="param-val" id="vSmpVol1">80</span></div><input type="range" id="smpVol1" min="0" max="100" value="80" step="1" oninput="V('vSmpVol1',this.value)"></div>
+        <button class="mini-btn smp-pad" onclick="initAudio();playSample(1)">PAD</button>
+      </div>
+      <div>
+        <div class="label">// slot_2</div>
+        <div style="display:flex;gap:.3rem;align-items:center;margin-bottom:.2rem">
+          <button class="mini-btn smp-pad" onclick="document.getElementById('smpFile2').click()">LOAD</button>
+          <input type="file" id="smpFile2" accept="audio/*" onchange="loadSample(2,this)" style="display:none">
+          <span class="smp-name" id="smpName2">no_file</span>
+        </div>
+        <canvas class="smp-canvas" id="smpCanvas2" width="200" height="30"></canvas>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">PITCH (st)</span><span class="param-val" id="vSmpPitch2">0</span></div><input type="range" id="smpPitch2" min="-24" max="24" value="0" step="1" oninput="V('vSmpPitch2',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">ATTACK</span><span class="param-val" id="vSmpAtk2">5</span></div><input type="range" id="smpAtk2" min="0" max="500" value="5" step="1" oninput="V('vSmpAtk2',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vSmpDec2">500</span></div><input type="range" id="smpDec2" min="50" max="2000" value="500" step="1" oninput="V('vSmpDec2',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">VOLUME</span><span class="param-val" id="vSmpVol2">80</span></div><input type="range" id="smpVol2" min="0" max="100" value="80" step="1" oninput="V('vSmpVol2',this.value)"></div>
+        <button class="mini-btn smp-pad" onclick="initAudio();playSample(2)">PAD</button>
+
+        <div class="label" style="margin-top:.6rem">// slot_3</div>
+        <div style="display:flex;gap:.3rem;align-items:center;margin-bottom:.2rem">
+          <button class="mini-btn smp-pad" onclick="document.getElementById('smpFile3').click()">LOAD</button>
+          <input type="file" id="smpFile3" accept="audio/*" onchange="loadSample(3,this)" style="display:none">
+          <span class="smp-name" id="smpName3">no_file</span>
+        </div>
+        <canvas class="smp-canvas" id="smpCanvas3" width="200" height="30"></canvas>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">PITCH (st)</span><span class="param-val" id="vSmpPitch3">0</span></div><input type="range" id="smpPitch3" min="-24" max="24" value="0" step="1" oninput="V('vSmpPitch3',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">ATTACK</span><span class="param-val" id="vSmpAtk3">5</span></div><input type="range" id="smpAtk3" min="0" max="500" value="5" step="1" oninput="V('vSmpAtk3',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">DECAY</span><span class="param-val" id="vSmpDec3">500</span></div><input type="range" id="smpDec3" min="50" max="2000" value="500" step="1" oninput="V('vSmpDec3',this.value)"></div>
+        <div class="param c-amber"><div class="param-head"><span class="param-name">VOLUME</span><span class="param-val" id="vSmpVol3">80</span></div><input type="range" id="smpVol3" min="0" max="100" value="80" step="1" oninput="V('vSmpVol3',this.value)"></div>
+        <button class="mini-btn smp-pad" onclick="initAudio();playSample(3)">PAD</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ======== TAB: GLITCH ======== -->
 <div class="tab-content" id="tab-glitch">
   <div class="module m-noise" data-mod="noise_glitch_engine">
@@ -393,6 +459,55 @@
         <div class="comp-meter"><div class="comp-meter-bar" id="compGRBar"></div></div>
       </div>
     </div>
+    <!-- TAPE FX -->
+    <div class="module m-corrupt" data-mod="tape_fx">
+      <div class="tog-wrap"><div class="tog" id="togTape" onclick="togMod('tape')"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">WOW_DEPTH</span><span class="param-val" id="vTapeWowD">0</span></div><input type="range" id="sTapeWowD" min="0" max="100" value="0" step="1" oninput="updTape()"></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">WOW_RATE_Hz</span><span class="param-val" id="vTapeWowR">0.5</span></div><input type="range" id="sTapeWowR" min="0.1" max="5" value="0.5" step="0.1" oninput="updTape()"></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">FLUTTER_DEPTH</span><span class="param-val" id="vTapeFlutD">0</span></div><input type="range" id="sTapeFlutD" min="0" max="100" value="0" step="1" oninput="updTape()"></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">FLUTTER_RATE_Hz</span><span class="param-val" id="vTapeFlutR">6</span></div><input type="range" id="sTapeFlutR" min="2" max="30" value="6" step="0.5" oninput="updTape()"></div>
+      <div class="param c-corrupt"><div class="param-head"><span class="param-name">VINYL_CRACKLE</span><span class="param-val" id="vTapeCrackle">0</span></div><input type="range" id="sTapeCrackle" min="0" max="100" value="0" step="1" oninput="updTape()"></div>
+      <button class="mini-btn tape-stop-btn" onclick="tapeStop()">TAPE_STOP</button>
+    </div>
+    <!-- SIDECHAIN -->
+    <div class="module m-bass" data-mod="sidechain">
+      <div class="tog-wrap"><div class="tog" id="togSC" onclick="toggleSC(this)"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-bass"><div class="param-head"><span class="param-name">TRIGGER</span><span class="param-val" id="vSCTrig" style="font-size:10px">KICK</span></div>
+        <div class="mini-btns"><button class="mini-btn sel" onclick="setSCTrigger('kick',this)">KICK</button><button class="mini-btn" onclick="setSCTrigger('snare',this)">SNARE</button><button class="mini-btn" onclick="setSCTrigger('clap',this)">CLAP</button></div></div>
+      <div class="param c-bass"><div class="param-head"><span class="param-name">TARGET</span><span class="param-val" id="vSCTarget" style="font-size:10px">BASS</span></div>
+        <div class="mini-btns"><button class="mini-btn sel" onclick="setSCTarget('bass',this)">BASS</button><button class="mini-btn" onclick="setSCTarget('synth',this)">SYNTH</button><button class="mini-btn" onclick="setSCTarget('fm',this)">FM</button><button class="mini-btn" onclick="setSCTarget('all',this)">ALL</button></div></div>
+      <div class="param c-bass"><div class="param-head"><span class="param-name">AMOUNT</span><span class="param-val" id="vSCAmount">80</span></div><input type="range" id="sSCAmount" min="0" max="100" value="80" step="1" oninput="V('vSCAmount',this.value)"></div>
+      <div class="param c-bass"><div class="param-head"><span class="param-name">ATTACK_ms</span><span class="param-val" id="vSCAtk">5</span></div><input type="range" id="sSCAtk" min="1" max="50" value="5" step="1" oninput="V('vSCAtk',this.value)"></div>
+      <div class="param c-bass"><div class="param-head"><span class="param-name">RELEASE_ms</span><span class="param-val" id="vSCRel">200</span></div><input type="range" id="sSCRel" min="50" max="500" value="200" step="1" oninput="V('vSCRel',this.value)"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== TAB: ARP ======== -->
+<div class="tab-content" id="tab-arp">
+  <div class="dsp-grid">
+    <div class="module m-synth" data-mod="arpeggiator">
+      <div class="tog-wrap"><div class="tog" id="togArp" onclick="toggleArp(this)"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">TARGET</span><span class="param-val" id="vArpTarget" style="font-size:10px">SYNTH</span></div>
+        <div class="mini-btns"><button class="mini-btn" onclick="setArpTarget('bass',this)">BASS</button><button class="mini-btn sel" onclick="setArpTarget('synth',this)">SYNTH</button><button class="mini-btn" onclick="setArpTarget('fm',this)">FM</button></div></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">PATTERN</span><span class="param-val" id="vArpPat" style="font-size:10px">UP</span></div>
+        <div class="mini-btns"><button class="mini-btn sel" onclick="setArpPattern('up',this)">UP</button><button class="mini-btn" onclick="setArpPattern('down',this)">DOWN</button><button class="mini-btn" onclick="setArpPattern('up_down',this)">UP_DN</button><button class="mini-btn" onclick="setArpPattern('random',this)">RND</button></div></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">RATE</span><span class="param-val" id="vArpRate" style="font-size:10px">1/8</span></div>
+        <div class="mini-btns"><button class="mini-btn" onclick="setArpRate(4,this)">1/4</button><button class="mini-btn sel" onclick="setArpRate(8,this)">1/8</button><button class="mini-btn" onclick="setArpRate(16,this)">1/16</button><button class="mini-btn" onclick="setArpRate(32,this)">1/32</button></div></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">OCTAVES</span><span class="param-val" id="vArpOct">2</span></div><input type="range" id="sArpOct" min="1" max="4" value="2" step="1" oninput="arpState.octaves=+this.value;V('vArpOct',this.value)"></div>
+      <div class="param c-synth"><div class="param-head"><span class="param-name">GATE_%</span><span class="param-val" id="vArpGate">70</span></div><input type="range" id="sArpGate" min="10" max="100" value="70" step="1" oninput="arpState.gate=+this.value;V('vArpGate',this.value)"></div>
+      <div class="tog-wrap" style="margin-top:.3rem"><div class="tog" id="togArpHold" onclick="arpState.hold=!arpState.hold;this.classList.toggle('on')"><div class="dot"></div></div><span class="tog-label">HOLD</span></div>
+      <div style="font-size:7px;color:#553366;margin-top:.3rem">NOTE: <span id="arpNoteDisp" style="color:var(--synth)">--</span></div>
+    </div>
+    <div class="module m-acid" data-mod="scale_lock">
+      <div class="tog-wrap"><div class="tog" id="togScale" onclick="scaleState.active=!scaleState.active;this.classList.toggle('on');V('stKey',scaleState.active?NOTES[scaleState.root]+' '+scaleState.type.toUpperCase():'--');document.getElementById('stKey').className=scaleState.active?'on':'off'"><div class="dot"></div></div><span class="tog-label">BYPASSED</span></div>
+      <div class="param c-acid"><div class="param-head"><span class="param-name">ROOT</span><span class="param-val" id="vScaleRoot" style="font-size:10px">C</span></div>
+        <div class="mini-btns"><button class="mini-btn sel" onclick="setScaleRoot(0,this)">C</button><button class="mini-btn" onclick="setScaleRoot(1,this)">C#</button><button class="mini-btn" onclick="setScaleRoot(2,this)">D</button><button class="mini-btn" onclick="setScaleRoot(3,this)">D#</button><button class="mini-btn" onclick="setScaleRoot(4,this)">E</button><button class="mini-btn" onclick="setScaleRoot(5,this)">F</button><button class="mini-btn" onclick="setScaleRoot(6,this)">F#</button><button class="mini-btn" onclick="setScaleRoot(7,this)">G</button><button class="mini-btn" onclick="setScaleRoot(8,this)">G#</button><button class="mini-btn" onclick="setScaleRoot(9,this)">A</button><button class="mini-btn" onclick="setScaleRoot(10,this)">A#</button><button class="mini-btn" onclick="setScaleRoot(11,this)">B</button></div></div>
+      <div class="param c-acid"><div class="param-head"><span class="param-name">SCALE</span><span class="param-val" id="vScaleType" style="font-size:10px">CHROMATIC</span></div>
+        <div class="mini-btns"><button class="mini-btn sel" onclick="setScaleType('chromatic',this)">CHROM</button><button class="mini-btn" onclick="setScaleType('major',this)">MAJOR</button><button class="mini-btn" onclick="setScaleType('minor',this)">MINOR</button><button class="mini-btn" onclick="setScaleType('dorian',this)">DORIAN</button><button class="mini-btn" onclick="setScaleType('phrygian',this)">PHRYG</button></div>
+        <div class="mini-btns" style="margin-top:.15rem"><button class="mini-btn" onclick="setScaleType('blues',this)">BLUES</button><button class="mini-btn" onclick="setScaleType('penta_min',this)">PNT_m</button><button class="mini-btn" onclick="setScaleType('penta_maj',this)">PNT_M</button><button class="mini-btn" onclick="setScaleType('harmonic',this)">HARM</button><button class="mini-btn" onclick="setScaleType('whole_tone',this)">WHOLE</button></div></div>
+      <div class="scale-notes" id="scaleDisplay">C C# D D# E F F# G G# A A# B</div>
+    </div>
   </div>
 </div>
 
@@ -405,8 +520,29 @@
   </div>
 </div>
 
-<!-- ======== TAB: LOOPS ======== -->
-<div class="tab-content" id="tab-loops">
+<!-- ======== TAB: SONG ======== -->
+<div class="tab-content" id="tab-song">
+  <div class="module m-corrupt" data-mod="song_mode // pattern_chain">
+    <div class="label">// pattern chain</div>
+    <div class="chain-display" id="songChain"><span style="font-size:7px;color:#553366">EMPTY</span></div>
+    <div class="source-btns" style="margin-bottom:.4rem;margin-top:.3rem">
+      <button onclick="addToChain()">ADD</button>
+      <button onclick="removeFromChain()">REMOVE</button>
+      <button onclick="clearChain()">CLR_CHAIN</button>
+      <button onclick="playSong()" id="btnPlaySong">PLAY_SONG</button>
+      <button onclick="stopSong()" id="btnStopSong">STOP_SONG</button>
+    </div>
+    <div class="tog-wrap"><div class="tog on" id="togSongLoop" onclick="songState.loop=!songState.loop;this.classList.toggle('on')"><div class="dot"></div></div><span class="tog-label">LOOP_CHAIN</span></div>
+    <div style="font-size:7px;color:#553366;margin-top:.2rem" id="songDisplay">CHAIN: EMPTY</div>
+  </div>
+  <div class="module m-acid" data-mod="export_wav">
+    <div class="label">// export session</div>
+    <div class="source-btns" style="margin-bottom:.4rem">
+      <button onclick="startExport()" id="btnExport">REC_OUTPUT</button>
+      <button onclick="stopExport()" id="btnExportStop">STOP_REC</button>
+    </div>
+    <div class="export-status" id="exportStatus">READY</div>
+  </div>
   <div class="module m-green" data-mod="loop_recorder">
     <div class="source-btns" style="margin-bottom:.4rem">
       <button onclick="startLoopRec()" id="btnLR">REC</button>

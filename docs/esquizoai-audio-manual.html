@@ -1,0 +1,796 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EsquizoAI Audio Workstation - Manual v1.0</title>
+<style>
+:root{--green:#00ff41;--amber:#ffb000;--red:#ff2020;--cyan:#00e5ff;--purple:#cc00ff;--bg:#0a0a0a;--bg2:#111111;--bg3:#161616}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--green);font-family:'Courier New',Courier,monospace;font-size:13px;line-height:1.6;padding:0}
+a{color:var(--cyan);text-decoration:none}
+a:hover{text-decoration:underline}
+.cover{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 20px;border-bottom:2px solid var(--green);background:var(--bg)}
+.ascii-art{color:var(--green);font-size:10px;line-height:1.2;white-space:pre;margin-bottom:40px;text-shadow:0 0 10px var(--green)}
+.cover-title{font-size:26px;font-weight:bold;color:var(--amber);letter-spacing:6px;text-shadow:0 0 20px var(--amber);margin-bottom:12px}
+.cover-subtitle{font-size:16px;color:var(--cyan);letter-spacing:4px;margin-bottom:8px}
+.cover-meta{font-size:12px;color:#555;margin-top:40px;letter-spacing:2px}
+.cover-bar{width:400px;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);margin:20px auto}
+.container{max-width:960px;margin:0 auto;padding:20px 30px}
+.section{margin-bottom:60px;padding-top:30px}
+.section-header{border-left:4px solid var(--green);padding:8px 16px;background:var(--bg2);margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.section-header.amber{border-color:var(--amber)}
+.section-header.red{border-color:var(--red)}
+.section-header.cyan{border-color:var(--cyan)}
+.section-header.purple{border-color:var(--purple)}
+.section-title{font-size:18px;font-weight:bold;letter-spacing:3px;text-shadow:0 0 8px currentColor}
+.section-num{font-size:11px;color:#444;letter-spacing:1px}
+h3{color:var(--amber);font-size:13px;letter-spacing:2px;margin:20px 0 10px;padding-bottom:4px;border-bottom:1px solid #222}
+h4{color:var(--cyan);font-size:12px;letter-spacing:1px;margin:16px 0 8px}
+p{margin-bottom:10px;color:#ccffcc}
+.toc{background:var(--bg2);border:1px solid #222;padding:24px 30px}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 40px;margin-top:16px}
+.toc-item{padding:3px 0;border-bottom:1px dotted #1a1a1a}
+.toc-num{color:#444;margin-right:8px}
+.toc-link{color:var(--green)}
+.toc-link:hover{color:var(--amber)}
+table{width:100%;border-collapse:collapse;margin:12px 0 20px;font-size:12px}
+thead tr{background:#0d0d0d}
+th{padding:7px 10px;text-align:left;color:var(--amber);border:1px solid #222;font-size:11px;letter-spacing:1px}
+td{padding:5px 10px;border:1px solid #1a1a1a;color:#aaffaa;vertical-align:top}
+tr:nth-child(even) td{background:#0c0c0c}
+tr:hover td{background:#131313}
+.val{color:var(--cyan)}.def{color:var(--amber)}.range{color:#88ff88}
+.code-block{background:var(--bg3);border:1px solid #1e1e1e;border-left:3px solid var(--green);padding:14px 18px;margin:12px 0;white-space:pre;overflow-x:auto;font-size:12px;line-height:1.5;color:var(--green)}
+.code-block.cyan{border-left-color:var(--cyan);color:var(--cyan)}
+code{color:var(--cyan);background:#0d0d0d;padding:1px 5px;border:1px solid #1a1a1a;font-size:11px}
+.badge{display:inline-block;padding:2px 7px;font-size:10px;letter-spacing:1px;border-radius:2px;margin:1px}
+.badge-green{background:#002200;color:var(--green);border:1px solid var(--green)}
+.badge-amber{background:#221500;color:var(--amber);border:1px solid var(--amber)}
+.badge-red{background:#220000;color:var(--red);border:1px solid var(--red)}
+.badge-cyan{background:#001a1a;color:var(--cyan);border:1px solid var(--cyan)}
+.badge-purple{background:#110022;color:var(--purple);border:1px solid var(--purple)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.tip-box{background:#080808;border:1px solid #1a1a1a;border-left:3px solid var(--amber);padding:10px 14px;margin:8px 0;color:#ccffaa;font-size:12px}
+.tip-box::before{content:'> ';color:var(--amber)}
+.signal-flow{background:var(--bg3);border:1px solid #1a1a1a;padding:20px;overflow-x:auto}
+.status-bar{background:#0d0d0d;border:1px solid #222;padding:8px 14px;font-size:11px;letter-spacing:1px;display:flex;gap:20px;flex-wrap:wrap}
+.status-item{color:var(--green)}
+.status-item span{color:var(--amber)}
+.kbd-row{display:flex;gap:4px;margin:4px 0}
+.key{background:#111;border:1px solid #333;border-bottom:3px solid #222;padding:6px 10px;font-size:11px;color:var(--green);min-width:34px;text-align:center}
+.key.active{background:#002200;border-color:var(--green)}
+.key.black{background:#0a0a0a;border-color:#333;color:var(--amber)}
+footer{border-top:1px solid #1a1a1a;padding:20px 30px;text-align:center;color:#333;font-size:11px;letter-spacing:2px;margin-top:60px}
+@media print{
+body{background:#fff;color:#000;font-size:11px}
+.cover{min-height:auto;padding:40px;border-color:#000;page-break-after:always}
+.section{page-break-before:always}
+.ascii-art{color:#000;text-shadow:none;font-size:9px}
+.cover-title{color:#000;text-shadow:none}
+.cover-subtitle{color:#333}
+.section-header{background:#f0f0f0;border-color:#000}
+.section-title{text-shadow:none;color:#000}
+h3{color:#333}h4{color:#555}p{color:#000}td{color:#000}
+th{color:#000;background:#e0e0e0}
+.code-block{background:#f5f5f5;color:#000;border-color:#999}
+a{color:#000}
+.badge-green,.badge-amber,.badge-red,.badge-cyan,.badge-purple{background:#eee;color:#000;border-color:#999}
+.tip-box{background:#f9f9f9;color:#000;border-color:#999}
+.status-bar{background:#f0f0f0}
+.status-item,.status-item span{color:#000}
+.key{background:#eee;color:#000;border-color:#999}
+tr:nth-child(even) td{background:#f5f5f5}
+.signal-flow{background:#f5f5f5}
+footer{color:#666}
+}
+</style>
+</head>
+<body>
+<div class="cover" id="cover">
+<pre class="ascii-art">
+ ___ ___  ___  _   _ ___ ____   ___    _   ___ 
+| __/ __|/ _ \| | | |_ _|_  /  / _ \  /_\ |_ _|
+| _|\__ \ (_) | |_| || | / /  | (_) |/ _ \ | | 
+|___|___/\__\_\___/|___/___| \___/_/ \_\|___|
+
+ +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+
+ |A|U|D|I|O| |W|O|R|K|S|T|A|T|I|O|N|
+ +-+-+-+-+-+ +-+-+-+-+-+-+-+-+-+-+
+
+  [ SAW ] [ FM ] [ SAMPLER ] [ NOISE ] [ SSB ] [ FX ] [ SEQ ]
+  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+  : DRUMS  BASS  SYNTH  FM  GLITCH  ARP  MIXER  SONG MODE  :
+  :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+</pre>
+<div class="cover-bar"></div>
+<div class="cover-title">ESQUIZOAI AUDIO WORKSTATION</div>
+<div class="cover-subtitle">MANUAL DE USUARIO v1.0</div>
+<div class="cover-bar"></div>
+<div class="cover-meta">
+El Loko Akrata // EsquizoAI-land &nbsp;|&nbsp; 2026<br><br>
+Browser-based modular audio workstation &mdash; Web Audio API<br>
+Sequencer &middot; FM &middot; Sampler &middot; Noise/Glitch &middot; SSB &middot; FX Chain &middot; Song Mode
+</div>
+</div>
+<div class="container">
+<div class="section" id="toc">
+<div class="section-header cyan">
+<span class="section-num">// 00</span>
+<span class="section-title" style="color:var(--cyan)">TABLA DE CONTENIDOS</span>
+</div>
+<div class="toc"><div class="toc-grid">
+<div class="toc-item"><span class="toc-num">01.</span><a class="toc-link" href="#quickstart">Quick Start</a></div>
+<div class="toc-item"><span class="toc-num">10.</span><a class="toc-link" href="#noise">Noise / Glitch Engine</a></div>
+<div class="toc-item"><span class="toc-num">02.</span><a class="toc-link" href="#interface">Interfaz General</a></div>
+<div class="toc-item"><span class="toc-num">11.</span><a class="toc-link" href="#ssb">SSB Tab (Shifter + Ring Mod)</a></div>
+<div class="toc-item"><span class="toc-num">03.</span><a class="toc-link" href="#drums">Drums Module</a></div>
+<div class="toc-item"><span class="toc-num">12.</span><a class="toc-link" href="#fx">FX Chain (8 efectos)</a></div>
+<div class="toc-item"><span class="toc-num">04.</span><a class="toc-link" href="#bass">Bass Synth</a></div>
+<div class="toc-item"><span class="toc-num">13.</span><a class="toc-link" href="#signal">Signal Flow</a></div>
+<div class="toc-item"><span class="toc-num">05.</span><a class="toc-link" href="#synth">Synth Module</a></div>
+<div class="toc-item"><span class="toc-num">14.</span><a class="toc-link" href="#sequencer">Sequencer</a></div>
+<div class="toc-item"><span class="toc-num">06.</span><a class="toc-link" href="#fm">FM Synth</a></div>
+<div class="toc-item"><span class="toc-num">15.</span><a class="toc-link" href="#arp">Arpeggiator &amp; Scale Lock</a></div>
+<div class="toc-item"><span class="toc-num">07.</span><a class="toc-link" href="#sampler">Sampler (4 slots)</a></div>
+<div class="toc-item"><span class="toc-num">16.</span><a class="toc-link" href="#song">Song Mode &amp; Export</a></div>
+<div class="toc-item"><span class="toc-num">08.</span><a class="toc-link" href="#mixer">Mixer</a></div>
+<div class="toc-item"><span class="toc-num">17.</span><a class="toc-link" href="#viz">Visualizacion</a></div>
+<div class="toc-item"><span class="toc-num">09.</span><a class="toc-link" href="#kbd">Keyboard Shortcuts</a></div>
+<div class="toc-item"><span class="toc-num">18.</span><a class="toc-link" href="#tips">Tips &amp; Hacks</a></div>
+</div></div>
+</div>
+<div class="section" id="quickstart">
+<div class="section-header"><span class="section-num">// 01</span><span class="section-title">QUICK START</span></div>
+<div class="two-col">
+<div>
+<h3>INICIO EN 5 PASOS</h3>
+<table><thead><tr><th>#</th><th>ACCION</th><th>NOTA</th></tr></thead><tbody>
+<tr><td class="val">1</td><td>Abrir <code>esquizoai-audio.html</code> en navegador</td><td>Chrome/Firefox recomendado</td></tr>
+<tr><td class="val">2</td><td>Click en cualquier boton para inicializar AudioContext</td><td>Requerido por politica de browsers</td></tr>
+<tr><td class="val">3</td><td>Seleccionar tab (DRUMS / BASS / SYNTH etc.)</td><td>11 tabs disponibles</td></tr>
+<tr><td class="val">4</td><td>Presionar <code>SPACE</code> para arrancar el sequencer</td><td>BPM default: 120</td></tr>
+<tr><td class="val">5</td><td>Teclado <code>Z-M</code> para tocar notas en vivo</td><td>C -> B (una octava)</td></tr>
+</tbody></table>
+</div>
+<div>
+<h3>MAPA DE TECLADO RAPIDO</h3>
+<div class="kbd-row">
+<div class="key active">Z<br><small>C</small></div>
+<div class="key black">S<br><small>C#</small></div>
+<div class="key active">X<br><small>D</small></div>
+<div class="key black">D<br><small>D#</small></div>
+<div class="key active">C<br><small>E</small></div>
+<div class="key active">V<br><small>F</small></div>
+<div class="key black">G<br><small>F#</small></div>
+<div class="key active">B<br><small>G</small></div>
+<div class="key black">H<br><small>G#</small></div>
+<div class="key active">N<br><small>A</small></div>
+<div class="key black">J<br><small>A#</small></div>
+<div class="key active">M<br><small>B</small></div>
+</div>
+<p style="margin-top:10px;font-size:11px;color:#666">Bass tab: MIDI base 36 (C2) &nbsp;|&nbsp; Synth/FM: MIDI base 48 (C3)</p>
+</div>
+</div>
+</div>
+<div class="section" id="interface">
+<div class="section-header amber"><span class="section-num">// 02</span><span class="section-title" style="color:var(--amber)">INTERFAZ GENERAL</span></div>
+<h3>STATUS BAR</h3>
+<div class="status-bar">
+<div class="status-item">CTX: <span>RUNNING</span></div>
+<div class="status-item">BPM: <span>120</span></div>
+<div class="status-item">STEP: <span>01/16</span></div>
+<div class="status-item">PAT: <span>A</span></div>
+<div class="status-item">LOOPS: <span>0</span></div>
+<div class="status-item">SR: <span>44100</span></div>
+<div class="status-item">FX: <span>0</span></div>
+<div class="status-item">ARP: <span>OFF</span></div>
+<div class="status-item">KEY: <span>C MAJ</span></div>
+<div class="status-item">CH: <span>12</span></div>
+</div>
+<h3>TRANSPORT</h3>
+<table><thead><tr><th>CONTROL</th><th>FUNCION</th><th>RANGO / DEFAULT</th></tr></thead><tbody>
+<tr><td>PLAY</td><td>Arrancar sequencer</td><td>-</td></tr>
+<tr><td>STOP</td><td>Detener sequencer, reset a step 1</td><td>-</td></tr>
+<tr><td>REC</td><td>Armar grabacion de loop</td><td>-</td></tr>
+<tr><td>BPM SLIDER</td><td>Tempo del sequencer</td><td class="def">40-300 BPM &middot; def: 120</td></tr>
+<tr><td>SWING</td><td>Groove shuffle (delay en steps pares)</td><td class="def">0-75% &middot; def: 0%</td></tr>
+</tbody></table>
+<h3>SOURCES</h3>
+<table><thead><tr><th>BOTON</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>SAW</td><td>Generador interno de onda sierra continua como fuente de audio</td></tr>
+<tr><td>MIC</td><td>Entrada de microfono (requiere permiso del navegador)</td></tr>
+<tr><td>FILE</td><td>Cargar archivo de audio externo como fuente (MP3, WAV, OGG)</td></tr>
+<tr><td>KILL</td><td>Silenciar toda fuente activa inmediatamente</td></tr>
+</tbody></table>
+<h3>TABS DISPONIBLES</h3>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin:12px 0">
+<span class="badge badge-green">DRUMS</span>
+<span class="badge badge-cyan">BASS</span>
+<span class="badge badge-amber">SYNTH</span>
+<span class="badge badge-purple">FM</span>
+<span class="badge badge-red">SAMPLER</span>
+<span class="badge badge-green">GLITCH</span>
+<span class="badge badge-cyan">SSB</span>
+<span class="badge badge-amber">FX</span>
+<span class="badge badge-purple">ARP</span>
+<span class="badge badge-green">MIXER</span>
+<span class="badge badge-red">SONG</span>
+</div>
+</div>
+<div class="section" id="drums">
+<div class="section-header red"><span class="section-num">// 03</span><span class="section-title" style="color:var(--red)">DRUMS MODULE</span></div>
+<p>Sintesis de bateria 100% analogica via Web Audio. Cinco voces independientes con sintesis por osciladores, envolventes y filtros.</p>
+<h3>PARAMETROS POR VOZ</h3>
+<table><thead><tr><th>VOZ</th><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td rowspan="4" style="color:var(--red);font-weight:bold">KICK</td><td>PITCH</td><td class="range">20-120 Hz</td><td class="def">55</td><td>Frecuencia inicial del oscilador</td></tr>
+<tr><td>DECAY</td><td class="range">50-800 ms</td><td class="def">300</td><td>Tiempo de caida de la envoltura</td></tr>
+<tr><td>SWEEP</td><td class="range">50-500 ms</td><td class="def">150</td><td>Tiempo de caida del pitch sweep</td></tr>
+<tr><td>CLICK</td><td class="range">0-100%</td><td class="def">30</td><td>Transiente de ataque (ruido breve)</td></tr>
+<tr><td rowspan="3" style="color:var(--amber);font-weight:bold">SNARE</td><td>TONE</td><td class="range">80-400 Hz</td><td class="def">200</td><td>Tono del cuerpo del snare</td></tr>
+<tr><td>NOISE</td><td class="range">0-100%</td><td class="def">70</td><td>Nivel de ruido blanco en el snare</td></tr>
+<tr><td>DECAY</td><td class="range">30-600 ms</td><td class="def">200</td><td>Tiempo de caida total</td></tr>
+<tr><td rowspan="2" style="color:var(--cyan);font-weight:bold">HIHAT</td><td>FREQ</td><td class="range">2000-16000 Hz</td><td class="def">8000</td><td>Frecuencia de osciladores metallic noise</td></tr>
+<tr><td>DECAY</td><td class="range">10-500 ms</td><td class="def">80</td><td>Tiempo de caida (open/closed)</td></tr>
+<tr><td style="color:var(--green);font-weight:bold">CLAP</td><td>CLAP_DEC</td><td class="range">30-500 ms</td><td class="def">150</td><td>Decay del ruido filtrado de clap</td></tr>
+<tr><td style="color:var(--purple);font-weight:bold">PERC</td><td>PERC_F</td><td class="range">100-4000 Hz</td><td class="def">800</td><td>Pitch del percusivo tom/conga sintetico</td></tr>
+</tbody></table>
+<h3>PRESETS DE BATERIA</h3>
+<table><thead><tr><th>PRESET</th><th>kP</th><th>kD</th><th>kS</th><th>kC</th><th>sT</th><th>sN</th><th>sD</th><th>hF</th><th>hD</th><th>cD</th><th>pF</th></tr></thead><tbody>
+<tr><td style="color:var(--amber);font-weight:bold">808</td><td>50</td><td>400</td><td>200</td><td>20</td><td>150</td><td>60</td><td>250</td><td>6000</td><td>60</td><td>200</td><td>600</td></tr>
+<tr><td style="color:var(--cyan);font-weight:bold">909</td><td>60</td><td>300</td><td>150</td><td>40</td><td>200</td><td>80</td><td>180</td><td>10000</td><td>80</td><td>150</td><td>800</td></tr>
+<tr><td style="color:var(--red);font-weight:bold">INDUSTRIAL</td><td>40</td><td>500</td><td>400</td><td>80</td><td>100</td><td>90</td><td>400</td><td>4000</td><td>200</td><td>300</td><td>300</td></tr>
+<tr><td style="color:var(--purple);font-weight:bold">NOISE</td><td>30</td><td>600</td><td>500</td><td>100</td><td>80</td><td>100</td><td>500</td><td>3000</td><td>400</td><td>500</td><td>200</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">kP=kickPitch, kD=kickDecay, kS=kickSweep, kC=kickClick, sT=snareTone, sN=snareNoise, sD=snareDecay, hF=hihatFreq, hD=hihatDecay, cD=clapDecay, pF=percFreq</p>
+</div>
+<div class="section" id="bass">
+<div class="section-header cyan"><span class="section-num">// 04</span><span class="section-title" style="color:var(--cyan)">BASS SYNTH</span></div>
+<p>Sintetizador de bajos substractivo con dos osciladores, filtro resonante, envoltura y drive. Portamento (glide) para lineas melodicas.</p>
+<h3>PARAMETROS</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>OSC1_TYPE</td><td class="range">SAW/SQR/SIN/TRI</td><td class="def">SAW</td><td>Forma de onda del oscilador principal</td></tr>
+<tr><td>DETUNE</td><td class="range">0-50 cents</td><td class="def">0</td><td>Desafinacion OSC1 respecto al pitch base</td></tr>
+<tr><td>SUB_OSC</td><td class="range">0-100%</td><td class="def">50</td><td>Nivel del sub-oscilador (una octava abajo)</td></tr>
+<tr><td>SUB_TYPE</td><td class="range">SIN/SQR/TRI</td><td class="def">SQR</td><td>Forma de onda del sub-oscilador</td></tr>
+<tr><td>GLIDE_MS</td><td class="range">0-500 ms</td><td class="def">30</td><td>Portamento: tiempo de deslizamiento entre notas</td></tr>
+<tr><td>CUTOFF</td><td class="range">20-16000 Hz</td><td class="def">800</td><td>Frecuencia de corte del filtro paso bajo</td></tr>
+<tr><td>RESONANCE</td><td class="range">0-30</td><td class="def">5</td><td>Resonancia del filtro (Q factor)</td></tr>
+<tr><td>ENV_AMOUNT</td><td class="range">0-10000 Hz</td><td class="def">3000</td><td>Modulacion de la envoltura sobre el filtro</td></tr>
+<tr><td>ENV_DECAY</td><td class="range">10-2000 ms</td><td class="def">200</td><td>Tiempo de caida de la envoltura de filtro</td></tr>
+<tr><td>ATTACK</td><td class="range">1-500 ms</td><td class="def">5</td><td>Ataque de la envoltura de amplitud</td></tr>
+<tr><td>DECAY</td><td class="range">10-2000 ms</td><td class="def">150</td><td>Decay de la envoltura de amplitud</td></tr>
+<tr><td>SUSTAIN</td><td class="range">0-100%</td><td class="def">60</td><td>Nivel de sustain</td></tr>
+<tr><td>RELEASE</td><td class="range">10-2000 ms</td><td class="def">100</td><td>Tiempo de release al soltar nota</td></tr>
+<tr><td>DRIVE</td><td class="range">0-100</td><td class="def">0</td><td>Saturacion/distorsion pre-filtro</td></tr>
+<tr><td>OCTAVE</td><td class="range">-1/0/+1</td><td class="def">0</td><td>Transposicion de octava del teclado</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#666">Teclado: Z-M = C2-B2 (MIDI 36-47)</p>
+<h3>PRESETS DE BAJO (10)</h3>
+<table><thead><tr><th>PRESET</th><th>OSC1</th><th>SUB%</th><th>GL</th><th>CUT</th><th>RES</th><th>EA</th><th>ED</th><th>A</th><th>D</th><th>S</th><th>R</th><th>DET</th><th>DRV</th><th>OCT</th></tr></thead><tbody>
+<tr><td style="color:var(--amber)">ACID_303</td><td>SAW</td><td>30</td><td>10</td><td>400</td><td>15</td><td>5000</td><td>120</td><td>2</td><td>100</td><td>0</td><td>30</td><td>0</td><td>20</td><td>0</td></tr>
+<tr><td style="color:var(--cyan)">SUB_BASS</td><td>SIN</td><td>80</td><td>50</td><td>200</td><td>2</td><td>500</td><td>300</td><td>5</td><td>200</td><td>80</td><td>200</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td style="color:var(--green)">REESE</td><td>SAW</td><td>70</td><td>80</td><td>1200</td><td>4</td><td>2000</td><td>400</td><td>10</td><td>300</td><td>60</td><td>300</td><td>15</td><td>0</td><td>0</td></tr>
+<tr><td style="color:var(--purple)">PLUCK</td><td>SQR</td><td>20</td><td>0</td><td>3000</td><td>8</td><td>8000</td><td>80</td><td>1</td><td>80</td><td>0</td><td>20</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td style="color:var(--red)">GROWL</td><td>SAW</td><td>60</td><td>20</td><td>600</td><td>12</td><td>6000</td><td>150</td><td>3</td><td>150</td><td>30</td><td>80</td><td>8</td><td>40</td><td>0</td></tr>
+<tr><td style="color:var(--cyan)">DUB</td><td>SIN</td><td>100</td><td>60</td><td>300</td><td>3</td><td>800</td><td>500</td><td>8</td><td>400</td><td>70</td><td>400</td><td>0</td><td>0</td><td>-1</td></tr>
+<tr><td style="color:var(--red)">DISTORTED</td><td>SAW</td><td>40</td><td>0</td><td>1000</td><td>6</td><td>4000</td><td>100</td><td>2</td><td>120</td><td>50</td><td>60</td><td>5</td><td>80</td><td>0</td></tr>
+<tr><td style="color:var(--amber)">OCTAVE</td><td>SAW</td><td>90</td><td>0</td><td>2000</td><td>3</td><td>3000</td><td>150</td><td>3</td><td>150</td><td>60</td><td>100</td><td>0</td><td>10</td><td>0</td></tr>
+<tr><td style="color:var(--purple)">WOBBLE</td><td>SQR</td><td>60</td><td>100</td><td>500</td><td>18</td><td>7000</td><td>300</td><td>5</td><td>250</td><td>40</td><td>150</td><td>20</td><td>30</td><td>0</td></tr>
+<tr><td style="color:var(--green)">FM_BASS</td><td>SIN</td><td>30</td><td>0</td><td>6000</td><td>1</td><td>8000</td><td>60</td><td>1</td><td>60</td><td>0</td><td>20</td><td>35</td><td>0</td><td>0</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">EA=envAmount, ED=envDecay, A=attack, D=decay, S=sustain%, R=release, DET=detune cents, DRV=drive, OCT=octave, GL=glide ms</p>
+</div>
+<div class="section" id="synth">
+<div class="section-header purple"><span class="section-num">// 05</span><span class="section-title" style="color:var(--purple)">SYNTH MODULE</span></div>
+<p>Sintetizador substractivo de doble oscilador. OSC2 con detune independiente para efectos de chorus/detuning. Envoltura ADSR completa para amplitud y filtro.</p>
+<h3>PARAMETROS</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>OSC1_TYPE</td><td class="range">SAW/SQR/SIN/TRI</td><td class="def">SAW</td><td>Forma de onda del oscilador 1</td></tr>
+<tr><td>OSC2_DETUNE</td><td class="range">0-50 cents</td><td class="def">7</td><td>Desafinacion del oscilador 2</td></tr>
+<tr><td>OSC2_TYPE</td><td class="range">SAW/SQR/SIN</td><td class="def">SAW</td><td>Forma de onda del oscilador 2</td></tr>
+<tr><td>OSC_MIX</td><td class="range">0-100%</td><td class="def">50</td><td>Balance OSC1 / OSC2</td></tr>
+<tr><td>CUTOFF</td><td class="range">20-16000 Hz</td><td class="def">4000</td><td>Frecuencia de corte del filtro</td></tr>
+<tr><td>RESONANCE</td><td class="range">0-30</td><td class="def">2</td><td>Resonancia del filtro (Q)</td></tr>
+<tr><td>FLT_ENV</td><td class="range">0-10000 Hz</td><td class="def">2000</td><td>Cantidad de la envoltura de filtro</td></tr>
+<tr><td>FLT_DEC</td><td class="range">10-3000 ms</td><td class="def">400</td><td>Decay de la envoltura de filtro</td></tr>
+<tr><td>ATK</td><td class="range">1-2000 ms</td><td class="def">10</td><td>Ataque de amplitud</td></tr>
+<tr><td>DEC</td><td class="range">10-3000 ms</td><td class="def">300</td><td>Decay de amplitud</td></tr>
+<tr><td>SUS</td><td class="range">0-100%</td><td class="def">70</td><td>Sustain de amplitud</td></tr>
+<tr><td>REL</td><td class="range">10-3000 ms</td><td class="def">200</td><td>Release de amplitud</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#666">Teclado: Z-M = C3-B3 (MIDI 48-59)</p>
+<h3>PRESETS SYNTH (14)</h3>
+<table><thead><tr><th>PRESET</th><th>OSC1</th><th>DET</th><th>MIX</th><th>CUT</th><th>RES</th><th>FE</th><th>FD</th><th>A</th><th>D</th><th>S</th><th>R</th></tr></thead><tbody>
+<tr><td style="color:var(--amber)">LEAD</td><td>SAW</td><td>12</td><td>50</td><td>5000</td><td>3</td><td>3000</td><td>300</td><td>5</td><td>200</td><td>70</td><td>150</td></tr>
+<tr><td style="color:var(--cyan)">PAD</td><td>SAW</td><td>7</td><td>50</td><td>2000</td><td>1</td><td>1000</td><td>1000</td><td>500</td><td>500</td><td>80</td><td>1000</td></tr>
+<tr><td style="color:var(--red)">STAB</td><td>SQR</td><td>5</td><td>40</td><td>6000</td><td>5</td><td>5000</td><td>100</td><td>1</td><td>100</td><td>0</td><td>30</td></tr>
+<tr><td style="color:var(--green)">PLUCK</td><td>SAW</td><td>3</td><td>60</td><td>8000</td><td>4</td><td>8000</td><td>80</td><td>1</td><td>80</td><td>0</td><td>50</td></tr>
+<tr><td style="color:var(--amber)">BRASS</td><td>SAW</td><td>10</td><td>50</td><td>3000</td><td>2</td><td>4000</td><td>200</td><td>30</td><td>300</td><td>60</td><td>200</td></tr>
+<tr><td style="color:var(--cyan)">STRINGS</td><td>SAW</td><td>8</td><td>50</td><td>3500</td><td>1</td><td>500</td><td>800</td><td>300</td><td>600</td><td>85</td><td>600</td></tr>
+<tr><td style="color:var(--green)">ORGAN</td><td>SIN</td><td>0</td><td>80</td><td>8000</td><td>0</td><td>200</td><td>50</td><td>3</td><td>30</td><td>100</td><td>15</td></tr>
+<tr><td style="color:var(--purple)">BELL</td><td>SIN</td><td>50</td><td>70</td><td>10000</td><td>2</td><td>10000</td><td>60</td><td>1</td><td>40</td><td>0</td><td>800</td></tr>
+<tr><td style="color:var(--amber)">KEYS</td><td>SQR</td><td>2</td><td>50</td><td>5000</td><td>3</td><td>6000</td><td>120</td><td>2</td><td>120</td><td>20</td><td>80</td></tr>
+<tr><td style="color:var(--red)">CHOIR</td><td>SAW</td><td>6</td><td>50</td><td>1800</td><td>6</td><td>800</td><td>600</td><td>400</td><td>400</td><td>75</td><td>500</td></tr>
+<tr><td style="color:var(--cyan)">ACID_LEAD</td><td>SAW</td><td>0</td><td>30</td><td>600</td><td>20</td><td>8000</td><td>150</td><td>2</td><td>150</td><td>0</td><td>30</td></tr>
+<tr><td style="color:var(--green)">AMBIENT</td><td>TRI</td><td>4</td><td>60</td><td>1500</td><td>1</td><td>500</td><td>2000</td><td>1000</td><td>1000</td><td>90</td><td>2000</td></tr>
+<tr><td style="color:var(--purple)">PERC_SYNTH</td><td>SIN</td><td>40</td><td>50</td><td>12000</td><td>1</td><td>10000</td><td>30</td><td>1</td><td>30</td><td>0</td><td>15</td></tr>
+<tr><td style="color:var(--amber)">NOISE_TEX</td><td>SAW</td><td>50</td><td>50</td><td>2000</td><td>10</td><td>5000</td><td>500</td><td>200</td><td>500</td><td>50</td><td>800</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">DET=detune cents, MIX=oscMix%, CUT=cutoff Hz, RES=resonance, FE=filterEnv Hz, FD=filterDec ms, A/D/S/R = attack/decay/sustain/release</p>
+</div>
+<div class="section" id="fm">
+<div class="section-header amber"><span class="section-num">// 06</span><span class="section-title" style="color:var(--amber)">FM SYNTH</span></div>
+<p>Sintesis FM de 2 operadores (carrier + modulator). El indice de modulacion controla la complejidad timbrica. Feedback del carrier via delay loop para auto-modulacion.</p>
+<h3>PARAMETROS</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>CARRIER_TYPE</td><td class="range">SIN/SAW/SQR/TRI</td><td class="def">SIN</td><td>Forma de onda del carrier (operador de salida)</td></tr>
+<tr><td>OCTAVE</td><td class="range">-1/0/+1</td><td class="def">0</td><td>Transposicion de octava del teclado</td></tr>
+<tr><td>MOD_TYPE</td><td class="range">SIN/SAW/SQR</td><td class="def">SIN</td><td>Forma de onda del modulador</td></tr>
+<tr><td>RATIO</td><td class="range">0.1-16</td><td class="def">2.0</td><td>Ratio freq modulador/carrier. Enteros = armonicos, irracionales = inharmonicos</td></tr>
+<tr><td>FM_INDEX</td><td class="range">0-2000</td><td class="def">100</td><td>Profundidad de modulacion. Mayor = mas brillante y complejo</td></tr>
+<tr><td>FEEDBACK</td><td class="range">0-100%</td><td class="def">0</td><td>Auto-modulacion del carrier via delay loop</td></tr>
+<tr><td>CUTOFF</td><td class="range">20-20000 Hz</td><td class="def">6000</td><td>Frecuencia de corte del filtro paso bajo</td></tr>
+<tr><td>RESONANCE</td><td class="range">0-30</td><td class="def">1</td><td>Resonancia del filtro</td></tr>
+<tr><td>FLT_ENV</td><td class="range">0-15000 Hz</td><td class="def">3000</td><td>Modulacion de envoltura sobre filtro</td></tr>
+<tr><td>FLT_DEC</td><td class="range">10-3000 ms</td><td class="def">300</td><td>Decay de envoltura de filtro</td></tr>
+<tr><td>ATK</td><td class="range">1-2000 ms</td><td class="def">5</td><td>Ataque de amplitud</td></tr>
+<tr><td>DEC</td><td class="range">10-3000 ms</td><td class="def">200</td><td>Decay de amplitud</td></tr>
+<tr><td>SUS</td><td class="range">0-100%</td><td class="def">50</td><td>Sustain de amplitud</td></tr>
+<tr><td>REL</td><td class="range">10-3000 ms</td><td class="def">300</td><td>Release de amplitud</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#666">Teclado: Z-M = C3-B3 (MIDI 48-59)</p>
+<h3>PRESETS FM (8)</h3>
+<table><thead><tr><th>PRESET</th><th>CT</th><th>MT</th><th>RATIO</th><th>IDX</th><th>FB%</th><th>CUT</th><th>RES</th><th>FE</th><th>FD</th><th>A</th><th>D</th><th>S</th><th>R</th></tr></thead><tbody>
+<tr><td style="color:var(--cyan)">BELL</td><td>SIN</td><td>SIN</td><td>3.5</td><td>600</td><td>0</td><td>8000</td><td>1</td><td>8000</td><td>80</td><td>1</td><td>500</td><td>0</td><td>1500</td></tr>
+<tr><td style="color:var(--amber)">BRASS</td><td>SIN</td><td>SAW</td><td>1</td><td>300</td><td>30</td><td>4000</td><td>3</td><td>5000</td><td>200</td><td>20</td><td>200</td><td>60</td><td>200</td></tr>
+<tr><td style="color:var(--green)">E_PIANO</td><td>SIN</td><td>SIN</td><td>14</td><td>400</td><td>0</td><td>6000</td><td>1</td><td>3000</td><td>300</td><td>3</td><td>400</td><td>30</td><td>800</td></tr>
+<tr><td style="color:var(--red)">METALLIC</td><td>SIN</td><td>SQR</td><td>3.14</td><td>800</td><td>50</td><td>10000</td><td>5</td><td>8000</td><td>100</td><td>1</td><td>300</td><td>0</td><td>500</td></tr>
+<tr><td style="color:var(--purple)">ORGAN</td><td>SIN</td><td>SIN</td><td>2</td><td>150</td><td>0</td><td>8000</td><td>0</td><td>200</td><td>50</td><td>3</td><td>30</td><td>100</td><td>15</td></tr>
+<tr><td style="color:var(--cyan)">BASS_FM</td><td>SIN</td><td>SIN</td><td>1</td><td>200</td><td>20</td><td>800</td><td>4</td><td>4000</td><td>150</td><td>3</td><td>150</td><td>60</td><td>100</td></tr>
+<tr><td style="color:var(--green)">DRONE</td><td>SIN</td><td>SIN</td><td>0.5</td><td>50</td><td>0</td><td>3000</td><td>2</td><td>500</td><td>2000</td><td>500</td><td>2000</td><td>90</td><td>2000</td></tr>
+<tr><td style="color:var(--amber)">PERC_FM</td><td>SIN</td><td>SQR</td><td>5</td><td>1000</td><td>0</td><td>12000</td><td>0</td><td>10000</td><td>30</td><td>1</td><td>80</td><td>0</td><td>100</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">CT=carrierType, MT=modType, IDX=fmIndex, FB=feedback%, CUT=cutoff, RES=resonance, FE=filterEnv, FD=filterDec ms</p>
+</div>
+<div class="section" id="sampler">
+<div class="section-header red"><span class="section-num">// 07</span><span class="section-title" style="color:var(--red)">SAMPLER (4 SLOTS)</span></div>
+<p>Cuatro slots de sample independientes. Cada slot carga, visualiza y reproduce audio con pitch, envoltura y volumen propios. Asignados a tracks SMP0-SMP3 del sequencer.</p>
+<h3>PARAMETROS POR SLOT</h3>
+<table><thead><tr><th>CONTROL</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>LOAD</td><td>-</td><td>-</td><td>Cargar archivo de audio. Muestra forma de onda en canvas al cargar</td></tr>
+<tr><td>Waveform Display</td><td>-</td><td>-</td><td>Canvas con visualizacion de la forma de onda del sample cargado</td></tr>
+<tr><td>PITCH</td><td class="range">-24 a +24 semitonos</td><td class="def">0 st</td><td>Transposicion de pitch del sample</td></tr>
+<tr><td>ATTACK</td><td class="range">0-500 ms</td><td class="def">5 ms</td><td>Tiempo de fade-in al inicio de reproduccion</td></tr>
+<tr><td>DECAY</td><td class="range">50-2000 ms</td><td class="def">500 ms</td><td>Tiempo de caida de la envoltura de amplitud</td></tr>
+<tr><td>VOLUME</td><td class="range">0-100%</td><td class="def">80%</td><td>Nivel de salida del slot</td></tr>
+<tr><td>PAD</td><td>-</td><td>-</td><td>Disparar sample manualmente (one-shot)</td></tr>
+</tbody></table>
+<h3>FORMATOS SOPORTADOS</h3>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0">
+<span class="badge badge-green">MP3</span>
+<span class="badge badge-cyan">WAV</span>
+<span class="badge badge-amber">OGG</span>
+<span class="badge badge-purple">FLAC</span>
+</div>
+<p style="font-size:12px;color:#88ff88">Decodificacion via Web Audio API <code>decodeAudioData</code>. Compatibilidad dependiente del navegador.</p>
+</div>
+<div class="section" id="mixer">
+<div class="section-header"><span class="section-num">// 08</span><span class="section-title">MIXER</span></div>
+<p>12 canales independientes con control de volumen, mute y enrutamiento DSP. El Master controla el nivel de salida global post-cadena de efectos.</p>
+<h3>CANALES</h3>
+<table><thead><tr><th>#</th><th>CANAL</th><th>DESCRIPCION</th><th>DSP DEFAULT</th></tr></thead><tbody>
+<tr><td class="val">1</td><td>KICK</td><td>Bateria - Kick drum</td><td>OFF</td></tr>
+<tr><td class="val">2</td><td>SNARE</td><td>Bateria - Snare</td><td>OFF</td></tr>
+<tr><td class="val">3</td><td>HIHAT</td><td>Bateria - Hi-hat</td><td>OFF</td></tr>
+<tr><td class="val">4</td><td>CLAP</td><td>Bateria - Clap</td><td>OFF</td></tr>
+<tr><td class="val">5</td><td>PERC</td><td>Bateria - Percusivo</td><td>OFF</td></tr>
+<tr><td class="val">6</td><td>BASS</td><td>Bass Synth</td><td>OFF</td></tr>
+<tr><td class="val">7</td><td>SYNTH</td><td>Synth Module</td><td>OFF</td></tr>
+<tr><td class="val">8</td><td>FM</td><td>FM Synth</td><td>OFF</td></tr>
+<tr><td class="val">9</td><td>SAMPLER</td><td>4 slots de sampler combinados</td><td>OFF</td></tr>
+<tr><td class="val">10</td><td>NOISE</td><td>Noise/Glitch Engine</td><td>OFF</td></tr>
+<tr><td class="val">11</td><td>SOURCE</td><td>Fuente externa (SAW/MIC/FILE)</td><td>OFF</td></tr>
+<tr><td class="val">12</td><td>LOOPS</td><td>Loop Recorder playback</td><td>OFF</td></tr>
+</tbody></table>
+<h3>CONTROLES POR CANAL</h3>
+<table><thead><tr><th>CONTROL</th><th>RANGO</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>Volume Slider</td><td class="range">0-100%</td><td>Nivel de salida del canal</td></tr>
+<tr><td>MUTE (M)</td><td>ON/OFF</td><td>Silenciar canal sin perder configuracion</td></tr>
+<tr><td>DSP Toggle</td><td>ON/OFF</td><td>DSP=ON: enrutar por cadena de efectos completa. DSP=OFF: bypass directo al analyser</td></tr>
+<tr><td>MASTER</td><td class="range">0-100%</td><td class="def">Default: 70%. Nivel de salida global</td></tr>
+</tbody></table>
+</div>
+<div class="section" id="kbd">
+<div class="section-header cyan"><span class="section-num">// 09</span><span class="section-title" style="color:var(--cyan)">KEYBOARD SHORTCUTS</span></div>
+<h3>ATAJOS GLOBALES</h3>
+<table><thead><tr><th>TECLA</th><th>ACCION</th></tr></thead><tbody>
+<tr><td><code>SPACE</code></td><td>Play / Stop sequencer</td></tr>
+</tbody></table>
+<h3>MAPA MUSICAL (Z-M)</h3>
+<table><thead><tr><th>TECLA</th><th>NOTA</th><th>MIDI BASS (C2)</th><th>MIDI SYNTH/FM (C3)</th></tr></thead><tbody>
+<tr><td><code>Z</code></td><td>C</td><td class="val">36</td><td class="val">48</td></tr>
+<tr><td><code>S</code></td><td>C#</td><td class="val">37</td><td class="val">49</td></tr>
+<tr><td><code>X</code></td><td>D</td><td class="val">38</td><td class="val">50</td></tr>
+<tr><td><code>D</code></td><td>D#</td><td class="val">39</td><td class="val">51</td></tr>
+<tr><td><code>C</code></td><td>E</td><td class="val">40</td><td class="val">52</td></tr>
+<tr><td><code>V</code></td><td>F</td><td class="val">41</td><td class="val">53</td></tr>
+<tr><td><code>G</code></td><td>F#</td><td class="val">42</td><td class="val">54</td></tr>
+<tr><td><code>B</code></td><td>G</td><td class="val">43</td><td class="val">55</td></tr>
+<tr><td><code>H</code></td><td>G#</td><td class="val">44</td><td class="val">56</td></tr>
+<tr><td><code>N</code></td><td>A</td><td class="val">45</td><td class="val">57</td></tr>
+<tr><td><code>J</code></td><td>A#</td><td class="val">46</td><td class="val">58</td></tr>
+<tr><td><code>M</code></td><td>B</td><td class="val">47</td><td class="val">59</td></tr>
+<tr><td><code>,</code></td><td>C (+1 octava)</td><td class="val">48</td><td class="val">60</td></tr>
+</tbody></table>
+<p style="font-size:12px;color:#88ff88">Comportamiento: <code>keydown</code> = note on, <code>keyup</code> = note off. Con arpeggiador activo y HOLD encendido, las notas se acumulan en el pool hasta soltar HOLD.</p>
+<div class="two-col" style="margin-top:16px">
+<div>
+<h3>TECLADO VISUAL</h3>
+<div class="kbd-row">
+<div class="key active">Z<br><small>C</small></div>
+<div class="key black">S<br><small>C#</small></div>
+<div class="key active">X<br><small>D</small></div>
+<div class="key black">D<br><small>D#</small></div>
+<div class="key active">C<br><small>E</small></div>
+<div class="key active">V<br><small>F</small></div>
+<div class="key black">G<br><small>F#</small></div>
+<div class="key active">B<br><small>G</small></div>
+<div class="key black">H<br><small>G#</small></div>
+<div class="key active">N<br><small>A</small></div>
+<div class="key black">J<br><small>A#</small></div>
+<div class="key active">M<br><small>B</small></div>
+</div>
+</div>
+<div>
+<h3>NOTAS DE USO</h3>
+<p style="font-size:12px">Las teclas de notas negras (C#,D#,F#,G#,A#) usan las teclas de letras que van entre las blancas correspondientes en el teclado QWERTY.</p>
+<p style="font-size:12px">El tab activo determina si se toca en octava Bass (C2) o Synth/FM (C3).</p>
+</div>
+</div>
+</div>
+<div class="section" id="noise">
+<div class="section-header red"><span class="section-num">// 10</span><span class="section-title" style="color:var(--red)">NOISE / GLITCH ENGINE</span></div>
+<p>Generador de ruido con cuatro tipos de espectro. Motor de glitch con control de densidad, pulsing y distorsion espectral. Estado default: OFFLINE.</p>
+<h3>TIPOS DE RUIDO</h3>
+<table><thead><tr><th>TIPO</th><th>ALGORITMO</th><th>CARACTER SONORO</th></tr></thead><tbody>
+<tr><td style="color:var(--green)">WHITE</td><td>Random flat spectrum</td><td>Espectro plano, hiss brillante, contenido igual en todas las frecuencias</td></tr>
+<tr><td style="color:var(--cyan)">PINK</td><td>Paul Kellet 7-accumulator (-3dB/oct)</td><td>Espectro natural, balanced, similar al ruido de la naturaleza</td></tr>
+<tr><td style="color:var(--amber)">BROWN</td><td>Integrated noise (-6dB/oct)</td><td>Espectro muy oscuro, rumble sub, textura de tornado o mar profundo</td></tr>
+<tr><td style="color:var(--red)">ELECTRIC</td><td>Sparse bursts con transients</td><td>Chispas electricas, cortos circuitos, glitch esporadico con silencio entre bursts</td></tr>
+</tbody></table>
+<h3>PARAMETROS</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>Toggle</td><td>OFFLINE/ONLINE</td><td class="def">OFFLINE</td><td>Activar/desactivar el generador de ruido</td></tr>
+<tr><td>NOISE_TYPE</td><td class="range">WHITE/PINK/BROWN/ELECTRIC</td><td class="def">WHITE</td><td>Seleccion del tipo de espectro de ruido</td></tr>
+<tr><td>DENSITY</td><td class="range">1-100%</td><td class="def">100%</td><td>Densidad de muestra generada por buffer</td></tr>
+<tr><td>VOLUME</td><td class="range">0-100%</td><td class="def">70%</td><td>Nivel de salida del generador</td></tr>
+<tr><td>FREQ_TILT (LPF)</td><td class="range">80-20000 Hz</td><td class="def">8000 Hz</td><td>Filtro paso bajo para moldear el espectro superiormente</td></tr>
+<tr><td>RESONANCE</td><td class="range">0-20</td><td class="def">1</td><td>Resonancia del filtro de tilt</td></tr>
+<tr><td>GLITCH_AMT</td><td class="range">0-100%</td><td class="def">0%</td><td>Cantidad de corrupcion/glitch aplicada al buffer de audio</td></tr>
+<tr><td>PULSE_RATE</td><td class="range">0-30 Hz</td><td class="def">0 Hz</td><td>Frecuencia de pulsos on/off del ruido (tremolo de ruido)</td></tr>
+<tr><td>HPF_CUTOFF</td><td class="range">20-8000 Hz</td><td class="def">20 Hz</td><td>Filtro paso alto para eliminar contenido sub-grave</td></tr>
+</tbody></table>
+</div>
+<div class="section" id="ssb">
+<div class="section-header purple"><span class="section-num">// 11</span><span class="section-title" style="color:var(--purple)">SSB TAB -- SHIFTER + RING MOD</span></div>
+<p>Dos modulos de procesamiento espectral avanzado. El SSB Shifter desplaza todo el espectro en Hz (no en semitonos, desafinacion real). El Ring Modulator multiplica la senal por un carrier sinusoidal creando bandas laterales.</p>
+<div class="two-col">
+<div>
+<h3>SSB FREQUENCY SHIFTER</h3>
+<p style="font-size:11px;color:#88ff88">Implementacion: Hilbert approximation con allpass de 4 taps. Estado por defecto: <span class="badge badge-green">ACTIVE</span></p>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>SHIFT_HZ</td><td class="range">-1000 a +1000 Hz</td><td class="def">0 Hz</td><td>Desplazamiento espectral en Hertz</td></tr>
+<tr><td>SIDEBAND</td><td class="range">USB/LSB/BOTH</td><td class="def">USB</td><td>USB=upper, LSB=lower, BOTH=mezcla</td></tr>
+<tr><td>MIX</td><td class="range">0-100%</td><td class="def">100%</td><td>Balance seco/procesado</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">A diferencia del pitch shift en semitonos, el SSB shift desplaza todas las frecuencias por el mismo valor Hz. Resultado: las relaciones armonicas se rompen creando inharmonicidad.</p>
+</div>
+<div>
+<h3>RING MODULATOR</h3>
+<p style="font-size:11px;color:#88ff88">Multiplicacion de senal por carrier sinusoidal. Estado por defecto: <span class="badge badge-red">BYPASSED</span></p>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>CARRIER</td><td class="range">-2000 a +2000 Hz</td><td class="def">0 Hz</td><td>Frecuencia del oscilador carrier</td></tr>
+<tr><td>DEPTH</td><td class="range">0-100%</td><td class="def">100%</td><td>Profundidad de modulacion del ring</td></tr>
+<tr><td>LFO</td><td class="range">0-20 Hz</td><td class="def">0 Hz</td><td>LFO modulando la frecuencia del carrier</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">LFO modulando CARRIER a bajas frecuencias (0.1-2Hz) = tremolo/vibrato espectral evolutivo. A frecuencias medias = AM synthesis metalica.</p>
+</div>
+</div>
+</div>
+<div class="section" id="fx">
+<div class="section-header amber"><span class="section-num">// 12</span><span class="section-title" style="color:var(--amber)">FX CHAIN (8 EFECTOS)</span></div>
+<p>Cadena de efectos serial. Todos los efectos tienen estado <span class="badge badge-red">BYPASSED</span> por defecto. El orden de la cadena es fijo segun el Signal Flow.</p>
+<h3>1. WAVESHAPER</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>DRIVE</td><td class="range">0-100</td><td class="def">0</td><td>Ganancia pre-saturacion. Mayor = mas distorsion</td></tr>
+<tr><td>CURVE</td><td class="range">SOFT/HARD/FOLD</td><td class="def">SOFT</td><td>SOFT=tanh suave, HARD=hard clip, FOLD=wavefold (dobla la onda al sobrepasar umbral)</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">4x oversample para reducir aliasing. FOLD a DRIVE alto crea espectros riquisimos con octavas y quintas sinteticas.</p>
+<h3>2. DELAY</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>TIME</td><td class="range">10-2000 ms</td><td class="def">300 ms</td><td>Tiempo de retardo del eco</td></tr>
+<tr><td>FEEDBACK (FB)</td><td class="range">0-95%</td><td class="def">30%</td><td>Porcentaje de senal realimentada (ecos sucesivos)</td></tr>
+<tr><td>WET</td><td class="range">0-100%</td><td class="def">50%</td><td>Nivel de la senal procesada en la mezcla</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">Buffer maximo: 5 segundos. FB mayor a 90% con TIME largo crea reverb/drone por acumulacion de loops.</p>
+<h3>3. REVERB</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>SIZE_ms</td><td class="range">100-8000 ms</td><td class="def">2000 ms</td><td>Tamano del espacio sintetico (longitud del IR)</td></tr>
+<tr><td>DECAY</td><td class="range">0.1-12</td><td class="def">3</td><td>Tiempo de reverberacion (RT60 aproximado)</td></tr>
+<tr><td>PRE_DLY</td><td class="range">0-100 ms</td><td class="def">0 ms</td><td>Pre-delay antes del reverb (separa early reflections)</td></tr>
+<tr><td>WET</td><td class="range">0-100%</td><td class="def">40%</td><td>Nivel de la reverberacion en la mezcla</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">Convolver con IR generada por ruido coloreado. SIZE_ms controla longitud del IR. DECAY alto con SIZE grande = caves espaciales.</p>
+<h3>4. CHORUS / FLANGER</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>MODE</td><td class="range">CHORUS/FLANG</td><td class="def">CHORUS</td><td>CHORUS=delay base 25ms, FLANG=delay base 3ms</td></tr>
+<tr><td>RATE</td><td class="range">0.05-10 Hz</td><td class="def">0.5 Hz</td><td>Velocidad del LFO que modula el delay</td></tr>
+<tr><td>DEPTH</td><td class="range">0-100%</td><td class="def">50%</td><td>Profundidad de modulacion del delay variable</td></tr>
+<tr><td>FEEDBACK</td><td class="range">0-90%</td><td class="def">20%</td><td>Realimentacion del delay. Alto en FLANG = peinado de frecuencias intenso</td></tr>
+<tr><td>WET</td><td class="range">0-100%</td><td class="def">50%</td><td>Nivel del efecto en la mezcla</td></tr>
+</tbody></table>
+<h3>5. BITCRUSHER</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>BITS</td><td class="range">1-16</td><td class="def">16</td><td>Resolucion de bits. 1-4 = efecto extremo de lo-fi/8bit</td></tr>
+<tr><td>SR_REDUX</td><td class="range">1-32</td><td class="def">1</td><td>Factor de reduccion de sample rate. 8 = SR/8 = aliasing intenso</td></tr>
+<tr><td>PSYCHO_MODE</td><td>ON/OFF</td><td class="def">OFF</td><td>Dither estocastico en la cuantizacion: el resultado varia en cada procesado</td></tr>
+</tbody></table>
+<h3>6. COMPRESSOR</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>THRESHOLD</td><td class="range">-60 a 0 dB</td><td class="def">-24 dB</td><td>Nivel de entrada a partir del cual comienza la compresion</td></tr>
+<tr><td>RATIO</td><td class="range">1-20</td><td class="def">4</td><td>Relacion de compresion. 4:1 = 4dB in / 1dB out sobre threshold</td></tr>
+<tr><td>ATTACK</td><td class="range">0-1000 ms</td><td class="def">20 ms</td><td>Velocidad de activacion del compresor</td></tr>
+<tr><td>RELEASE</td><td class="range">10-2000 ms</td><td class="def">250 ms</td><td>Velocidad de desactivacion del compresor</td></tr>
+<tr><td>MAKEUP</td><td class="range">0-30 dB</td><td class="def">0 dB</td><td>Ganancia de compensacion post-compresion</td></tr>
+<tr><td>GR Meter</td><td>Display</td><td>-</td><td>Medidor de ganancia de reduccion en tiempo real</td></tr>
+</tbody></table>
+<h3>7. TAPE FX</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>WOW_DEPTH</td><td class="range">0-100%</td><td class="def">0%</td><td>Profundidad del pitch wobble lento (wow de cinta)</td></tr>
+<tr><td>WOW_RATE</td><td class="range">0.1-5 Hz</td><td class="def">0.5 Hz</td><td>Velocidad del wow</td></tr>
+<tr><td>FLUTTER_DEPTH</td><td class="range">0-100%</td><td class="def">0%</td><td>Profundidad del flutter rapido de cinta</td></tr>
+<tr><td>FLUTTER_RATE</td><td class="range">2-30 Hz</td><td class="def">6 Hz</td><td>Velocidad del flutter</td></tr>
+<tr><td>VINYL_CRACKLE</td><td class="range">0-100%</td><td class="def">0%</td><td>Intensidad del crackle aleatorio de vinilo</td></tr>
+<tr><td>TAPE_STOP</td><td>Button</td><td>-</td><td>Efecto de tape stop: fade + slowdown en 2 segundos. Dramatico en live</td></tr>
+</tbody></table>
+<h3>8. SIDECHAIN</h3>
+<table><thead><tr><th>PARAM</th><th>RANGO</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>TRIGGER</td><td class="range">KICK/SNARE/CLAP</td><td class="def">KICK</td><td>Fuente de disparo de la compresion sidechain</td></tr>
+<tr><td>TARGET</td><td class="range">BASS/SYNTH/FM/ALL</td><td class="def">BASS</td><td>Instrumento objetivo del ducking</td></tr>
+<tr><td>AMOUNT</td><td class="range">0-100%</td><td class="def">80%</td><td>Profundidad del ducking al recibir trigger</td></tr>
+<tr><td>ATTACK</td><td class="range">1-50 ms</td><td class="def">5 ms</td><td>Velocidad de ducking al recibir trigger</td></tr>
+<tr><td>RELEASE</td><td class="range">50-500 ms</td><td class="def">200 ms</td><td>Tiempo de recuperacion del volumen post-trigger</td></tr>
+</tbody></table>
+</div>
+<div class="section" id="signal">
+<div class="section-header"><span class="section-num">// 13</span><span class="section-title">SIGNAL FLOW</span></div>
+<p>Diagrama del flujo de senal interno. Los instrumentos con DSP=OFF van directo al analyser. Con DSP=ON ingresan a la cadena de efectos completa antes de la salida.</p>
+<div class="signal-flow">
+<div class="code-block cyan">
+[DRUMS] [BASS] [SYNTH] [FM] [SAMPLER] [NOISE] [SOURCE] [LOOPS]
+    |        |                     |
+(routeDSP=OFF)               (routeDSP=ON)
+    |                              |
+ [analyser]                    [dspIn bus]
+                                   |
+                        [SSB Hilbert Freq Shifter]
+                         (USB/LSB/BOTH, shift Hz)
+                                   |
+                           [Ring Modulator]
+                           (carrier Hz, LFO)
+                                   |
+                         [Bitcrusher]
+                         (bits, SR redux, psycho)
+                                   |
+                      [Waveshaper x4 oversample]
+                         (drive, SOFT/HARD/FOLD)
+                                   |
+                      [Chorus / Flanger]
+                     (rate, depth, feedback, wet)
+                                   |
+         +-------------------------+-------------------------+
+         |                                                   |
+     [Delay]                                           [Reverb]
+  (time, FB, wet)                             (size, decay, predly, wet)
+     dry+wet                                          dry+wet
+         |                                                   |
+         +-------------------------+-------------------------+
+                                   |
+                        [Compressor + GR meter]
+                        (thr, ratio, atk, rel, makeup)
+                                   |
+                             [Tape FX]
+                     (wow, flutter, crackle, stop)
+                                   |
+                          [Sidechain VCA]
+                     (trigger, target, amt, atk, rel)
+                                   |
+                           [Main Analyser]
+                     (wave, FFT, spectrogram display)
+                                   |
+                        [Master Gain x0.7 default]
+                                   |
+                    [AudioContext.destination]
+</div>
+</div>
+<p style="margin-top:12px;font-size:12px;color:#88ff88">Delay y Reverb son paralelos (parallel wet/dry sum). La senal seca de ambos se suma en el bus post-chorus antes de entrar al Compressor.</p>
+</div>
+<div class="section" id="sequencer">
+<div class="section-header amber"><span class="section-num">// 14</span><span class="section-title" style="color:var(--amber)">SEQUENCER</span></div>
+<p>Sequencer de 16 pasos con 8 patrones (A-H) y 13 tracks de instrumentos. Soporte de notas cromaticas en tracks con pitch (Bass, Synth, FM, Samplers).</p>
+<div class="two-col">
+<div>
+<h3>ESPECIFICACIONES</h3>
+<table><thead><tr><th>PARAMETRO</th><th>VALOR</th></tr></thead><tbody>
+<tr><td>Pasos por patron</td><td class="val">16 steps</td></tr>
+<tr><td>Patrones disponibles</td><td class="val">8 (A-H)</td></tr>
+<tr><td>Tracks</td><td class="val">13 (5 drums + 3 pitched + 4 samplers + 1 noise)</td></tr>
+<tr><td>Bass MIDI pool</td><td class="val">MIDI 36-47 (C2-B2)</td></tr>
+<tr><td>Synth/FM MIDI pool</td><td class="val">MIDI 60-71 (C3-B3)</td></tr>
+</tbody></table>
+</div>
+<div>
+<h3>TRACKS DISPONIBLES</h3>
+<table><thead><tr><th>TRACK ID</th><th>INSTRUMENTO</th><th>TIPO</th></tr></thead><tbody>
+<tr><td class="val">KICK</td><td>Kick drum</td><td>Trigger</td></tr>
+<tr><td class="val">SNRE</td><td>Snare drum</td><td>Trigger</td></tr>
+<tr><td class="val">HHAT</td><td>Hi-hat</td><td>Trigger</td></tr>
+<tr><td class="val">CLAP</td><td>Clap</td><td>Trigger</td></tr>
+<tr><td class="val">PERC</td><td>Percusivo</td><td>Trigger</td></tr>
+<tr><td class="val">BASS</td><td>Bass Synth</td><td>Pitched (C2-B2)</td></tr>
+<tr><td class="val">SYNT</td><td>Synth Module</td><td>Pitched (C3-B3)</td></tr>
+<tr><td class="val">FM__</td><td>FM Synth</td><td>Pitched (C3-B3)</td></tr>
+<tr><td class="val">SMP0</td><td>Sampler slot 0</td><td>Pitched</td></tr>
+<tr><td class="val">SMP1</td><td>Sampler slot 1</td><td>Pitched</td></tr>
+<tr><td class="val">SMP2</td><td>Sampler slot 2</td><td>Pitched</td></tr>
+<tr><td class="val">SMP3</td><td>Sampler slot 3</td><td>Pitched</td></tr>
+</tbody></table>
+</div>
+</div>
+<h3>INTERACCION CON CELDAS</h3>
+<table><thead><tr><th>ACCION</th><th>RESULTADO</th><th>APLICA A</th></tr></thead><tbody>
+<tr><td>Click izquierdo</td><td>Toggle on/off del step</td><td>Todas las tracks</td></tr>
+<tr><td>Click derecho</td><td>Incrementar nota (+1 semitono)</td><td>Tracks pitched unicamente</td></tr>
+<tr><td>Scroll wheel</td><td>Ajuste fino de pitch +-1 semitono</td><td>Tracks pitched unicamente</td></tr>
+</tbody></table>
+<h3>FUNCIONES DE PATRON</h3>
+<table><thead><tr><th>BOTON</th><th>DESCRIPCION</th><th>DETALLE</th></tr></thead><tbody>
+<tr><td>CLR</td><td>Borrar patron activo</td><td>Limpia todas las 13 tracks del patron actual</td></tr>
+<tr><td>RND</td><td>Patron aleatorio</td><td>Densidades: kick 30%, snare 20%, hat 50%, clap 10%, perc 15%, bass 40%, synth 25%, fm 20%, samplers 15%</td></tr>
+<tr><td>EUCLID</td><td>Ritmos euclidianos</td><td>kick=4, snare=3, hat=7, clap=2, perc=5 eventos distribuidos en 16 steps</td></tr>
+<tr><td>CPY</td><td>Copiar patron</td><td>Copia el patron activo al clipboard interno</td></tr>
+<tr><td>PST</td><td>Pegar patron</td><td>Pega el patron copiado al slot actualmente seleccionado</td></tr>
+</tbody></table>
+</div>
+<div class="section" id="arp">
+<div class="section-header purple"><span class="section-num">// 15</span><span class="section-title" style="color:var(--purple)">ARPEGGIATOR &amp; SCALE LOCK</span></div>
+<div class="two-col">
+<div>
+<h3>ARPEGGIATOR</h3>
+<p style="font-size:11px;color:#88ff88">Genera patrones melodicos automaticos a partir de notas sostenidas via teclado Z-M.</p>
+<table><thead><tr><th>PARAM</th><th>OPCIONES</th><th>DEFAULT</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>TARGET</td><td class="range">BASS/SYNTH/FM</td><td class="def">SYNTH</td><td>Instrumento que el arpeggiador controlara</td></tr>
+<tr><td>PATTERN</td><td class="range">UP/DOWN/UP_DN/RND</td><td class="def">UP</td><td>Direccion del arpeggio. UP_DN = ping-pong, RND = aleatorio</td></tr>
+<tr><td>RATE</td><td class="range">1/4 / 1/8 / 1/16 / 1/32</td><td class="def">1/8</td><td>Division ritmica del arpeggio relativa al BPM</td></tr>
+<tr><td>OCTAVES</td><td class="range">1-4</td><td class="def">2</td><td>Numero de octavas que abarca el arpeggio</td></tr>
+<tr><td>GATE_%</td><td class="range">10-100%</td><td class="def">70%</td><td>Duracion de cada nota como porcentaje del step</td></tr>
+<tr><td>HOLD</td><td>ON/OFF</td><td class="def">OFF</td><td>Con HOLD=ON: las notas se acumulan en el pool sin necesidad de mantener teclas presionadas</td></tr>
+</tbody></table>
+</div>
+<div>
+<h3>SCALE LOCK</h3>
+<p style="font-size:11px;color:#88ff88">Fuerza todas las notas del teclado y del sequencer a la escala seleccionada. Algoritmo: distancia cromatica minima al snap.</p>
+<table><thead><tr><th>PARAM</th><th>OPCIONES</th><th>DEFAULT</th></tr></thead><tbody>
+<tr><td>ROOT</td><td class="range">C / C# / D / D# / E / F / F# / G / G# / A / A# / B</td><td class="def">C</td></tr>
+<tr><td>SCALE</td><td>ver tabla abajo</td><td class="def">CHROM</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555;margin-top:8px">El display del Scale Lock muestra las notas activas de la escala en la octava central. ROOT cambia el centro tonal.</p>
+</div>
+</div>
+<h3>ESCALAS DISPONIBLES (10)</h3>
+<table><thead><tr><th>ID</th><th>NOMBRE</th><th>INTERVALOS (semitonos desde root)</th><th>NOTAS</th></tr></thead><tbody>
+<tr><td class="val">CHROM</td><td>Cromatica</td><td>[0,1,2,3,4,5,6,7,8,9,10,11]</td><td>12 notas - sin restriccion</td></tr>
+<tr><td class="val">MAJOR</td><td>Mayor (Jonica)</td><td>[0,2,4,5,7,9,11]</td><td>7 notas - alegre, estable</td></tr>
+<tr><td class="val">MINOR</td><td>Menor Natural (Eolia)</td><td>[0,2,3,5,7,8,10]</td><td>7 notas - oscura, melancolica</td></tr>
+<tr><td class="val">DORIAN</td><td>Dorico</td><td>[0,2,3,5,7,9,10]</td><td>7 notas - menor con 6ta mayor, funk/jazz</td></tr>
+<tr><td class="val">PHRYG</td><td>Frigio</td><td>[0,1,3,5,7,8,10]</td><td>7 notas - oscuro, hispanico, flamenco</td></tr>
+<tr><td class="val">BLUES</td><td>Blues</td><td>[0,3,5,6,7,10]</td><td>6 notas - tension blues, blue note en tritono</td></tr>
+<tr><td class="val">PNT_m</td><td>Pentatonica Menor</td><td>[0,3,5,7,10]</td><td>5 notas - universal, dark groove</td></tr>
+<tr><td class="val">PNT_M</td><td>Pentatonica Mayor</td><td>[0,2,4,7,9]</td><td>5 notas - universal, luminosa</td></tr>
+<tr><td class="val">HARM</td><td>Armonica Menor</td><td>[0,2,3,5,7,8,11]</td><td>7 notas - dramatica, clasica, medio-oriental</td></tr>
+<tr><td class="val">WHOLE</td><td>Tono Entero</td><td>[0,2,4,6,8,10]</td><td>6 notas - ambigua, impresionista, Debussy</td></tr>
+</tbody></table>
+</div>
+<div class="section" id="song">
+<div class="section-header"><span class="section-num">// 16</span><span class="section-title">SONG MODE &amp; EXPORT</span></div>
+<div class="three-col">
+<div>
+<h3>PATTERN CHAIN</h3>
+<table><thead><tr><th>CONTROL</th><th>ACCION</th></tr></thead><tbody>
+<tr><td>ADD</td><td>Agregar patron actual a la cadena</td></tr>
+<tr><td>REMOVE</td><td>Eliminar el ultimo patron de la cadena</td></tr>
+<tr><td>CLR_CHAIN</td><td>Limpiar cadena completa</td></tr>
+<tr><td>PLAY_SONG</td><td>Reproducir cadena en secuencia</td></tr>
+<tr><td>STOP_SONG</td><td>Detener song mode</td></tr>
+<tr><td>LOOP_CHAIN</td><td>Repetir cadena al terminar (def: ON)</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">Display: "A-&gt;B-&gt;C-&gt;D" con patron activo resaltado. Maximo de patrones en cadena: no limitado.</p>
+</div>
+<div>
+<h3>EXPORT SESSION</h3>
+<table><thead><tr><th>CONTROL</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>REC_OUTPUT</td><td>Iniciar grabacion via MediaRecorder a formato WebM</td></tr>
+<tr><td>STOP_REC</td><td>Detener grabacion y auto-descargar archivo</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">Formato: <code>audio/webm</code><br>Nombre: <code>esquizoai_session_[timestamp].webm</code><br>Graba la salida real del AudioContext (post-master).</p>
+</div>
+<div>
+<h3>LOOP RECORDER</h3>
+<table><thead><tr><th>CONTROL</th><th>DESCRIPCION</th></tr></thead><tbody>
+<tr><td>REC</td><td>Iniciar grabacion de loop</td></tr>
+<tr><td>STOP_REC</td><td>Detener grabacion de loop</td></tr>
+<tr><td>PLAY_ALL</td><td>Reproducir todos los loops grabados</td></tr>
+<tr><td>STOP_ALL</td><td>Detener todos los loops</td></tr>
+<tr><td>CLEAR</td><td>Borrar todos los loops grabados</td></tr>
+<tr><td>BARS</td><td>Compases a grabar: 1-16 (def: 4)</td></tr>
+</tbody></table>
+<p style="font-size:11px;color:#555">Auto-stop tras el conteo de compases al BPM actual. Cada loop muestra: duracion ms, controles play/stop individuales.</p>
+</div>
+</div>
+</div>
+<div class="section" id="viz">
+<div class="section-header cyan"><span class="section-num">// 17</span><span class="section-title" style="color:var(--cyan)">VISUALIZACION</span></div>
+<p>Tres displays de analisis de senal en tiempo real. FFT size global: 4096 bins. Todos los displays leen del analyser post-efectos.</p>
+<table><thead><tr><th>DISPLAY</th><th>CANVAS</th><th>DESCRIPCION</th><th>DETALLES TECNICOS</th></tr></thead><tbody>
+<tr>
+<td style="color:var(--green);font-weight:bold">WAVE</td>
+<td>450 x 90 px</td>
+<td>Osciloscopio - dominio temporal</td>
+<td>Color verde (#00ff41). Grid de 20px. Traza la forma de onda completa en tiempo real usando getByteTimeDomainData()</td>
+</tr>
+<tr>
+<td style="color:var(--purple);font-weight:bold">FFT</td>
+<td>450 x 90 px</td>
+<td>Analizador de frecuencias - barras verticales</td>
+<td>Gradiente de color: purple (bajos) a cyan (medios) a yellow (altos). Usa getByteFrequencyData() con 4096 bins</td>
+</tr>
+<tr>
+<td style="color:var(--amber);font-weight:bold">SPECTROGRAM</td>
+<td>900 x 100 px</td>
+<td>Espectrograma con scroll horizontal continuo</td>
+<td>Mapa de color: purple (bajo) -> cyan -> yellow (alto). Eje X = tiempo, eje Y = frecuencia. Scroll en tiempo real</td>
+</tr>
+</tbody></table>
+</div>
+<div class="section" id="tips">
+<div class="section-header amber"><span class="section-num">// 18</span><span class="section-title" style="color:var(--amber)">TIPS &amp; HACKS</span></div>
+<p>Tecnicas probadas de uso creativo extremo del sistema.</p>
+<div class="tip-box">Combinar preset ACID_303 bass + patron EUCLID para groove techno instantaneo. El ritmo euclidiano genera patrones off-grid naturales.</div>
+<div class="tip-box">Activar SSB shift en +7Hz sobre oscilador SAW para efecto chorus sutil sin usar el modulo Chorus. Desplaza el espectro entero 7Hz arriba.</div>
+<div class="tip-box">Boton TAPE_STOP durante un live set = breakdown dramatico. El pitch cae en 2 segundos simulando una cinta que frena.</div>
+<div class="tip-box">PSYCHO_MODE en Bitcrusher agrega dither estocastico: el sample cuantizado suena diferente en cada hit incluso con los mismos parametros.</div>
+<div class="tip-box">Enrutar drums por DSP (Mixer DSP=ON) + Waveshaper FOLD alto = drums aplastados y distorsionados con armonicos extra.</div>
+<div class="tip-box">ELECTRIC noise type + GLITCH_AMT 80%+ + PULSE_RATE 8Hz = textura industrial densa con chispas ritmicas irregulares.</div>
+<div class="tip-box">ARP con HOLD=ON + patron UP_DN + preset AMBIENT synth = secuencias de pad generativas sin intervenir manualmente.</div>
+<div class="tip-box">Ring Mod CARRIER 100Hz + LFO 0.1Hz = tremolo de evolucion lenta. El LFO hace que el carrier oscile creando AM de baja frecuencia.</div>
+<div class="tip-box">SIDECHAIN AMOUNT=100% + ATTACK 1ms sobre TARGET=ALL = pumping extremo de toda la mezcla sincronizado al kick.</div>
+<div class="tip-box">Preset WOBBLE bass + modo FLANG del Chorus + FEEDBACK 60% = wobble estilo dubstep. Sync manual de BPM del LFO necesario.</div>
+<div class="tip-box">BROWN noise + FREQ_TILT menor a 200Hz = capa de sub rumble continuo debajo de la bateria. Engordar el kick con textura de fondo.</div>
+<div class="tip-box">CPY patron -> PST a slot nuevo -> RND en el original = genera variacion preservando la version anterior en el slot nuevo.</div>
+<div class="tip-box">Export + Loop Recorder simultaneamente: graba loops internos en RAM y exporta la sesion completa a archivo WebM al mismo tiempo.</div>
+<div class="tip-box">Delay FEEDBACK mayor a 90% + TIME largo (1500ms+) = reverb de espacio infinito / drone sustain sin fin. Subir lentamente el feedback.</div>
+<div class="tip-box">FM METALLIC preset con RATIO=3.14 (irracional, pi) = inharmonicidad maxima. Los parciales no se alinean creando timbre metalico caotico.</div>
+<div class="tip-box">Activar SIDECHAIN sobre TARGET=ALL + TRIGGER=KICK = pumping clasico 4-on-the-floor que afecta toda la mezcla de instrumentos procesados.</div>
+</div>
+<footer>
+<div style="color:#1a1a1a;margin-bottom:8px">============================================================</div>
+ESQUIZOAI AUDIO WORKSTATION &nbsp;|&nbsp; MANUAL v1.0 &nbsp;|&nbsp; 2026<br>
+El Loko Akrata // EsquizoAI-land<br>
+<span style="color:#111">Web Audio API &middot; Browser-native &middot; No dependencies &middot; No cloud</span>
+<div style="color:#1a1a1a;margin-top:8px">============================================================</div>
+</footer>
+</div>
+</body>
+</html>

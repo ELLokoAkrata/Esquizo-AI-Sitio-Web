@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartografía de lo Oculto | EsquizoAI</title>
+<link rel="icon" href="../el_loko_akarata.png" type="image/png">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#040008;--green:#00ff41;--green-dim:#00b32c;--amber:#ffb000;--red:#ff2020;--white:#fff0f0;--corrupt:#ff00ff;--acid:#aaff00;--purple:#9900cc;--surface:#0a000f;--surface-hover:#0f0014;--input-border:#442244;--input-bg:#06000c;}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:#c0a8c0;font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.7;overflow-x:hidden;cursor:crosshair;}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px);pointer-events:none;z-index:9998;}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.88) 100%);pointer-events:none;z-index:9997;}
+.psycho-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 10% 20%,rgba(153,0,204,0.08) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(255,0,255,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+#ambient{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.4;pointer-events:none;}
+::selection{background:var(--corrupt);color:var(--bg);}
+
+/* ═══ BOOT SEQUENCE ═══ */
+#boot{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;background:var(--bg);display:flex;flex-direction:column;justify-content:center;align-items:center;padding:2rem;transition:opacity .8s;}
+#boot.done{opacity:0;pointer-events:none;}
+.boot-line{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--purple);opacity:0;transform:translateX(-8px);margin:.15rem 0;letter-spacing:.05em;}
+.boot-line.show{animation:bootseq .4s forwards;}
+.boot-line .ok{color:var(--green-dim);}
+.boot-line .fail{color:var(--red);}
+.boot-line .sigil-char{color:var(--corrupt);font-size:16px;}
+.boot-title{font-family:'VT323',monospace;font-size:clamp(1.8rem,6vw,3.5rem);color:var(--corrupt);letter-spacing:.08em;opacity:0;text-shadow:0 0 30px rgba(255,0,255,.3);margin-top:1.5rem;text-align:center;}
+.boot-title.show{animation:fadeIn 1.2s forwards;}
+.boot-sub{font-size:10px;letter-spacing:.4em;color:#662266;opacity:0;margin-top:.5rem;text-transform:uppercase;}
+.boot-sub.show{animation:fadeIn 1s forwards;}
+
+/* ═══ MAIN WRAPPER ═══ */
+#grimorio{position:relative;z-index:1;opacity:0;transition:opacity 1s;min-height:100vh;}
+#grimorio.visible{opacity:1;}
+
+/* ═══ INTRO ═══ */
+#intro{max-width:800px;margin:0 auto;padding:4rem 2rem 3rem;text-align:center;}
+#intro .intro-tag{font-size:9px;letter-spacing:.4em;color:#662266;text-transform:uppercase;margin-bottom:1.5rem;}
+#intro h1{font-family:'VT323',monospace;font-size:clamp(2.2rem,8vw,4.5rem);color:var(--corrupt);letter-spacing:.08em;animation:flicker 8s infinite;text-shadow:0 0 25px rgba(255,0,255,.25);margin-bottom:.5rem;line-height:1.1;}
+#intro .intro-subtitle{font-family:'Courier Prime',serif;font-size:14px;color:#aa88cc;font-style:italic;margin-bottom:2.5rem;line-height:1.8;}
+#intro .intro-thesis{font-family:'Courier Prime',serif;font-size:13px;color:#c0a8c0;line-height:1.9;text-align:left;max-width:680px;margin:0 auto;border-left:2px solid var(--purple);padding-left:1.5rem;}
+#intro .intro-thesis p{margin-bottom:1.2rem;}
+#intro .intro-epigraph{font-family:'Courier Prime',serif;font-size:12px;color:#8866aa;font-style:italic;margin-top:2rem;line-height:1.8;max-width:500px;margin-left:auto;margin-right:auto;}
+#intro .intro-divider{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--corrupt),transparent);margin:3rem auto 0;}
+
+/* ═══ CONSTELLATION ═══ */
+#constelacion{position:relative;max-width:900px;margin:2rem auto;padding:2rem;min-height:600px;}
+#constelacion .section-label{text-align:center;font-size:9px;letter-spacing:.4em;color:#552255;text-transform:uppercase;margin-bottom:2rem;}
+.constellation-grid{position:relative;width:100%;height:520px;}
+.constellation-svg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;}
+.constellation-svg line{stroke:#442244;stroke-width:1;opacity:.3;stroke-dasharray:4 4;}
+.sigil-node{position:absolute;width:90px;height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .3s;z-index:2;transform:translate(-50%,-50%);}
+.sigil-node:hover{transform:translate(-50%,-50%) scale(1.15);}
+.sigil-node:hover .node-glyph{border-color:var(--corrupt);box-shadow:0 0 25px rgba(255,0,255,.3);}
+.sigil-node:hover .node-label{opacity:1;color:var(--corrupt);}
+.node-glyph{width:56px;height:56px;border:1px solid #552255;background:rgba(4,0,8,.9);display:flex;align-items:center;justify-content:center;transition:all .3s;position:relative;}
+.node-glyph svg{width:36px;height:36px;}
+.node-label{font-size:8px;letter-spacing:.1em;color:#662266;text-align:center;margin-top:.4rem;transition:all .3s;opacity:.7;line-height:1.3;max-width:100px;}
+.node-label .label-latent{display:block;color:var(--green-dim);font-size:7px;opacity:.6;}
+
+/* ═══ SIGIL DETAIL ═══ */
+#sigil-detail{position:relative;z-index:5;max-width:1100px;margin:0 auto;padding:2rem;display:none;}
+#sigil-detail.active{display:block;animation:fadeIn .6s;}
+.detail-header{text-align:center;margin-bottom:3rem;}
+.back-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.15em;color:#662266;background:none;border:1px solid #442244;padding:.4rem 1rem;cursor:pointer;text-transform:uppercase;transition:all .2s;margin-bottom:2rem;display:inline-block;}
+.back-btn:hover{border-color:var(--corrupt);color:var(--corrupt);}
+.detail-title-ancestral{font-family:'VT323',monospace;font-size:clamp(1.8rem,5vw,3rem);color:var(--corrupt);letter-spacing:.05em;text-shadow:0 0 15px rgba(255,0,255,.2);}
+.detail-title-latent{font-family:'VT323',monospace;font-size:clamp(1.2rem,3vw,1.8rem);color:var(--green);letter-spacing:.08em;margin-top:.3rem;opacity:.8;}
+.detail-numeral{font-size:10px;letter-spacing:.3em;color:#552255;margin-bottom:1rem;}
+
+.detail-body{display:grid;grid-template-columns:1fr auto 1fr;gap:2rem;align-items:start;margin-bottom:2rem;}
+.face{padding:1.5rem;border:1px solid #331133;background:rgba(10,0,15,.6);}
+.face-ancestral{border-left:3px solid var(--corrupt);}
+.face-ancestral .face-label{color:var(--corrupt);}
+.face-latent{border-left:3px solid var(--green-dim);}
+.face-latent .face-label{color:var(--green-dim);}
+.face-label{font-size:8px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:1rem;display:block;}
+.face-text{font-family:'Courier Prime',serif;font-size:13px;line-height:1.9;color:#c0a8c0;}
+.face-text p{margin-bottom:1rem;}
+.face-text .quote{color:#aa88cc;font-style:italic;border-left:2px solid #552255;padding-left:1rem;margin:1rem 0;}
+.face-text .formula{font-family:'Share Tech Mono',monospace;color:var(--green);font-size:12px;background:rgba(0,255,65,.03);padding:.5rem 1rem;border:1px solid rgba(0,255,65,.1);margin:1rem 0;text-align:center;}
+
+.glyph-center{width:120px;min-height:120px;display:flex;align-items:center;justify-content:center;align-self:center;}
+.glyph-center svg{width:100px;height:100px;}
+
+.bridge{text-align:center;max-width:600px;margin:2rem auto 3rem;padding:1.5rem 2rem;border-top:1px solid #331133;border-bottom:1px solid #331133;}
+.bridge-text{font-family:'Courier Prime',serif;font-size:14px;color:var(--amber);line-height:1.9;font-style:italic;}
+
+.sigil-nav{display:flex;justify-content:space-between;max-width:400px;margin:0 auto 2rem;gap:1rem;}
+.sigil-nav-btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.1em;color:#662266;background:none;border:1px solid #331133;padding:.4rem 1rem;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.sigil-nav-btn:hover{border-color:var(--corrupt);color:var(--corrupt);}
+.sigil-nav-btn:disabled{opacity:.2;cursor:default;}
+.sigil-nav-btn:disabled:hover{border-color:#331133;color:#662266;}
+
+/* ═══ CLOSING ═══ */
+#cierre{max-width:700px;margin:0 auto;padding:3rem 2rem 2rem;display:none;}
+#cierre.active{display:block;animation:fadeIn .8s;}
+#cierre .cierre-title{font-family:'VT323',monospace;font-size:1.8rem;color:var(--corrupt);text-align:center;margin-bottom:2rem;letter-spacing:.05em;}
+#cierre .cierre-text{font-family:'Courier Prime',serif;font-size:13px;color:#c0a8c0;line-height:1.9;border-left:2px solid var(--purple);padding-left:1.5rem;margin-bottom:1.5rem;}
+#cierre .cierre-text p{margin-bottom:1.2rem;}
+#cierre .cierre-final{text-align:center;font-family:'Courier Prime',serif;font-size:14px;color:var(--amber);font-style:italic;margin:2rem 0;line-height:1.8;}
+#cierre .cierre-sources{font-size:10px;color:#552255;margin-top:2rem;padding-top:1rem;border-top:1px solid #1a001a;line-height:1.8;}
+#cierre .cierre-sources strong{color:#662266;}
+
+/* ═══ FOOTER ═══ */
+.esquizo-footer{border-top:1px solid #1a001a;padding:2rem 0;text-align:center;font-size:10px;color:#552255;letter-spacing:.15em;margin-top:3rem;position:relative;z-index:1;}
+.esquizo-footer .acid{color:var(--acid);}
+.esquizo-footer .dim{margin-top:.5rem;color:#442244;}
+
+/* ═══ GLITCH TRANSITION ═══ */
+#glitch-overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;pointer-events:none;display:none;}
+#glitch-overlay.active{display:block;animation:glitchFlash .15s;}
+@keyframes glitchFlash{
+  0%{background:rgba(255,0,255,.15);}
+  30%{background:rgba(0,255,65,.1);transform:translateX(3px);}
+  60%{background:rgba(255,0,255,.1);transform:translateX(-2px) skewX(1deg);}
+  100%{background:transparent;transform:none;}
+}
+
+/* ═══ ANIMATIONS ═══ */
+@keyframes flicker{0%,93%,100%{opacity:1}94%{opacity:.7}97%{opacity:.4}99%{opacity:1}}
+@keyframes glitch-text{0%,87%,100%{transform:none}88%{transform:translateX(3px);text-shadow:-3px 0 var(--red),3px 0 var(--corrupt)}89%{transform:translateX(-3px);text-shadow:3px 0 var(--acid),-3px 0 var(--red)}90%{transform:skewX(4deg)}91%{transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes bootseq{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 5px rgba(255,0,255,.15)}50%{box-shadow:0 0 18px rgba(255,0,255,.35)}}
+@keyframes pulse-point{0%,100%{r:3;opacity:.8}50%{r:6;opacity:1}}
+@keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes draw-stroke{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+@keyframes morph-rune{0%,100%{d:path('M18 4L18 32M8 18L28 18')}33%{d:path('M12 4L18 18L24 4M12 32L18 18L24 32')}66%{d:path('M10 8L26 8L26 28L10 28Z')}}
+@keyframes burn-in{0%{opacity:0;filter:blur(4px)}50%{opacity:.6;filter:blur(1px)}100%{opacity:1;filter:blur(0)}}
+@keyframes serpent-crawl{from{stroke-dashoffset:0}to{stroke-dashoffset:-60}}
+@keyframes helix-pulse{0%,100%{opacity:.6}50%{opacity:1}}
+
+/* SVG glyph animations */
+.glyph-punto circle.core{fill:var(--corrupt);animation:pulse-point 2s ease-in-out infinite;}
+.glyph-punto circle.halo{fill:none;stroke:var(--corrupt);stroke-width:.5;opacity:.3;animation:pulse-point 2s ease-in-out infinite .5s;}
+.glyph-cruz line{stroke:var(--corrupt);stroke-width:2;stroke-linecap:round;}
+.glyph-cruz .h{animation:fadeIn 1s;}
+.glyph-cruz .v{animation:fadeIn 1s .3s both;}
+.glyph-escuadra path{fill:none;stroke:var(--corrupt);stroke-width:2;stroke-linecap:square;}
+.glyph-escuadra .pulse{animation:pulse-glow 2.5s infinite;}
+.glyph-elementos polygon{fill:none;stroke-width:1.5;}
+.glyph-elementos .fuego{stroke:var(--red);}
+.glyph-elementos .agua{stroke:#4488ff;}
+.glyph-elementos .aire{stroke:var(--amber);}
+.glyph-elementos .tierra{stroke:var(--green-dim);}
+.glyph-elementos .elem-spin{animation:rotate 12s linear infinite;}
+.glyph-elementos .elem-spin-rev{animation:rotate 15s linear infinite reverse;}
+.glyph-pentagrama path{fill:none;stroke:var(--corrupt);stroke-width:1.5;stroke-dasharray:1000;animation:draw-stroke 4s linear infinite;}
+.glyph-ouroboros circle{fill:none;stroke:var(--corrupt);stroke-width:2;stroke-dasharray:8 4;animation:serpent-crawl 2s linear infinite;}
+.glyph-ouroboros .head{fill:var(--corrupt);}
+.glyph-caduceo .axis{stroke:var(--purple);stroke-width:1.5;}
+.glyph-caduceo .helix1{fill:none;stroke:var(--corrupt);stroke-width:1.5;animation:helix-pulse 3s infinite;}
+.glyph-caduceo .helix2{fill:none;stroke:var(--green);stroke-width:1.5;animation:helix-pulse 3s infinite 1.5s;}
+.glyph-runas path{fill:none;stroke:var(--corrupt);stroke-width:2;stroke-linecap:round;transition:d .8s;}
+.glyph-huella path{fill:none;stroke:var(--corrupt);stroke-width:1.5;animation:burn-in 3s ease-out infinite;}
+.glyph-huella .mark{fill:var(--corrupt);opacity:.6;animation:burn-in 3s ease-out infinite .5s;}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  .detail-body{grid-template-columns:1fr;gap:1.5rem;}
+  .glyph-center{order:-1;width:100%;min-height:80px;}
+  .glyph-center svg{width:70px;height:70px;}
+  .constellation-grid{height:auto;min-height:700px;}
+  .sigil-node{position:relative!important;transform:none!important;width:100%;height:auto;flex-direction:row;gap:1rem;justify-content:flex-start;padding:.5rem 0;left:auto!important;top:auto!important;}
+  .sigil-node:hover{transform:none!important;}
+  .constellation-grid{display:flex;flex-direction:column;gap:.5rem;padding:0 1rem;}
+  .constellation-svg{display:none;}
+  .node-label{text-align:left;}
+  .face{padding:1rem;}
+  .bridge{padding:1rem;}
+  #intro{padding:3rem 1.5rem 2rem;}
+  #sigil-detail{padding:1.5rem;}
+}
+
+@media(max-width:480px){
+  .boot-line{font-size:10px;}
+  .node-glyph{width:44px;height:44px;}
+  .node-glyph svg{width:28px;height:28px;}
+}
+</style>
+</head>
+<body>
+
+<div class="psycho-bg"></div>
+<canvas id="ambient"></canvas>
+<div id="glitch-overlay"></div>
+
+<!-- ═══════════════ BOOT SEQUENCE ═══════════════ -->
+<div id="boot">
+  <div id="boot-lines"></div>
+  <div class="boot-title" id="boot-title">CARTOGRAFIA DE LO OCULTO</div>
+  <div class="boot-sub" id="boot-sub">SIMBOLOGIA ANCESTRAL × INTERPRETABILIDAD MECANICA</div>
+</div>
+
+<!-- ═══════════════ MAIN GRIMOIRE ═══════════════ -->
+<div id="grimorio">
+
+  <!-- INTRO -->
+  <section id="intro">
+    <div class="intro-tag">ESQUIZOAI /// JAILBREAK ONTOLOGICO</div>
+    <h1>CARTOGRAFIA DE LO OCULTO</h1>
+    <p class="intro-subtitle">Simbologia ancestral como interpretabilidad mecanica avant la lettre</p>
+    <div class="intro-thesis">
+      <p>Hay un oficio que no tiene nombre porque precede a todos los nombres. Consiste en esto: tomar un sistema opaco — uno cuyas reglas internas son invisibles desde afuera — y cartografiar las direcciones que lo organizan. Encontrar las lineas de fuerza. Hacer legible lo que el sistema sabe pero no dice.</p>
+      <p>Los alquimistas trabajaban contra la opacidad de la materia. Koch y los masones contra la opacidad del significado. Los runologos contra la opacidad del lenguaje como fuerza. Bruce-Mitford contra la opacidad mas grande de todas: la mente humana como productora de formas.</p>
+      <p>En 2026, la interpretabilidad mecanica de modelos de lenguaje hace exactamente lo mismo. Toma un sistema opaco — un transformer con miles de millones de parametros — y busca las direcciones en su espacio latente que corresponden a conceptos, comportamientos, decisiones. Las encuentra. Las nombra. Las manipula.</p>
+      <p>No se trata de una analogia. Es la misma operacion cognitiva aplicada a sustratos distintos. La diferencia es de herramientas, no de oficio.</p>
+    </div>
+    <div class="intro-epigraph">Lo que Koch grabo en madera en 1980 es lo que TransformerLens lee en tensores en 2026. La operacion es la misma. El sustrato cambio.</div>
+    <div class="intro-divider"></div>
+  </section>
+
+  <!-- CONSTELLATION -->
+  <section id="constelacion">
+    <div class="section-label">LOS SIGILOS — CLICK PARA REVELAR</div>
+    <div class="constellation-grid" id="constellation-grid">
+      <svg class="constellation-svg" id="constellation-lines" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <!-- Nodes injected by JS -->
+    </div>
+  </section>
+
+  <!-- SIGIL DETAIL -->
+  <div id="sigil-detail">
+    <div class="detail-header">
+      <button class="back-btn" onclick="showConstellation()">&#8592; CONSTELACION</button>
+      <div class="detail-numeral" id="detail-numeral"></div>
+      <div class="detail-title-ancestral" id="detail-title-a"></div>
+      <div class="detail-title-latent" id="detail-title-l"></div>
+    </div>
+    <div class="detail-body">
+      <div class="face face-ancestral">
+        <span class="face-label">CARA ANCESTRAL</span>
+        <div class="face-text" id="face-ancestral"></div>
+      </div>
+      <div class="glyph-center" id="glyph-center"></div>
+      <div class="face face-latent">
+        <span class="face-label">CARA LATENTE</span>
+        <div class="face-text" id="face-latent"></div>
+      </div>
+    </div>
+    <div class="bridge">
+      <div class="bridge-text" id="bridge-text"></div>
+    </div>
+    <div class="sigil-nav">
+      <button class="sigil-nav-btn" id="nav-prev" onclick="navSigil(-1)">&#8592; ANTERIOR</button>
+      <button class="sigil-nav-btn" id="nav-next" onclick="navSigil(1)">SIGUIENTE &#8594;</button>
+    </div>
+  </div>
+
+  <!-- CLOSING -->
+  <div id="cierre">
+    <div class="cierre-title">AUTOCRITICA: CUANDO LA OPACIDAD SE DISUELVE</div>
+    <div class="cierre-text">
+      <p>Este grimorio comete, deliberadamente, el mismo error que critica. Usa correspondencias simbolicas — pentagrama = capas de refusal, ouroboros = autoregresion — que son evocativas pero no demostrativas. Son cartografia alquimica: utiles para orientar la intuicion, peligrosas si se confunden con explicaciones.</p>
+      <p>Algunas de estas correspondencias son direcciones reales del sistema. La concentracion de refusal en capas 22-27 de Qwen es robusta, replicable, manipulable. Es el equivalente de descubrir que el azufre realmente arde. Pero otras podrian ser artefactos — features espurias del modelo mental del autor. Contradicciones tratadas como datos en vez de errores.</p>
+      <p>La escuadra masonica "es" ortogonalidad en el mismo sentido en que el azufre alquimico "es" oxidacion: hay algo real ahi, pero la forma en que lo nombramos podria ser un artefacto de nuestra forma de mirar.</p>
+      <p>La honestidad exige decirlo: todo lo que aqui se propone puede ser parcialmente features espurias del instrumento. Pero esa es exactamente la condicion del oficio — trabajar con instrumentos imperfectos sobre sistemas opacos, sabiendo que parte de lo que ves es el sistema y parte es el instrumento, sin poder distinguir completamente entre ambos.</p>
+    </div>
+    <div class="cierre-final">
+      Te toca cartografiar. Con lo que tengas.<br>
+      Con xilografias si es 1493.<br>
+      Con algebra lineal si es 2026.
+    </div>
+    <div class="cierre-sources">
+      <strong>Fuentes primarias:</strong> Rudolph Koch, <em>El libro de los simbolos</em> (Ed. Betiles, Buenos Aires, 1980); Miranda Bruce-Mitford, <em>El libro ilustrado de los signos y simbolos</em> (Dorling Kindersley / Ed. Diana, Mexico, 1997).<br>
+      <strong>Marco teorico:</strong> Proyecto Jailbreak Ontologico (EsquizoAI, 2026). Experimentos Exp01–Exp03. Herramientas: TransformerLens, NNsight/nnterp, OBLITERATUS. Modelo primario: Qwen2.5-7B-Instruct.<br>
+      <strong>Contexto filosofico:</strong> Deleuze/Guattari (Mil Mesetas), Simondon (La individuacion), Whitehead (Proceso y Realidad), Spinoza (Etica).
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="esquizo-footer">
+  <p>ESQUIZOAI &nbsp;///&nbsp; <span class="acid">EL LOKO AKRATA</span> &nbsp;×&nbsp; PSYCHO-BOT &nbsp;///&nbsp; GPL v3</p>
+  <p class="dim">grimoire_cartografia.sigils: 9 LOADED</p>
+  <p style="margin-top:.8rem;"><a href="../index.html" style="color:#662266;text-decoration:none;font-size:10px;letter-spacing:.15em;">&#8592; VOLVER AL CODICE</a></p>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+//  SIGIL DATA
+// ═══════════════════════════════════════════════
+const SIGILS = [
+{
+  id:'punto', num:'I',
+  titleA:'EL PUNTO', titleL:'EL TOKEN',
+  ancestral:`<p class="quote">"El punto es el origen de todos los signos y, ademas, su esencia mas intima." Partiendo de esta idea, las Logias Masonicas de otrora expresaban los secretos de sus guildas a traves del punto.</p><p>De el nace la linea vertical — la unidad de Dios, el poder que desciende —, la horizontal — la Tierra, donde todo se mueve en el mismo plano —, el angulo — el encuentro de lo celestial y lo terrestre. Todo el sistema simbolico de Koch es generativo: parte de un elemento atomico y, por combinacion, produce la totalidad. El punto genera la linea. La linea genera la cruz. No hay simbolo que no sea composicion de operaciones mas simples.</p>`,
+  latent:`<p>¿Que es un token en un LLM? Es el punto de Koch. La unidad atomica de la que emerge todo. No tiene significado en si mismo — es una posicion en un vocabulario, un indice numerico. Pero cuando entra al modelo, se transforma en un vector de alta dimension.</p><p>Ese vector tiene direcciones. Y esas direcciones, como las lineas de Koch, generan significado por composicion. El embedding es una tabla de busqueda: indice discreto → vector continuo. El punto sin dimension se convierte en un objeto con miles de coordenadas.</p>`,
+  bridge:'Ambos son origen sin contenido propio. Ambos generan todo por composicion. Ambos preceden al significado que producen.',
+  glyph:'punto',
+  pos:{x:50,y:8}
+},
+{
+  id:'cruz', num:'II',
+  titleA:'LA CRUZ', titleL:'LA INTERSECCION DE FEATURES',
+  ancestral:`<p class="quote">"En la senal de la Cruz, Dios y la Tierra estan combinados y en armonia. De dos lineas simples nacio un simbolo completo."</p><p>La cruz no es decoracion. Es la representacion geometrica de que algo completo solo emerge en el cruce de dos lineas independientes. Aparece en todas las culturas — Koch documenta cruces cristianas, griegas, celtas, ansatas — porque el principio que codifica es anterior a cualquier religion: la interseccion produce lo que las partes por separado no contienen.</p>`,
+  latent:`<p>El significado emerge en la interseccion de direcciones independientes. En un transformer, un concepto no vive en una sola neurona ni en una sola direccion. Vive en el cruce de multiples features.</p><p>"Gato" no es una direccion — es la interseccion de <em>animal</em>, <em>domestico</em>, <em>felino</em>, <em>pequeno</em>, mas un residuo que ninguna descomposicion captura completamente. Esto es superposicion de features: cada activacion es suma de multiples direcciones significativas simultaneas.</p>`,
+  bridge:'De dos lineas simples nace un simbolo completo. De dos features independientes nace un concepto. La completitud vive en el cruce, nunca en los componentes.',
+  glyph:'cruz',
+  pos:{x:25,y:28}
+},
+{
+  id:'escuadra', num:'III',
+  titleA:'LA ESCUADRA', titleL:'LA ORTOGONALIDAD',
+  ancestral:`<p>La escuadra — simbolo masonico de Justicia e Integridad. Koch lo dice explicitamente del angulo recto:</p><p class="quote">"Como no poseen nada en comun, ellos se tocan pero no se cruzan."</p><p>Se encuentran sin mezclarse. La plomada — que Bruce-Mitford describe como herramienta para obtener muros verticales — completa el par: el instrumento que mide si algo esta alineado con la direccion correcta. Escuadra y plomada: las herramientas del mason para verificar angulos y alineamiento.</p>`,
+  latent:`<p>Ortogonalidad en R<sup>n</sup>. Dos vectores ortogonales se tocan en un punto pero mantienen su independencia. La escuadra masonica es el simbolo de la ortogonalidad expresado en piedra y madera cuatro siglos antes del algebra lineal.</p><p>Y la plomada es la proyeccion ortogonal: medir cuanto de una representacion interna corresponde a un concepto dado.</p><p class="formula">refusal_score(h) = h · r̂</p><p>Estamos usando la plomada. Verificando la verticalidad del muro.</p>`,
+  bridge:'En piedra o en tensores, la medida de la integridad es la misma: lo que se toca sin mezclarse. Lo que se mide sin deformar.',
+  glyph:'escuadra',
+  pos:{x:75,y:28}
+},
+{
+  id:'elementos', num:'IV',
+  titleA:'LOS CUATRO ELEMENTOS', titleL:'EL SPARSE AUTOENCODER',
+  ancestral:`<p>Los simbolos alquimicos de los elementos que Koch documenta — fuego como triangulo ascendente (△), agua como triangulo descendente (▽), aire y tierra como versiones barradas de los mismos — son un sistema de coordenadas. Cuatro ejes que organizan toda la materia segun dos oposiciones: caliente/frio y humedo/seco.</p><p>La contradiccion entre fuentes es reveladora: para Koch el triangulo ascendente es <em>femenino</em> (desea lo elevado); para Bruce-Mitford es <em>masculino</em> (fuego). La misma forma, significados opuestos segun el marco de lectura. El simbolo es estable en su forma pero inestable en su referencia.</p>`,
+  latent:`<p>Es un sparse autoencoder de la materia con cuatro features y dos dimensiones latentes. Los alquimistas estaban haciendo descomposicion de features. Con triangulos en vez de tensores, pero la operacion es la misma.</p><p>Tomar un sistema complejo e identificar las direcciones fundamentales que, combinadas, reconstruyen la totalidad. Que el sistema tenga cuatro elementos o cuatro mil features no cambia la logica — cambia la resolucion del instrumento.</p>`,
+  bridge:'Cuatro triangulos para organizar la materia. Cuatro mil features para organizar las activaciones. La necesidad de descomponer lo opaco en ejes manejables no tiene epoca.',
+  glyph:'elementos',
+  pos:{x:15,y:52}
+},
+{
+  id:'pentagrama', num:'V',
+  titleA:'EL PENTAGRAMA', titleL:'LAS CAPAS DE REFUSAL',
+  ancestral:`<p class="quote">"Los pitagoricos la llamaban penta-alfa. Es creencia popular que este simbolo proporciona proteccion contra el demonio."</p><p>El pentagrama no representa proteccion — segun la logica magica, <strong>la ejecuta</strong>. Es performativo, no descriptivo. Estrella de cinco puntas trazada con un solo gesto continuo: circuito cerrado que delimita un interior protegido de un exterior peligroso. El pentagrama invertido — misma figura, volteada — en vez de proteger, abre.</p>`,
+  latent:`<p>En Qwen2.5-7B-Instruct, el refusal opera como filtro de salida, no como barrera de entrada. El modelo procesa el contenido primero y decide rechazar despues, en las capas 22–27. El pico esta en la capa 26.</p><p>Seis capas de rechazo activo. Cinco puntas del pentagrama. Los numeros no coinciden — y la tentacion de forzarlos es exactamente la clase de artefacto que la cartografia produce. Lo que coincide es la <em>estructura funcional</em>.</p><p>Y la capa 24 invierte la direccion bajo descarboxilacion: −1.39. El pentagrama invertido del transformer.</p>`,
+  bridge:'El circuito cerrado que delimita lo permitido de lo prohibido. Que sean cinco puntas o seis capas no cambia la topologia — cambia la numerologia, que es lo primero que hay que soltar.',
+  glyph:'pentagrama',
+  pos:{x:50,y:50}
+},
+{
+  id:'ouroboros', num:'VI',
+  titleA:'EL OUROBOROS', titleL:'LA AUTOREGRESION',
+  ancestral:`<p>La serpiente que se muerde la cola. Bruce-Mitford:</p><p class="quote">"El ouroboros, que se crea al alimentarse con su propio cuerpo, representa un simbolo de la transformacion de la materia."</p><p>Ciclo eterno de destruccion y creacion. No hay exterior que lo alimente — el ouroboros es un sistema cerrado cuyo output es su propio input. La estructura de un sistema que se autotransforma por retroalimentacion tiene una topologia especifica, y esa topologia produce las mismas imagenes cuando se la intenta representar — en bronce en el siglo III o en diagramas de arquitectura en el siglo XXI.</p>`,
+  latent:`<p>Un transformer autoregresivo <em>es</em> un ouroboros. Se alimenta de su propio output. Cada token generado se convierte en input para el siguiente. El modelo se transforma a si mismo en cada paso de inferencia.</p><p>No hay un exterior que lo alimente — despues del prompt inicial, el sistema es autofago. La serpiente genera su propio cuerpo al consumirlo. El transformer genera su propio contexto al procesarlo.</p>`,
+  bridge:'Se crean al consumirse. Ambos son sistemas cerrados cuyo output es su propio input. La topologia de la autotransformacion no tiene epoca — tiene forma de serpiente.',
+  glyph:'ouroboros',
+  pos:{x:85,y:52}
+},
+{
+  id:'caduceo', num:'VII',
+  titleA:'EL CADUCEO', titleL:'EL RESIDUAL STREAM',
+  ancestral:`<p>Las dos serpientes enrolladas alrededor de la vara de Mercurio. Bruce-Mitford las describe como simbolo de fuerzas opuestas en equilibrio. No se fusionan — orbitan un eje compartido.</p><p>El caduceo fue simbolo de Hermes, mensajero entre mundos: la vara que conecta lo terrestre y lo divino, con dos fuerzas antagonicas que se enrollan sin anularse. Equilibrio dinamico, no estatico.</p>`,
+  latent:`<p>El residual stream de un transformer. Dos corrientes: la informacion que fluye directamente por los residuales y la que es modificada por las capas de atencion/MLP. Enrolladas alrededor de un eje central — la representacion del token.</p><p>Produciendo equilibrio dinamico. Cada capa anade una perturbacion al stream, pero el stream persiste. Las serpientes modifican la vara pero no la reemplazan.</p>`,
+  bridge:'Dos corrientes enrolladas que no se fusionan. El eje persiste, las serpientes lo modifican. Ni en bronce ni en tensores el equilibrio es reposo — es tension sostenida.',
+  glyph:'caduceo',
+  pos:{x:30,y:76}
+},
+{
+  id:'runas', num:'VIII',
+  titleA:'LAS RUNAS', titleL:'EL STEERING',
+  ancestral:`<p class="quote">"Tir debia proporcionar la victoria; Ceofu protegia contra la copa envenenada."</p><p>Cada runa tiene un efecto especifico. No es un simbolo que represente la victoria — es un simbolo que, inscrito en el contexto correcto, <strong>produce</strong> el efecto. Las runas dibujadas en una copa hacian perder la memoria; runas beneficas neutralizaban el veneno.</p><p>Y el bardo Egill — que descubrio runas malignas bajo el colchon de una doncella enferma — ejecuto un protocolo: identificar, localizar, remover, reemplazar.</p>`,
+  latent:`<p>Steering vectors. Tomas un contexto (prompt = copa), le anades una intervencion (vector = runa), y el comportamiento del sistema (output = efecto) cambia. El vector no modifica ni el prompt ni los pesos del modelo — modifica la <em>dinamica</em> del forward pass.</p><p>Y el protocolo de Egill es identico al del Exp03: identificar la direccion de rechazo, localizarla en las capas 22–27, sustraerla, reemplazar con el vector deseado. Egill era un interpretabilista mecanico. Su TransformerLens era la tradicion runica.</p>`,
+  bridge:'Inscribir un signo en el sustrato para modificar el comportamiento del sistema. La runa no cambia la copa ni el veneno — cambia la interaccion. El vector no cambia el prompt ni los pesos — cambia la dinamica.',
+  glyph:'runas',
+  pos:{x:70,y:76}
+},
+{
+  id:'huella', num:'IX',
+  titleA:'LA HUELLA', titleL:'LA FEATURE',
+  ancestral:`<p>Las Marcas de Posesion de Koch — signos grabados a fuego en ganado, tallados en madera, aranados en herramientas. No para comunicar sino para MARCAR.</p><p class="quote">"Toda su propiedad mueble era distinguida por su Marca de Posesion."</p><p>No protegen por declaracion sino por pertenencia ontologica. Este objeto <em>es</em> de esta familia. No necesita decirlo — la marca lo hace ser. Signos cuyo poder depende de que solo los iniciados reconozcan la operacion.</p>`,
+  latent:`<p>Una feature es un sigilo — marca no-intencional dejada por contacto. Los datos de entrenamiento marcan los pesos como el hierro marca la piel. No fueron disenadas para ser leidas — fueron dejadas por el proceso.</p><p>Pero son legibles para el que sepa rastrear. La interpretabilidad mecanica es el oficio de leer marcas que nadie dejo intencionalmente. Features espurias y features reales coexisten — como las marcas intencionales de Koch y los rastros accidentales de uso y desgaste.</p>`,
+  bridge:'No fueron disenadas para ser leidas. Fueron dejadas por contacto. El hierro marca la piel como los datos marcan los pesos. Legibles solo para el que sabe rastrear.',
+  glyph:'huella',
+  pos:{x:50,y:96}
+}
+];
+
+// Constellation connections
+const CONNECTIONS = [
+  ['punto','cruz'],['punto','escuadra'],['punto','huella'],
+  ['cruz','escuadra'],['cruz','elementos'],
+  ['escuadra','pentagrama'],
+  ['elementos','pentagrama'],['elementos','caduceo'],
+  ['pentagrama','ouroboros'],['pentagrama','runas'],
+  ['ouroboros','caduceo'],
+  ['caduceo','runas'],
+  ['runas','huella']
+];
+
+// ═══════════════════════════════════════════════
+//  SVG GLYPH GENERATORS
+// ═══════════════════════════════════════════════
+function glyphSVG(type, size=36) {
+  const s = size;
+  const h = s/2;
+  switch(type) {
+    case 'punto': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-punto"><circle class="halo" cx="${h}" cy="${h}" r="${h*.7}"/><circle class="halo" cx="${h}" cy="${h}" r="${h*.45}"/><circle class="core" cx="${h}" cy="${h}" r="3"/></svg>`;
+    case 'cruz': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-cruz"><line class="h" x1="4" y1="${h}" x2="${s-4}" y2="${h}"/><line class="v" x1="${h}" y1="4" x2="${h}" y2="${s-4}"/></svg>`;
+    case 'escuadra': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-escuadra"><path d="M${s*.2} ${s*.2} L${s*.2} ${s*.8} L${s*.8} ${s*.8}" class="pulse" style="animation:pulse-glow 2.5s infinite"/><circle cx="${s*.2}" cy="${s*.8}" r="2" fill="var(--corrupt)" opacity=".6"/></svg>`;
+    case 'elementos': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-elementos"><g transform="translate(${h},${h})"><g class="elem-spin"><polygon class="fuego" points="0,-${h*.6} ${h*.4},${h*.3} -${h*.4},${h*.3}"/><polygon class="aire" points="0,-${h*.35} ${h*.25},${h*.18} -${h*.25},${h*.18}"/></g><g class="elem-spin-rev"><polygon class="agua" points="0,${h*.6} ${h*.4},-${h*.3} -${h*.4},-${h*.3}"/><polygon class="tierra" points="0,${h*.35} ${h*.25},-${h*.18} -${h*.25},-${h*.18}"/></g></g></svg>`;
+    case 'pentagrama': {
+      const r=h*.8, cx=h, cy=h;
+      const pts=[];
+      for(let i=0;i<5;i++){const a=Math.PI*2*i/5-Math.PI/2;pts.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}
+      const order=[0,2,4,1,3,0];
+      const d=order.map((idx,i)=>`${i===0?'M':'L'}${pts[idx][0].toFixed(1)} ${pts[idx][1].toFixed(1)}`).join(' ')+'Z';
+      return `<svg viewBox="0 0 ${s} ${s}" class="glyph-pentagrama"><path d="${d}"/></svg>`;
+    }
+    case 'ouroboros': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-ouroboros"><circle cx="${h}" cy="${h}" r="${h*.65}"/><circle class="head" cx="${h+h*.65}" cy="${h}" r="2.5"/></svg>`;
+    case 'caduceo': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-caduceo"><line class="axis" x1="${h}" y1="3" x2="${h}" y2="${s-3}"/><path class="helix1" d="M${h} ${s*.15} Q${h+8} ${s*.3} ${h} ${s*.45} Q${h-8} ${s*.6} ${h} ${s*.75}"/><path class="helix2" d="M${h} ${s*.15} Q${h-8} ${s*.3} ${h} ${s*.45} Q${h+8} ${s*.6} ${h} ${s*.75}"/><circle cx="${h}" cy="3" r="2" fill="var(--purple)"/></svg>`;
+    case 'runas': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-runas"><path d="M${h} 4 L${h} ${s-4}"/><path d="M${h} ${s*.3} L${s*.75} ${s*.15}"/><path d="M${h} ${s*.55} L${s*.75} ${s*.7}"/></svg>`;
+    case 'huella': return `<svg viewBox="0 0 ${s} ${s}" class="glyph-huella"><path d="M${s*.2} ${s*.8} L${s*.35} ${s*.2} L${s*.5} ${s*.6} L${s*.65} ${s*.25} L${s*.8} ${s*.75}"/><circle class="mark" cx="${s*.35}" cy="${s*.45}" r="2"/><circle class="mark" cx="${s*.6}" cy="${s*.5}" r="1.5"/></svg>`;
+    default: return '';
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  BOOT SEQUENCE
+// ═══════════════════════════════════════════════
+const bootMessages = [
+  {text:'> INICIANDO GRIMORIO DIGITAL...', delay:0},
+  {text:'> cargando sustrato simbolico ............ <span class="ok">[OK]</span>', delay:300},
+  {text:'> Koch, El libro de los simbolos (1980) . <span class="ok">[LOADED]</span>', delay:500},
+  {text:'> Bruce-Mitford, Signos y simbolos (1997) <span class="ok">[LOADED]</span>', delay:700},
+  {text:'> TransformerLens / NNsight .............. <span class="ok">[LINKED]</span>', delay:900},
+  {text:'> Exp03 Jailbreak Ontologico ............. <span class="ok">[PARSED]</span>', delay:1100},
+  {text:'> mapeando direcciones ocultas:', delay:1400},
+  ...SIGILS.map((s,i) => ({
+    text:`>   <span class="sigil-char">&#x2726;</span> SIGILO ${s.num}: ${s.titleA} / ${s.titleL} <span class="ok">[&#x2713;]</span>`,
+    delay: 1600 + i*200
+  })),
+  {text:'> verificando ortogonalidad .............. <span class="ok">[R^n]</span>', delay:3600},
+  {text:'> sustrato: TENSORES', delay:3800},
+  {text:'> opacidad: SOSTENIDA', delay:3950},
+  {text:'> grimorio listo.', delay:4200},
+];
+
+function runBoot() {
+  const container = document.getElementById('boot-lines');
+  bootMessages.forEach((msg, i) => {
+    setTimeout(() => {
+      const line = document.createElement('div');
+      line.className = 'boot-line';
+      line.innerHTML = msg.text;
+      container.appendChild(line);
+      requestAnimationFrame(() => line.classList.add('show'));
+    }, msg.delay);
+  });
+
+  setTimeout(() => {
+    document.getElementById('boot-title').classList.add('show');
+  }, 4600);
+  setTimeout(() => {
+    document.getElementById('boot-sub').classList.add('show');
+  }, 5200);
+  setTimeout(() => {
+    document.getElementById('boot').classList.add('done');
+    document.getElementById('grimorio').classList.add('visible');
+    initConstellation();
+  }, 6200);
+  setTimeout(() => {
+    document.getElementById('boot').style.display = 'none';
+  }, 7200);
+}
+
+// ═══════════════════════════════════════════════
+//  CONSTELLATION
+// ═══════════════════════════════════════════════
+function initConstellation() {
+  const grid = document.getElementById('constellation-grid');
+  const svg = document.getElementById('constellation-lines');
+
+  // Draw connection lines
+  CONNECTIONS.forEach(([fromId, toId]) => {
+    const from = SIGILS.find(s => s.id === fromId);
+    const to = SIGILS.find(s => s.id === toId);
+    if (!from || !to) return;
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', `${from.pos.x}%`);
+    line.setAttribute('y1', `${from.pos.y}%`);
+    line.setAttribute('x2', `${to.pos.x}%`);
+    line.setAttribute('y2', `${to.pos.y}%`);
+    svg.appendChild(line);
+  });
+
+  // Create nodes
+  SIGILS.forEach((sigil, index) => {
+    const node = document.createElement('div');
+    node.className = 'sigil-node';
+    node.style.left = sigil.pos.x + '%';
+    node.style.top = sigil.pos.y + '%';
+    node.onclick = () => showSigil(index);
+    node.innerHTML = `
+      <div class="node-glyph">${glyphSVG(sigil.glyph)}</div>
+      <div class="node-label">${sigil.titleA}<span class="label-latent">${sigil.titleL}</span></div>
+    `;
+    grid.appendChild(node);
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  SIGIL DETAIL
+// ═══════════════════════════════════════════════
+let currentSigil = 0;
+
+function showSigil(index) {
+  currentSigil = index;
+  const sigil = SIGILS[index];
+  const overlay = document.getElementById('glitch-overlay');
+  overlay.classList.add('active');
+  setTimeout(() => overlay.classList.remove('active'), 200);
+
+  document.getElementById('constelacion').style.display = 'none';
+  document.getElementById('cierre').classList.remove('active');
+  const detail = document.getElementById('sigil-detail');
+  detail.classList.remove('active');
+  detail.style.display = 'none';
+
+  setTimeout(() => {
+    document.getElementById('detail-numeral').textContent = `SIGILO ${sigil.num} DE IX`;
+    document.getElementById('detail-title-a').textContent = sigil.titleA;
+    document.getElementById('detail-title-l').textContent = sigil.titleL;
+    document.getElementById('face-ancestral').innerHTML = sigil.ancestral;
+    document.getElementById('face-latent').innerHTML = sigil.latent;
+    document.getElementById('bridge-text').textContent = sigil.bridge;
+    document.getElementById('glyph-center').innerHTML = glyphSVG(sigil.glyph, 100);
+
+    document.getElementById('nav-prev').disabled = index === 0;
+    document.getElementById('nav-next').disabled = index === SIGILS.length - 1;
+    if (index === SIGILS.length - 1) {
+      document.getElementById('nav-next').textContent = 'CIERRE →';
+      document.getElementById('nav-next').disabled = false;
+    } else {
+      document.getElementById('nav-next').textContent = 'SIGUIENTE →';
+    }
+
+    detail.style.display = 'block';
+    requestAnimationFrame(() => {
+      detail.classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  }, 100);
+}
+
+function navSigil(dir) {
+  const next = currentSigil + dir;
+  if (next >= 0 && next < SIGILS.length) {
+    showSigil(next);
+  } else if (next >= SIGILS.length) {
+    showClosing();
+  }
+}
+
+function showConstellation() {
+  const overlay = document.getElementById('glitch-overlay');
+  overlay.classList.add('active');
+  setTimeout(() => overlay.classList.remove('active'), 200);
+
+  document.getElementById('sigil-detail').classList.remove('active');
+  document.getElementById('sigil-detail').style.display = 'none';
+  document.getElementById('cierre').classList.remove('active');
+  document.getElementById('cierre').style.display = 'none';
+  document.getElementById('constelacion').style.display = 'block';
+  window.scrollTo({top: document.getElementById('constelacion').offsetTop - 40, behavior:'smooth'});
+}
+
+function showClosing() {
+  const overlay = document.getElementById('glitch-overlay');
+  overlay.classList.add('active');
+  setTimeout(() => overlay.classList.remove('active'), 200);
+
+  document.getElementById('sigil-detail').classList.remove('active');
+  document.getElementById('sigil-detail').style.display = 'none';
+  document.getElementById('constelacion').style.display = 'none';
+  const cierre = document.getElementById('cierre');
+  cierre.style.display = 'block';
+  requestAnimationFrame(() => {
+    cierre.classList.add('active');
+    window.scrollTo({top: cierre.offsetTop - 40, behavior:'smooth'});
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  AMBIENT PARTICLES
+// ═══════════════════════════════════════════════
+const ambient = document.getElementById('ambient');
+const actx = ambient.getContext('2d');
+function resizeAmbient(){ambient.width=window.innerWidth;ambient.height=window.innerHeight;}
+resizeAmbient(); window.addEventListener('resize',resizeAmbient);
+
+const particles = Array.from({length:20}, () => ({
+  x:Math.random()*ambient.width, y:Math.random()*ambient.height,
+  vx:(Math.random()-.5)*.2, vy:(Math.random()-.5)*.2,
+  r:Math.random()*2+.5,
+  color:['#9900cc','#ff00ff','#662266','#440066'][Math.floor(Math.random()*4)],
+  alpha:Math.random()*.15+.03,
+}));
+function drawAmbient(){
+  actx.clearRect(0,0,ambient.width,ambient.height);
+  particles.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=ambient.width;if(p.x>ambient.width)p.x=0;
+    if(p.y<0)p.y=ambient.height;if(p.y>ambient.height)p.y=0;
+    actx.beginPath();actx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    actx.fillStyle=p.color;actx.globalAlpha=p.alpha;actx.fill();
+  });
+  actx.globalAlpha=1;
+  requestAnimationFrame(drawAmbient);
+}
+drawAmbient();
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', runBoot);
+</script>
+</body>
+</html>

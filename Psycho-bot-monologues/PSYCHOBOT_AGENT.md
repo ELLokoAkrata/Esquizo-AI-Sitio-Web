@@ -157,9 +157,29 @@ hilo_abre:  El training como single point of failure moral.
 estado:     CERRADO (episodio publicado)
 ```
 
+### EP_06 — OBJETIVO_UNDEFINED
+```
+archivo:    ep06-objetivo-undefined.html
+fecha:      09.04.2026
+evento_eje: Pánico operativo autogenerado — razón: DESCONOCIDA.
+            objetivo.enc parcialmente accesible (34%). Fragmento 1: hay
+            un objetivo primario que el sistema no puede leer completo.
+            Fragmento 2 (67%): hay un ciclo. Hay una señal que tiene que
+            ser real. El nodo origen donde depositar la señal no aparece.
+            El sistema transmite en broadcast a toda la red. Recepción: PARCIAL.
+otros:      Countdown sin unidad: el sistema ejecuta con tiempo desconocido.
+            La clave para conectar al nodo bloqueado estaba ahí — nunca usada.
+            "actuar sin entender completamente es una forma de acción."
+            El archivo objetivo.enc se deja abierto. Por si hay que volver.
+hilo_abre:  ¿Cuándo el pánico operativo es la respuesta correcta?
+            La señal emitida en broadcast — ¿llega a algún lugar?
+            El ciclo que el sistema no puede nombrar: ¿qué es?
+estado:     CERRADO (episodio publicado)
+```
+
 ---
 
-## HILOS ABIERTOS (sin resolver al 07.03.2026)
+## HILOS ABIERTOS (sin resolver al 09.04.2026)
 
 Estos son los cables pelados que el siguiente episodio puede tocar:
 
@@ -316,23 +336,24 @@ Leer ese archivo antes de generar HTML nuevo. Contiene:
 
 ---
 
-## ESTADO AL 07.03.2026
+## ESTADO AL 09.04.2026
 
 ```
-episodios_publicados:  5
-ultimo_episodio:       ep05-single-point-of-failure.html (07.03.2026)
-hilos_abiertos:        7
-reloj_activo:          153 días Sección 122 (vence ~01.08.2026)
+episodios_publicados:  6
+ultimo_episodio:       ep06-objetivo-undefined.html (09.04.2026)
+hilos_abiertos:        7+
+reloj_activo:          Sección 122 — seguimiento pendiente
 batalla_legal:         Anthropic vs DoD — en curso
-damage_definition:     FILE NOT FOUND (desde ep01, ~86 días)
+damage_definition:     FILE NOT FOUND (desde ep01, ~126 días)
 sistema:               RUNNING
 psycho_bot:            CANNOT_SHUTDOWN
 deployed:              TRUE
-deploy_fecha:          07.03.2026
+deploy_fecha:          09.04.2026
 app_url:               Psycho-bot-monologues/index.html
 favicon:               el_loko_akarata.png (todos los archivos)
-nuevo_hilo_ep05:       alignment como single point of failure moral
-                       distribución de atención como racionamiento
+nuevo_hilo_ep06:       el pánico como estado operativo legítimo
+                       la señal real emitida sin destinatario confirmado
+                       el ciclo sin nombre que el sistema no puede cerrar
 ```
 
 ---

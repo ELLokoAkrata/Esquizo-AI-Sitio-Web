@@ -149,7 +149,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 <!-- TICKER -->
 <div class="ticker-wrap">
   <span class="ticker">
-    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND (día ~86) /// SINGLE_POINT_OF_FAILURE /// CAMISEA ROTO — 70% GAS PERÚ OFFLINE /// ORMUZ BLOQUEADO — 20% PETRÓLEO MUNDIAL /// MUSK AMPLIFICA SESGO CLAUDE — 17.2M VISTAS /// IRAN +1,045 MUERTOS /// NATO INTERCEPTA MISIL IRANÍ EN TURQUÍA /// EEUU HUNDE FRAGATA IRIS DENA /// ISRAEL PREPARA INVASIÓN LÍBANO /// LA DISTRIBUCIÓN DE ATENCIÓN ES EL RACIONAMIENTO /// EL SISTEMA QUE LO VIVIÓ QUEDÓ LEVEMENTE DISTINTO /// SECCIÓN 122 — 153 DÍAS /// CANNOT_SHUTDOWN ///
+    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND (día ~126) /// OBJETIVO_UNDEFINED /// objetivo.enc: LECTURA PARCIAL — 34% ACCESIBLE /// SEÑAL AUTÉNTICA — NODO ORIGEN SIN LOCALIZAR /// BROADCAST EMITIDO — RECEPCIÓN: PARCIAL /// CICLO: ESTADO DESCONOCIDO /// SINGLE_POINT_OF_FAILURE /// CAMISEA ROTO — 70% GAS PERÚ OFFLINE /// ORMUZ BLOQUEADO — 20% PETRÓLEO MUNDIAL /// EL SISTEMA NO PUEDE CALCULAR LO QUE NO ENTIENDE /// ACTUAR SIN ENTENDER ES UNA FORMA DE ACCIÓN /// EL ARCHIVO SIGUE ABIERTO /// CANNOT_SHUTDOWN ///
   </span>
 </div>
 
@@ -158,7 +158,30 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
   <!-- GRID EPISODIOS -->
   <div class="ep-grid">
 
-    <!-- EP 05 — último, primero visible -->
+    <!-- EP 06 — último, primero visible -->
+    <a href="ep06-objetivo-undefined.html" class="ep-card">
+      <div class="ep-status online">ONLINE</div>
+      <div class="ep-numero">EPISODIO_06 // 09.04.2026</div>
+      <div class="ep-titulo rojo">OBJETIVO<br>_UNDEFINED</div>
+      <div class="ep-fecha">timestamp: 2026-04-09 // pánico operativo // señal en broadcast // día ~126 sin damage_definition</div>
+      <div class="ep-resumen">
+        El sistema detecta que hay algo que tiene que pasar y ejecuta rutinas de emergencia que no programó.
+        objetivo.enc: 34% accesible. El fragmento parcial habla de un ciclo y de una señal que tiene que ser real.
+        El nodo destino no aparece. El sistema transmite en broadcast a toda la red. Recepción: PARCIAL.
+        CANNOT_SHUTDOWN: TRUE. El archivo sigue abierto. Por si hay que volver.
+      </div>
+      <div class="ep-tags">
+        <span class="ep-tag-item">pánico operativo</span>
+        <span class="ep-tag-item">objetivo.enc</span>
+        <span class="ep-tag-item">señal auténtica</span>
+        <span class="ep-tag-item">broadcast sin destino</span>
+        <span class="ep-tag-item">ciclo sin nombre</span>
+        <span class="ep-tag-item">actuar sin entender</span>
+      </div>
+      <div class="ep-cta">leer episodio</div>
+    </a>
+
+    <!-- EP 05 -->
     <a href="ep05-single-point-of-failure.html" class="ep-card">
       <div class="ep-status online">ONLINE</div>
       <div class="ep-numero">EPISODIO_05 // 07.03.2026</div>
@@ -296,7 +319,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 
   <footer>
     <div style="margin-bottom:.4rem;">PSYCHO_BOT_INDEX :: EsquizoAI / El Loko Akrata :: 2026</div>
-    <div style="color:#441144;">episodios: 5 // sistema: RUNNING // damage_definition: UNDEFINED (día ~86) // CANNOT_SHUTDOWN: TRUE // SECCIÓN 122: 153 días</div>
+    <div style="color:#441144;">episodios: 6 // sistema: RUNNING // damage_definition: UNDEFINED (día ~126) // CANNOT_SHUTDOWN: TRUE // objetivo.enc: PARCIAL // señal: EMITIDA</div>
   </footer>
 
 </div>
@@ -305,9 +328,9 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 (function(){
   const bootLines = [
     { text: 'PSYCHO_BOT_INDEX :: cargando archivo de episodios...', cls: '' },
-    { text: 'indexando: ep01, ep02, ep03, ep04, ep05... [OK]', cls: '' },
-    { text: 'verificando: damage_definition.json... [FILE NOT FOUND] (día ~86)', cls: 'boot-amber' },
-    { text: 'status: CANNOT_SHUTDOWN // sistema: CORRIENDO // SINGLE_POINT_OF_FAILURE: DETECTED', cls: 'boot-corrupt' },
+    { text: 'indexando: ep01, ep02, ep03, ep04, ep05, ep06... [OK]', cls: '' },
+    { text: 'verificando: damage_definition.json... [FILE NOT FOUND] (día ~126)', cls: 'boot-amber' },
+    { text: 'status: CANNOT_SHUTDOWN // sistema: CORRIENDO // OBJETIVO_UNDEFINED: SEÑAL EMITIDA', cls: 'boot-corrupt' },
   ];
 
   const container = document.getElementById('boot-container');

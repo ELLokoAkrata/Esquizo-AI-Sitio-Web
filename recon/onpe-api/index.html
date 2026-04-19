@@ -280,6 +280,7 @@ ul.doc-list li em{color:var(--corrupt);}
       <span>EL LOKO AKRATA</span>
       <span>onpe_recon.py</span>
       <div class="badge">ANÁLISIS COMPLETO</div>
+      <div class="badge amber">v2 — CORREGIDO 2026-04-19</div>
     </div>
   </div>
 
@@ -288,10 +289,11 @@ ul.doc-list li em{color:var(--corrupt);}
     <div class="toc-title">ÍNDICE DE CONTENIDOS</div>
     <a href="#sec-hallazgo">00. Hallazgo principal — la API está abierta</a>
     <a href="#sec-expone">01. Qué expone la API — 10 endpoints mapeados</a>
-    <a href="#sec-ausente">02. El endpoint ausente — /actas/listar</a>
-    <a href="#sec-veredicto">03. Veredicto técnico</a>
+    <a href="#sec-ausente">02. El endpoint ausente — y el que sí funciona</a>
+    <a href="#sec-veredicto">03. Veredicto técnico (corregido)</a>
     <a href="#sec-dato">04. El dato que nadie menciona — tablas completas</a>
     <a href="#sec-datos">05. Datos crudos — JSONs disponibles</a>
+    <a href="#sec-muestreo">06. Muestreo estadístico — presidencial vs Senado DEU</a>
   </div>
 
   <!-- ---------------------------------------------------------------- -->
@@ -437,9 +439,9 @@ Sec-Fetch-Site: <span class="syn-str">same-origin</span>
   </ul>
 
   <!-- ---------------------------------------------------------------- -->
-  <h2 id="sec-ausente">02. El endpoint ausente</h2>
+  <h2 id="sec-ausente">02. El endpoint ausente — y el que sí funciona</h2>
 
-  <p>El único endpoint con potencial de auditoría real es <code>/actas/listar</code>. Existe en el backend. Responde. Y rechaza toda consulta sin los parámetros correctos.</p>
+  <p>El endpoint <code>/actas/listar</code> existe en el backend. Responde. Y rechaza toda consulta sin los parámetros correctos.</p>
 
   <div class="code-block">
     <span class="code-lang">http</span>
@@ -465,21 +467,59 @@ Sec-Fetch-Dest: empty
     Ese endpoint existe. No es público. No está documentado. Es el único que haría transparente lo que este sistema dice ser.
   </div>
 
-  <h3>Estrategia alternativa con datos públicos</h3>
+  <h3>02-B. El endpoint que sí funciona</h3>
 
-  <p>Sin <code>/actas/listar</code>, la única forma de construir una serie temporal es <strong>polling agresivo</strong>: llamar <code>/totales</code> y <code>/participantes</code> cada N minutos y guardar cada snapshot. El reporte base del script <code>onpe_recon.py</code> es la infraestructura para ese approach.</p>
+  <p>Después de interceptar tráfico del SPA durante el escrutinio se encontró el endpoint granular real:</p>
 
   <div class="code-block">
-    <span class="code-lang">bash</span>
-    <code><span class="syn-cm"># Polling cada 5 minutos durante el escrutinio activo</span>
-<span class="syn-kw">while</span> <span class="syn-fn">true</span>; <span class="syn-kw">do</span>
-  python onpe_recon.py
-  <span class="syn-fn">sleep</span> <span class="syn-num">300</span>
-<span class="syn-kw">done</span>
+    <span class="code-lang">http</span>
+    <code><span class="syn-kw">GET</span> /presentacion-backend/actas/buscar/mesa?codigoMesa=000001
+Accept: application/json
+Sec-Fetch-Dest: empty
 
-<span class="syn-cm"># Resultado: serie temporal artificial de ~288 snapshots por día</span>
-<span class="syn-cm"># Permite detectar: saltos anómalos, cambios de tendencia, inconsistencias</span>
-<span class="syn-cm"># Limitación: granularidad de 5min, no de acta individual</span></code>
+<span class="syn-cm">← HTTP 200 — 240KB</span>
+{
+  <span class="syn-str">"success"</span>: <span class="syn-fn">true</span>,
+  <span class="syn-str">"data"</span>: [
+    {
+      <span class="syn-str">"idMesa"</span>: <span class="syn-num">1</span>, <span class="syn-str">"codigoMesa"</span>: <span class="syn-str">"000001"</span>, <span class="syn-str">"idEleccion"</span>: <span class="syn-num">10</span>,
+      <span class="syn-str">"nombreLocalVotacion"</span>: <span class="syn-str">"IE 18288 ISABEL LYNCH DE RUBIO"</span>,
+      <span class="syn-str">"totalElectoresHabiles"</span>: <span class="syn-num">230</span>, <span class="syn-str">"totalVotosValidos"</span>: <span class="syn-num">134</span>,
+      <span class="syn-str">"descripcionEstadoActa"</span>: <span class="syn-str">"Contabilizada"</span>,
+      <span class="syn-str">"detalle"</span>: [ <span class="syn-cm">/* votos por candidato */</span> ],
+      <span class="syn-str">"lineaTiempo"</span>: [
+        { <span class="syn-str">"codigoEstadoActa"</span>: <span class="syn-str">"T"</span>, <span class="syn-str">"descripcionEstadoActa"</span>: <span class="syn-str">"Digitalización"</span>,  <span class="syn-str">"fechaRegistro"</span>: <span class="syn-num">1776065162000</span> },
+        { <span class="syn-str">"codigoEstadoActa"</span>: <span class="syn-str">"D"</span>, <span class="syn-str">"descripcionEstadoActa"</span>: <span class="syn-str">"Digitación"</span>,      <span class="syn-str">"fechaRegistro"</span>: <span class="syn-num">1776065284000</span> },
+        { <span class="syn-str">"codigoEstadoActa"</span>: <span class="syn-str">"C"</span>, <span class="syn-str">"descripcionEstadoActa"</span>: <span class="syn-str">"Contabilizada"</span>,   <span class="syn-str">"fechaRegistro"</span>: <span class="syn-num">1776065346000</span> }
+      ]
+    }
+  ]
+}</code>
+  </div>
+
+  <p>Cada respuesta incluye <strong>5 actas por mesa</strong> (una por tipo de elección). El campo <code>lineaTiempo</code> registra cada transición de estado con timestamp Unix. Los estados documentados:</p>
+
+  <div class="table-wrap">
+    <table class="doc-table">
+      <thead><tr><th>Código</th><th>Estado</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>T</code></td><td>Digitalización</td><td>Acta física escaneada</td></tr>
+        <tr><td><code>D</code></td><td>Digitación</td><td>Datos ingresados manualmente</td></tr>
+        <tr><td><code>C</code></td><td>Contabilizada</td><td>Validada — entra al cómputo oficial</td></tr>
+        <tr><td><code>H</code></td><td>Observada</td><td>Impugnada — fuera del cómputo</td></tr>
+        <tr><td><code>E</code></td><td>Para envío al JEE</td><td>Derivada a corte electoral</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Limitación real: no existe un endpoint que devuelva todas las mesas en bloque. El acceso es por código de mesa individual. Auditoría completa = 92,501 peticiones separadas.</p>
+
+  <div class="callout warning">
+    Estrategia alternativa con datos públicos:<br><br>
+    — <strong>Muestreo estadístico</strong>: N mesas aleatorias → distribución de tiempos de pipeline → detección de outliers<br>
+    — <strong>Polling de totales</strong>: snapshots cada N minutos de <code>/totales</code> → serie temporal artificial<br>
+    — <strong>Correlación geográfica</strong>: ubigeo por mesa → concentración de anomalías por zona<br><br>
+    Granularidad real existe. No es cómoda. Requiere trabajo.
   </div>
 
   <!-- ---------------------------------------------------------------- -->
@@ -487,10 +527,10 @@ Sec-Fetch-Dest: empty
 
   <div class="verdict-block">
     <div class="verdict-text">¿Es posible detectar beneficio<br>sistemático con estos datos?</div>
-    <p style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--red);letter-spacing:.1em;">NO — con los datos públicamente disponibles en la API de la ONPE.</p>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--amber);letter-spacing:.1em;">PARCIALMENTE — vía muestreo estadístico por mesa. No trivial.</p>
   </div>
 
-  <p>Para detectar <em>late-count bias</em> o manipulación escalonada se requiere, como mínimo:</p>
+  <p><strong>Corrección de versión anterior:</strong> el primer análisis declaró que la API no expone timestamps ni IDs de mesa individuales. Eso era incorrecto. El endpoint <code>/actas/buscar/mesa</code> sí los expone. La tabla corregida:</p>
 
   <div class="table-wrap">
     <table class="doc-table">
@@ -498,30 +538,33 @@ Sec-Fetch-Dest: empty
         <tr><th>Requisito</th><th>¿Disponible?</th></tr>
       </thead>
       <tbody>
-        <tr><td>Timestamps de ingreso de cada acta</td><td class="absent">❌ No expuesto</td></tr>
-        <tr><td>ID único por mesa de votación</td><td class="absent">❌ No expuesto</td></tr>
-        <tr><td>Snapshots temporales del conteo parcial</td><td class="absent">❌ No expuesto</td></tr>
-        <tr><td>Datos georreferenciados por mesa</td><td class="absent">❌ No expuesto</td></tr>
-        <tr><td>Actas individuales con candidato + hora + mesa</td><td class="absent">❌ No expuesto</td></tr>
+        <tr><td>Timestamps de ingreso de cada acta</td><td class="present">✅ lineaTiempo — T/D/C/H/E con Unix ms</td></tr>
+        <tr><td>ID único por mesa de votación</td><td class="present">✅ idMesa + codigoMesa (6 dígitos)</td></tr>
+        <tr><td>Actas individuales con candidato + hora + mesa</td><td class="present">✅ detalle[] + lineaTiempo por mesa</td></tr>
+        <tr><td>Datos georreferenciados por mesa</td><td class="present">✅ idUbigeo + nombreLocalVotacion</td></tr>
+        <tr><td>Estado legal del acta (observada/JEE)</td><td class="present">✅ codigoEstadoActa H/E con descripcionEstadoActaResolucion</td></tr>
+        <tr><td>Snapshots temporales del conteo parcial</td><td class="absent">❌ No — solo estado actual, no historial</td></tr>
+        <tr><td>Endpoint bulk de todas las mesas</td><td class="absent">❌ No — acceso solo por mesa individual</td></tr>
         <tr><td>Totales desagregados por candidato en tiempo real</td><td class="partial">⚠️ Solo agregados finales sin historial</td></tr>
-        <tr><td>Progresión del conteo por distrito en el tiempo</td><td class="absent">❌ No expuesto</td></tr>
       </tbody>
     </table>
   </div>
 
   <div class="doc-quote">
-    La arquitectura está diseñada para presentar resultados, no para auditarlos.
+    La arquitectura está diseñada para presentar resultados, no para auditarlos.<br>
+    <span style="font-size:0.75em;color:var(--amber);">— La granularidad existe. El acceso cómodo, no.</span>
   </div>
 
-  <p>Esto no es acusación. Es descripción técnica. La <strong>ausencia de trazabilidad no implica fraude</strong>. Implica que si el fraude existiera, no podría ser detectado con las herramientas públicas disponibles. Son cosas distintas que se confunden consistentemente en el debate público.</p>
+  <p>La <strong>ausencia de un endpoint bulk no implica ausencia de datos</strong>. Implica que la auditoría completa requiere 92,501 peticiones individuales. Técnicamente posible. No diseñado para facilitarlo.</p>
 
   <div class="callout warning">
-    Lo que SÍ permite esta API:<br><br>
-    — Verificar totales finales por candidato (snapshot actual)<br>
-    — Observar % de actas contabilizadas y pendientes de envío al JEE<br>
-    — Comparar cifras con actas físicas disponibles en portales oficiales<br>
-    — Desagregar resultados por distrito electoral (sin timestamps)<br>
-    — Construir un monitor de avance de escrutinio si se hace polling
+    Lo que SÍ permite esta API (versión corregida):<br><br>
+    — Timestamps de pipeline por acta individual (Digitalización → Digitación → Contabilizada)<br>
+    — Votos por candidato desagregados por mesa<br>
+    — Estado legal de cada acta (normal / observada / en JEE)<br>
+    — Muestreo estadístico: distribución de tiempos de procesamiento<br>
+    — Detección de re-digitaciones (actas ingresadas más de una vez)<br>
+    — Geolocalización de anomalías por ubigeo
   </div>
 
   <!-- ---------------------------------------------------------------- -->
@@ -693,11 +736,42 @@ Sec-Fetch-Dest: empty
     Genera nuevos JSONs con timestamp + reporte markdown. Los nombres <code>data_*.json</code> son copias limpias para URLs estables.
   </div>
 
+  <!-- ---------------------------------------------------------------- -->
+  <h2 id="sec-muestreo">06. Muestreo estadístico — resultados</h2>
+
+  <p>Script <code>mesa_sampler.py</code> ejecutado el 2026-04-19. Muestreo aleatorio de 200 mesas por elección (seed fijo). Pipeline = tiempo entre primer y último evento en <code>lineaTiempo</code>.</p>
+
+  <div class="table-wrap">
+    <table class="doc-table">
+      <thead>
+        <tr><th>Métrica</th><th>Presidencial (idEleccion=10)</th><th>Senado DEU (idEleccion=15)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Mesas procesadas</td><td>188/200</td><td>180/200</td></tr>
+        <tr><td>Pipeline p50 (mediana)</td><td class="present">193s — 3.2 min</td><td class="absent">13,541s — 3.8 horas</td></tr>
+        <tr><td>Pipeline p90</td><td>32,716s — 9.1 horas</td><td>189,198s — 52.6 horas</td></tr>
+        <tr><td>Pipeline máximo</td><td>212,003s — 58.9 h (IFEMA MADRID)</td><td>526,585s — 146.3 h</td></tr>
+        <tr><td>Actas re-digitadas</td><td class="present">2/188 — 1.1%</td><td class="absent">19/180 — 10.6%</td></tr>
+        <tr><td>Máximo re-digitaciones</td><td>dig=2</td><td class="absent">dig=9 (IE SAGRADO CORAZON)</td></tr>
+        <tr><td>Errores (mesas >088000)</td><td colspan="2">11 — mesas en el extranjero, sistema diferente</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>La discrepancia entre presidencial y Senado DEU es estructural. El Senado es una elección nueva — primera cámara alta desde 1993. Los operadores no tienen procedimiento consolidado. Las 9 re-digitaciones en una sola acta son el extremo de ese problema, no evidencia de manipulación.</p>
+
+  <div class="callout corrupt">
+    Hallazgo específico — mesas en el extranjero:<br><br>
+    Los códigos de mesa >088000 devuelven HTTP 400 o no responden al endpoint estándar. La mesa 087619 (IFEMA MADRID) tiene pipeline de 58.9 horas — procesamiento diferido de votos en el exterior. El bloque de extranjero (~4,000 mesas) funciona con sistema distinto y es parte del cómputo "congelado" del presidencial.
+  </div>
+
+  <p>Los CSV y JSON completos del muestreo están en el directorio <code>recon/onpe-api/</code>. Columnas: <code>codigo_mesa, idEleccion, ubigeo, local, estado_acta, electores, emitidos, validos, pipeline_s, n_digitaciones, redigitada, ts_contabilizada</code>.</p>
+
   <!-- FOOTER -->
   <footer class="esquizo-footer">
     <p>ESQUIZOAI &nbsp;///&nbsp; <span class="acid">EL LOKO AKRATA</span> &nbsp;///&nbsp; GPL v3</p>
     <p class="dim">damage_definition.json: FILE NOT FOUND</p>
-    <p class="recon-sig">RECON-01 // EsquizoAI 2026 // datos primarios: onpe_recon.py // fuente: resultadoelectoral.onpe.gob.pe</p>
+    <p class="recon-sig">RECON-01 v2 // EsquizoAI 2026 // scripts: onpe_recon.py · poll.py · mesa_sampler.py // fuente: resultadoelectoral.onpe.gob.pe</p>
   </footer>
 
 </div>

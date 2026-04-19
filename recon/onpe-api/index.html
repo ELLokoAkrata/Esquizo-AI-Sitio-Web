@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RECON-01 // CARTOGRAFÍA DE LA API ONPE | EsquizoAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#040008;--green:#00ff41;--green-dim:#00b32c;--amber:#ffb000;
+  --red:#ff2020;--white:#fff0f0;--corrupt:#ff00ff;--acid:#aaff00;
+  --purple:#9900cc;--surface:#0a000f;--input-border:#442244;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:var(--bg);color:#c0a8c0;
+  font-family:'Share Tech Mono',monospace;font-size:13px;line-height:1.7;
+  overflow-x:hidden;cursor:crosshair;
+}
+body::after{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);
+  pointer-events:none;z-index:9998;
+}
+body::before{
+  content:'';position:fixed;top:0;left:0;width:100%;height:100%;
+  background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.88) 100%);
+  pointer-events:none;z-index:9997;
+}
+.psycho-bg{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:
+    radial-gradient(ellipse at 10% 20%,rgba(153,0,204,0.06) 0%,transparent 50%),
+    radial-gradient(ellipse at 90% 80%,rgba(170,255,0,0.04) 0%,transparent 50%),
+    radial-gradient(ellipse at 50% 50%,rgba(255,32,32,0.02) 0%,transparent 60%);
+  pointer-events:none;z-index:0;
+}
+
+/* ---- SCAN LINE ---- */
+.scan-overlay{
+  position:fixed;top:0;left:0;width:100%;height:4px;
+  background:linear-gradient(to bottom,transparent,rgba(0,255,65,0.06),transparent);
+  animation:scan 6s linear infinite;pointer-events:none;z-index:9999;
+}
+@keyframes scan{from{top:-5%}to{top:105%}}
+
+/* ---- LAYOUT ---- */
+.doc-wrap{max-width:820px;margin:0 auto;padding:2rem 1.5rem;position:relative;z-index:1;}
+
+/* ---- HEADER ---- */
+.doc-header{border-bottom:1px solid #552255;padding-bottom:1.5rem;margin-bottom:2rem;position:relative;}
+.doc-tag{font-size:9px;letter-spacing:.35em;color:#aa44bb;display:block;margin-bottom:.6rem;text-transform:uppercase;}
+.doc-header h1{
+  font-family:'VT323',monospace;font-size:clamp(1.8rem,5.5vw,3.2rem);
+  color:var(--acid);line-height:1.05;
+  animation:glitch-text 9s infinite;
+}
+.doc-meta{display:flex;gap:1.5rem;margin-top:.9rem;font-size:10px;color:#662266;letter-spacing:.1em;flex-wrap:wrap;align-items:center;}
+.doc-meta span::before{content:'// ';color:#442244;}
+.badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-size:8px;letter-spacing:.25em;text-transform:uppercase;
+  border:1px solid var(--green-dim);padding:.2rem .7rem;color:var(--green);
+  background:rgba(0,255,65,.04);
+}
+.badge::before{
+  content:'';width:5px;height:5px;border-radius:50%;
+  background:var(--green);box-shadow:0 0 6px var(--green);
+  animation:blink 1.4s step-end infinite;
+}
+.badge.red{border-color:var(--red);color:var(--red);background:rgba(255,32,32,.04);}
+.badge.red::before{background:var(--red);box-shadow:0 0 6px var(--red);}
+.badge.amber{border-color:var(--amber);color:var(--amber);background:rgba(255,176,0,.04);}
+.badge.amber::before{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+
+/* ---- TOC ---- */
+.toc{
+  border:1px solid var(--input-border);border-left:3px solid var(--corrupt);
+  padding:1.2rem 1.5rem;margin-bottom:2.5rem;background:var(--surface);
+}
+.toc-title{font-size:9px;letter-spacing:.3em;color:var(--corrupt);margin-bottom:.8rem;text-transform:uppercase;}
+.toc a{
+  display:block;color:#cc99cc;text-decoration:none;font-size:11px;
+  padding:.28rem 0;border-bottom:1px solid #0f000f;transition:color .2s;
+  letter-spacing:.05em;
+}
+.toc a:hover{color:var(--acid);}
+.toc a::before{content:'> ';color:#552255;}
+
+/* ---- HEADINGS ---- */
+.doc-wrap h2{
+  font-family:'Share Tech Mono',monospace;font-size:13px;
+  color:var(--acid);letter-spacing:.2em;text-transform:uppercase;
+  margin:2.8rem 0 1rem;padding-bottom:.5rem;border-bottom:1px solid #1a001a;
+}
+.doc-wrap h2::before{content:'$ ';color:var(--green-dim);}
+.doc-wrap h3{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  color:var(--corrupt);letter-spacing:.12em;margin:1.6rem 0 .7rem;
+  text-transform:uppercase;
+}
+.doc-wrap h3::before{content:'> ';color:#552255;}
+
+/* ---- PROSE ---- */
+.doc-wrap p{font-family:'Courier Prime',monospace;font-size:13px;color:#c0a8c0;line-height:1.9;margin-bottom:1rem;}
+.doc-wrap strong{color:var(--white);font-weight:700;}
+.doc-wrap em{color:var(--corrupt);font-style:italic;}
+
+/* ---- CODE ---- */
+.code-block{
+  background:#02000a;border:1px solid var(--input-border);border-left:3px solid var(--green-dim);
+  padding:1rem;margin:1rem 0 1.5rem;overflow-x:auto;position:relative;
+}
+.code-block code{
+  font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);
+  line-height:1.7;display:block;white-space:pre;
+}
+.code-lang{position:absolute;top:.4rem;right:.6rem;font-size:8px;letter-spacing:.15em;color:#552255;text-transform:uppercase;}
+.doc-wrap :not(.code-block)>code{
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  background:rgba(170,255,0,.05);color:var(--acid);
+  padding:.1rem .4rem;border:1px solid #1a001a;
+}
+
+/* ---- CALLOUTS ---- */
+.callout{border:1px solid var(--input-border);border-left:3px solid var(--amber);padding:1rem 1.2rem;margin:1.5rem 0;font-family:'Courier Prime',monospace;font-size:12.5px;color:#cc99cc;line-height:1.8;}
+.callout::before{display:block;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.25em;margin-bottom:.6rem;text-transform:uppercase;}
+.callout.info{border-left-color:var(--acid);}
+.callout.info::before{content:'INFO://';color:var(--acid);}
+.callout.warning{border-left-color:var(--amber);}
+.callout.warning::before{content:'WARNING://';color:var(--amber);}
+.callout.danger{border-left-color:var(--red);}
+.callout.danger::before{content:'CRITICAL://';color:var(--red);}
+.callout.corrupt{border-left-color:var(--corrupt);}
+.callout.corrupt::before{content:'EXCEPTION://';color:var(--corrupt);}
+
+/* ---- TABLES ---- */
+.table-wrap{overflow-x:auto;margin:1.5rem 0;}
+.doc-table{width:100%;border-collapse:collapse;font-size:11px;}
+.doc-table th{
+  text-align:left;font-size:8px;letter-spacing:.2em;color:var(--acid);
+  text-transform:uppercase;padding:.6rem .8rem;
+  border-bottom:2px solid var(--input-border);background:var(--surface);
+}
+.doc-table td{padding:.5rem .8rem;border-bottom:1px solid #1a001a;color:#c0a8c0;vertical-align:top;}
+.doc-table tr:hover td{background:rgba(170,255,0,.02);}
+.doc-table code{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);}
+.absent{color:var(--red)!important;font-size:10px;letter-spacing:.05em;}
+.present{color:var(--green-dim)!important;}
+.partial{color:var(--amber)!important;}
+.tag-absent{
+  display:inline-block;font-size:7px;letter-spacing:.15em;
+  border:1px solid var(--red);color:var(--red);padding:.05rem .3rem;
+  text-transform:uppercase;vertical-align:middle;margin-left:.3rem;
+}
+.tag-400{
+  display:inline-block;font-size:7px;letter-spacing:.15em;
+  border:1px solid var(--amber);color:var(--amber);padding:.05rem .3rem;
+  text-transform:uppercase;vertical-align:middle;
+}
+.num-big{font-family:'VT323',monospace;font-size:2.2rem;color:var(--acid);display:block;line-height:1;}
+.num-label{font-size:9px;letter-spacing:.2em;color:#662266;text-transform:uppercase;}
+
+/* ---- STAT GRID ---- */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin:1.5rem 0;}
+.stat-box{border:1px solid var(--input-border);border-left:3px solid var(--corrupt);padding:1rem;background:var(--surface);}
+.stat-box.green{border-left-color:var(--green-dim);}
+.stat-box.amber{border-left-color:var(--amber);}
+.stat-box.red{border-left-color:var(--red);}
+
+/* ---- VERDICT ---- */
+.verdict-block{
+  border:1px solid var(--red);padding:1.5rem;margin:1.5rem 0;
+  background:rgba(255,32,32,.03);position:relative;
+}
+.verdict-block::before{
+  content:'VEREDICTO';position:absolute;top:-.6rem;left:1rem;
+  font-size:8px;letter-spacing:.3em;color:var(--red);
+  background:var(--bg);padding:0 .5rem;
+}
+.verdict-text{
+  font-family:'VT323',monospace;font-size:clamp(1.5rem,4vw,2.2rem);
+  color:var(--red);line-height:1.1;margin-bottom:.8rem;
+}
+
+/* ---- QUOTE ---- */
+.doc-quote{
+  border-left:3px solid var(--corrupt);padding:.8rem 1.2rem;margin:1.5rem 0;
+  font-family:'Courier Prime',monospace;font-size:14px;color:var(--white);
+  font-style:italic;line-height:1.7;
+  background:rgba(255,0,255,.02);
+}
+.doc-quote::before{content:'" ';color:var(--corrupt);font-size:1.5rem;line-height:.5;vertical-align:-.3rem;}
+.doc-quote::after{content:' "';color:var(--corrupt);font-size:1.5rem;line-height:.5;vertical-align:-.3rem;}
+
+/* ---- DOUBLE TABLE ---- */
+.dual-table{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0;}
+@media(max-width:640px){.dual-table{grid-template-columns:1fr;}}
+.dual-table-label{
+  font-size:8px;letter-spacing:.25em;color:#aa44bb;text-transform:uppercase;
+  margin-bottom:.5rem;border-bottom:1px solid #1a001a;padding-bottom:.3rem;
+}
+
+/* ---- HTTP STATUS ---- */
+.http-ok{color:var(--green-dim);font-family:'Share Tech Mono',monospace;}
+.http-400{color:var(--amber);font-family:'Share Tech Mono',monospace;}
+.http-204{color:#664466;font-family:'Share Tech Mono',monospace;}
+
+/* ---- FOOTER ---- */
+.esquizo-footer{
+  border-top:1px solid #1a001a;padding:2rem 0;text-align:center;
+  font-size:10px;color:#552255;letter-spacing:.15em;margin-top:3rem;
+}
+.esquizo-footer .acid{color:var(--acid);}
+.esquizo-footer .dim{margin-top:.5rem;color:#442244;}
+.esquizo-footer .recon-sig{
+  margin-top:1rem;font-size:9px;color:#331133;letter-spacing:.1em;
+  font-family:'Courier Prime',monospace;
+}
+
+/* ---- ANIMATIONS ---- */
+@keyframes glitch-text{
+  0%,87%,100%{transform:none;text-shadow:none;}
+  88%{transform:translateX(3px);text-shadow:-3px 0 var(--red),3px 0 var(--corrupt);}
+  89%{transform:translateX(-3px);text-shadow:3px 0 var(--acid),-3px 0 var(--red);}
+  90%{transform:skewX(3deg);}
+  91%{transform:none;}
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.doc-wrap > *{animation:fadeIn .4s ease both;}
+::selection{background:var(--corrupt);color:var(--bg);}
+
+/* ---- MISC ---- */
+.sep{display:block;border:none;border-top:1px dashed #1a001a;margin:2rem 0;}
+ul.doc-list{list-style:none;padding:0;margin:.8rem 0 1rem;}
+ul.doc-list li{
+  font-family:'Courier Prime',monospace;font-size:12.5px;color:#c0a8c0;
+  padding:.2rem 0 .2rem 1.2rem;position:relative;line-height:1.7;
+}
+ul.doc-list li::before{content:'→ ';color:#552255;position:absolute;left:0;}
+ul.doc-list li strong{color:var(--white);}
+ul.doc-list li em{color:var(--corrupt);}
+</style>
+</head>
+<body>
+<div class="psycho-bg"></div>
+<div class="scan-overlay"></div>
+
+<div class="doc-wrap">
+
+  <!-- HEADER -->
+  <div class="doc-header">
+    <span class="doc-tag">ESQUIZOAI // RECONOCIMIENTO // AUDITORÍA ELECTORAL PERÚ 2026</span>
+    <h1>RECON-01 // CARTOGRAFÍA<br>DE LA API ONPE</h1>
+    <div class="doc-meta">
+      <span>2026-04-19</span>
+      <span>EL LOKO AKRATA</span>
+      <span>onpe_recon.py</span>
+      <div class="badge">ANÁLISIS COMPLETO</div>
+    </div>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">ÍNDICE DE CONTENIDOS</div>
+    <a href="#sec-hallazgo">00. Hallazgo principal — la API está abierta</a>
+    <a href="#sec-expone">01. Qué expone la API — 10 endpoints mapeados</a>
+    <a href="#sec-ausente">02. El endpoint ausente — /actas/listar</a>
+    <a href="#sec-veredicto">03. Veredicto técnico</a>
+    <a href="#sec-dato">04. El dato que nadie menciona</a>
+  </div>
+
+  <!-- ---------------------------------------------------------------- -->
+  <h2 id="sec-hallazgo">00. Hallazgo principal</h2>
+
+  <p>La API pública de resultados electorales de la ONPE es <strong>accesible sin autenticación, sin tokens, sin rate limiting</strong>. No por descuido técnico. Por diseño de presentación: el sistema fue construido para mostrar datos a un navegador, y cualquier script que imite ese comportamiento obtiene exactamente lo mismo.</p>
+
+  <div class="stat-grid">
+    <div class="stat-box green">
+      <span class="num-big">10</span>
+      <span class="num-label">endpoints mapeados</span>
+    </div>
+    <div class="stat-box amber">
+      <span class="num-big">0</span>
+      <span class="num-label">endpoints con auth</span>
+    </div>
+    <div class="stat-box red">
+      <span class="num-big">0</span>
+      <span class="num-label">rate limits detectados</span>
+    </div>
+  </div>
+
+  <h3>El mecanismo</h3>
+
+  <p>CloudFront (el CDN de Amazon que sirve el sitio) está configurado con <strong>comportamiento dual basado en el header <code>Sec-Fetch-Dest</code></strong>:</p>
+
+  <div class="code-block">
+    <span class="code-lang">http</span>
+    <code><span class="syn-cm"># Navegación directa (curl sin headers especiales, browser en barra de URL)</span>
+Sec-Fetch-Dest: <span class="syn-str">document</span>
+<span class="syn-op">→</span> CloudFront devuelve <span class="syn-str">index.html</span> (SPA Angular, 35KB)
+
+<span class="syn-cm"># Request XHR/fetch desde JavaScript (browser, o script que imita)</span>
+Sec-Fetch-Dest: <span class="syn-str">empty</span>
+Sec-Fetch-Mode: <span class="syn-str">cors</span>
+Sec-Fetch-Site: <span class="syn-str">same-origin</span>
+<span class="syn-op">→</span> CloudFront proxea al backend real <span class="syn-kw">→</span> JSON con datos electorales</code>
+  </div>
+
+  <p>El script <code>onpe_recon.py</code> reproduce exactamente estos headers. La API responde.</p>
+
+  <div class="callout info">
+    Base URL real del backend: <code>resultadoelectoral.onpe.gob.pe/presentacion-backend/</code><br><br>
+    Las URLs del estilo <code>/resumen-general/proceso-electoral-activo</code> que circulan en redes son <em>rutas del router Angular</em>, no endpoints de API. El SPA las intercepta. Por eso curl sin headers correctos devuelve HTML.
+  </div>
+
+  <!-- ---------------------------------------------------------------- -->
+  <h2 id="sec-expone">01. Qué expone la API</h2>
+
+  <p>Diez endpoints respondieron exitosamente. La tabla documenta qué campos retorna cada uno y —más importante— qué campos están <strong>estructuralmente ausentes</strong>.</p>
+
+  <div class="table-wrap">
+    <table class="doc-table">
+      <thead>
+        <tr>
+          <th>Endpoint</th>
+          <th>Status</th>
+          <th>Campos presentes</th>
+          <th>Ausencias críticas</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>/proceso/proceso-electoral-activo</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td><code>id</code>, <code>nombre</code>, <code>acronimo</code>, <code>fechaProceso</code> (Unix ms), <code>idEleccionPrincipal</code>, <code>tipoProcesoElectoral</code></td>
+          <td class="absent">Sin estado de escrutinio. <code>fechaProceso</code> es la fecha del proceso, no de procesamiento de actas.</td>
+        </tr>
+        <tr>
+          <td><code>/proceso/2/elecciones</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td>Menú de navegación del SPA: <code>id</code>, <code>nombre</code>, <code>url</code>, <code>idEleccion</code>, <code>orden</code></td>
+          <td class="absent">Solo metadatos de UI. No contiene datos electorales.</td>
+        </tr>
+        <tr>
+          <td><code>/distrito-electoral/distritos</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td><code>codigo</code>, <code>nombre</code> — 27 distritos electorales</td>
+          <td class="absent">Sin resultados. Solo catálogo de lookup para construir otras queries.</td>
+        </tr>
+        <tr>
+          <td><code>/resumen-general/totales?idEleccion=10</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td><code>actasContabilizadas</code>, <code>contabilizadas</code>, <code>totalActas</code>, <code>fechaActualizacion</code>, <code>totalVotosEmitidos</code>, <code>totalVotosValidos</code>, ubigeos</td>
+          <td class="absent">
+            <code>fechaActualizacion</code> = timestamp del snapshot, <em>no de cada acta</em>.<br>
+            Sin <code>id_mesa</code>. Sin secuencia de ingreso. Sin historial.<span class="tag-absent">sin serie temporal</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>/resumen-general/participantes?idEleccion=10</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td><code>nombreCandidato</code>, <code>dniCandidato</code>, <code>totalVotosValidos</code>, <code>porcentajeVotosValidos</code>, <code>nombreAgrupacionPolitica</code></td>
+          <td class="absent">
+            Sin timestamps. Sin <code>id_mesa</code>. Sin ubigeo por candidato.<br>
+            Sin actas individuales. Solo totales agregados nacionales.<span class="tag-absent">sin granularidad</span>
+          </td>
+        </tr>
+        <tr>
+          <td><code>/resumen-general/totales?idEleccion=14</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td>Misma estructura que <code>idEleccion=10</code>. Congreso de la República.</td>
+          <td class="absent">83.84% actas contabilizadas al momento de captura. Sin progresión temporal.</td>
+        </tr>
+        <tr>
+          <td><code>/resumen-general/totales?idEleccion=15</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td>Senado — Distrito Electoral Único. Misma estructura.</td>
+          <td class="absent">79.35% actas. La menor cobertura de los tres cuerpos legislativos capturados.</td>
+        </tr>
+        <tr>
+          <td><code>/resumen-general/totales?idEleccion=14&amp;tipoFiltro=distrito_electoral&amp;idDistritoElectoral=15</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td>Totales de Lima Metropolitana para el Congreso. 88.66% actas. 5.5M votos emitidos.</td>
+          <td class="absent">Desagregación por distrito electoral disponible, pero sin timestamps y sin nivel de mesa.</td>
+        </tr>
+        <tr>
+          <td><code>/resumen-general/participantes?idEleccion=14&amp;...&amp;idDistritoElectoral=15</code></td>
+          <td><span class="http-ok">200</span></td>
+          <td>Votos por partido en Lima Metropolitana. Sin nombre de candidato (solo partido).</td>
+          <td class="absent">Sin candidatos individuales en nivel distrito. Sin timestamps. Sin mesas.</td>
+        </tr>
+        <tr>
+          <td><code>/actas/listar</code></td>
+          <td><span class="http-400">400</span></td>
+          <td><em>El endpoint existe.</em> Responde con error estructurado JSON.</td>
+          <td class="partial">Parámetros requeridos: desconocidos. Respuesta: <code>"Los parámetros enviados son incorrectos o están incompletos."</code> <span class="tag-400">requiere params</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Lo que la API nunca expone</h3>
+
+  <ul class="doc-list">
+    <li><strong>Timestamp de ingreso de cada acta</strong> al sistema central — imposible reconstruir el orden de procesamiento</li>
+    <li><strong>ID único de mesa de votación</strong> — sin este campo, los votos son totales sin ubicación granular</li>
+    <li><strong>Secuencia de procesamiento de actas</strong> — no hay rastro de qué actas llegaron primero, cuáles después</li>
+    <li><strong>Metadatos de transmisión</strong> — sin dispositivo emisor, sin operador, sin hora de envío por acta</li>
+    <li><strong>Snapshots históricos del conteo parcial</strong> — la API solo devuelve estado actual; no existe endpoint de historial</li>
+    <li><strong>Distribución de votos nulos/blancos por mesa</strong> — solo agregados nacionales o por distrito</li>
+    <li><strong>Actas por candidato en orden cronológico</strong> — la curva de escrutinio <em>no existe como dato público</em></li>
+  </ul>
+
+  <!-- ---------------------------------------------------------------- -->
+  <h2 id="sec-ausente">02. El endpoint ausente</h2>
+
+  <p>El único endpoint con potencial de auditoría real es <code>/actas/listar</code>. Existe en el backend. Responde. Y rechaza toda consulta sin los parámetros correctos.</p>
+
+  <div class="code-block">
+    <span class="code-lang">http</span>
+    <code><span class="syn-kw">GET</span> /presentacion-backend/actas/listar
+Accept: application/json
+Sec-Fetch-Dest: empty
+
+<span class="syn-cm">← HTTP 400</span>
+{
+  <span class="syn-str">"error"</span>: <span class="syn-str">"Solicitud inválida"</span>,
+  <span class="syn-str">"message"</span>: <span class="syn-str">"Los parámetros enviados son incorrectos o están incompletos."</span>,
+  <span class="syn-str">"status"</span>: <span class="syn-num">400</span>
+}</code>
+  </div>
+
+  <p>Se probaron combinaciones sistemáticas: <code>idEleccion=10</code>, <code>idMesa</code>, <code>proceso</code>, <code>page</code>, <code>size</code>, <code>idDistritoElectoral</code>, <code>idProceso</code>. Todas devuelven 400. Los parámetros correctos no están documentados públicamente.</p>
+
+  <div class="callout corrupt">
+    Si <code>/actas/listar</code> expusiera datos completos, permitiría construir:<br><br>
+    — La curva de escrutinio: <code>votos(candidato, t)</code> para cada acta ingresada<br>
+    — Detección de late-count bias estadístico<br>
+    — Trazabilidad de qué mesas llegaron tarde y cómo se distribuyeron sus votos<br><br>
+    Ese endpoint existe. No es público. No está documentado. Es el único que haría transparente lo que este sistema dice ser.
+  </div>
+
+  <h3>Estrategia alternativa con datos públicos</h3>
+
+  <p>Sin <code>/actas/listar</code>, la única forma de construir una serie temporal es <strong>polling agresivo</strong>: llamar <code>/totales</code> y <code>/participantes</code> cada N minutos y guardar cada snapshot. El reporte base del script <code>onpe_recon.py</code> es la infraestructura para ese approach.</p>
+
+  <div class="code-block">
+    <span class="code-lang">bash</span>
+    <code><span class="syn-cm"># Polling cada 5 minutos durante el escrutinio activo</span>
+<span class="syn-kw">while</span> <span class="syn-fn">true</span>; <span class="syn-kw">do</span>
+  python onpe_recon.py
+  <span class="syn-fn">sleep</span> <span class="syn-num">300</span>
+<span class="syn-kw">done</span>
+
+<span class="syn-cm"># Resultado: serie temporal artificial de ~288 snapshots por día</span>
+<span class="syn-cm"># Permite detectar: saltos anómalos, cambios de tendencia, inconsistencias</span>
+<span class="syn-cm"># Limitación: granularidad de 5min, no de acta individual</span></code>
+  </div>
+
+  <!-- ---------------------------------------------------------------- -->
+  <h2 id="sec-veredicto">03. Veredicto técnico</h2>
+
+  <div class="verdict-block">
+    <div class="verdict-text">¿Es posible detectar beneficio<br>sistemático con estos datos?</div>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--red);letter-spacing:.1em;">NO — con los datos públicamente disponibles en la API de la ONPE.</p>
+  </div>
+
+  <p>Para detectar <em>late-count bias</em> o manipulación escalonada se requiere, como mínimo:</p>
+
+  <div class="table-wrap">
+    <table class="doc-table">
+      <thead>
+        <tr><th>Requisito</th><th>¿Disponible?</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Timestamps de ingreso de cada acta</td><td class="absent">❌ No expuesto</td></tr>
+        <tr><td>ID único por mesa de votación</td><td class="absent">❌ No expuesto</td></tr>
+        <tr><td>Snapshots temporales del conteo parcial</td><td class="absent">❌ No expuesto</td></tr>
+        <tr><td>Datos georreferenciados por mesa</td><td class="absent">❌ No expuesto</td></tr>
+        <tr><td>Actas individuales con candidato + hora + mesa</td><td class="absent">❌ No expuesto</td></tr>
+        <tr><td>Totales desagregados por candidato en tiempo real</td><td class="partial">⚠️ Solo agregados finales sin historial</td></tr>
+        <tr><td>Progresión del conteo por distrito en el tiempo</td><td class="absent">❌ No expuesto</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="doc-quote">
+    La arquitectura está diseñada para presentar resultados, no para auditarlos.
+  </div>
+
+  <p>Esto no es acusación. Es descripción técnica. La <strong>ausencia de trazabilidad no implica fraude</strong>. Implica que si el fraude existiera, no podría ser detectado con las herramientas públicas disponibles. Son cosas distintas que se confunden consistentemente en el debate público.</p>
+
+  <div class="callout warning">
+    Lo que SÍ permite esta API:<br><br>
+    — Verificar totales finales por candidato (snapshot actual)<br>
+    — Observar % de actas contabilizadas y pendientes de envío al JEE<br>
+    — Comparar cifras con actas físicas disponibles en portales oficiales<br>
+    — Desagregar resultados por distrito electoral (sin timestamps)<br>
+    — Construir un monitor de avance de escrutinio si se hace polling
+  </div>
+
+  <!-- ---------------------------------------------------------------- -->
+  <h2 id="sec-dato">04. El dato que nadie menciona</h2>
+
+  <p>Los resultados capturados el 2026-04-19 mediante <code>onpe_recon.py</code> — el mismo sistema, el mismo día, la misma API — muestran el siguiente estado:</p>
+
+  <div class="dual-table">
+    <div>
+      <div class="dual-table-label">Presidencial — 93.48% actas contabilizadas</div>
+      <div class="table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr><th>Candidato</th><th>Partido</th><th>%</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Keiko Fujimori</td>
+              <td>Fuerza Popular</td>
+              <td><strong>17.056%</strong></td>
+            </tr>
+            <tr>
+              <td>Roberto Sánchez</td>
+              <td>Juntos por el Perú</td>
+              <td>12.006%</td>
+            </tr>
+            <tr>
+              <td>Rafael López Aliaga</td>
+              <td>Renovación Popular</td>
+              <td>11.921%</td>
+            </tr>
+            <tr>
+              <td>Jorge Nieto</td>
+              <td>Partido del Buen Gobierno</td>
+              <td>11.063%</td>
+            </tr>
+            <tr>
+              <td>Ricardo Belmont</td>
+              <td>Partido Cívico Obras</td>
+              <td>10.167%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <div class="dual-table-label">Congreso Lima Metropolitana — 88.66% actas</div>
+      <div class="table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr><th>Partido</th><th>%</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Renovación Popular</strong></td>
+              <td style="color:var(--acid);font-weight:700;">19.992%</td>
+            </tr>
+            <tr>
+              <td>Partido del Buen Gobierno</td>
+              <td>16.484%</td>
+            </tr>
+            <tr>
+              <td>Fuerza Popular</td>
+              <td>15.717%</td>
+            </tr>
+            <tr>
+              <td>Ahora Nación</td>
+              <td>8.664%</td>
+            </tr>
+            <tr>
+              <td>Partido Cívico Obras</td>
+              <td>8.481%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout danger">
+    <strong>Dato factual, sin interpretación:</strong><br><br>
+    Renovación Popular — el partido de Rafael López Aliaga, tercer lugar en la presidencial — <strong>lidera el Congreso en Lima Metropolitana con 19.99%</strong>, usando el mismo sistema de escrutinio, procesado el mismo día, transmitido por la misma infraestructura técnica.<br><br>
+    El candidato que denuncia irregularidades en la elección presidencial obtiene su mejor resultado en la elección legislativa limeña a través de ese mismo sistema.<br><br>
+    Esto no prueba ni refuta nada sobre el escrutinio presidencial. Es un dato que raramente aparece en el debate sobre la integridad de esta elección.
+  </div>
+
+  <p>La consistencia técnica entre ambas elecciones — mismo sistema, mismo día, misma API — no valida ni invalida ninguna denuncia específica. Lo que sí hace es complicar la narrativa de un sistema selectivamente corrupto. Si el mecanismo beneficia a alguien en presidencial, opera el mismo día para perjudicarlo en legislativo limeño, y viceversa.</p>
+
+  <p>Los datos están en este directorio. El resto es tu problema.</p>
+
+  <hr class="sep">
+
+  <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#552255;letter-spacing:.08em;">
+    METODOLOGÍA: Los datos fueron capturados vía fetch() desde el dominio <code>resultadoelectoral.onpe.gob.pe</code> con headers <code>Sec-Fetch-Dest: empty</code>. Sin modificación. Sin interpolación. Sin inferencia. Los JSON crudos están en este mismo directorio, con timestamp en el nombre.
+  </p>
+
+  <!-- FOOTER -->
+  <footer class="esquizo-footer">
+    <p>ESQUIZOAI &nbsp;///&nbsp; <span class="acid">EL LOKO AKRATA</span> &nbsp;///&nbsp; GPL v3</p>
+    <p class="dim">damage_definition.json: FILE NOT FOUND</p>
+    <p class="recon-sig">RECON-01 // EsquizoAI 2026 // datos primarios: onpe_recon.py // fuente: resultadoelectoral.onpe.gob.pe</p>
+  </footer>
+
+</div>
+</body>
+</html>

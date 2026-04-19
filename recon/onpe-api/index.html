@@ -293,7 +293,7 @@ ul.doc-list li em{color:var(--corrupt);}
     <a href="#sec-veredicto">03. Veredicto técnico (corregido)</a>
     <a href="#sec-dato">04. El dato que nadie menciona — tablas completas</a>
     <a href="#sec-datos">05. Datos crudos — JSONs disponibles</a>
-    <a href="#sec-muestreo">06. Muestreo estadístico — presidencial vs Senado DEU</a>
+    <a href="#sec-muestreo">06. Muestreo estadístico — presidencial vs Senado DEU + cruce redigitadas</a>
   </div>
 
   <!-- ---------------------------------------------------------------- -->
@@ -767,11 +767,45 @@ Sec-Fetch-Dest: empty
 
   <p>Los CSV y JSON completos del muestreo están en el directorio <code>recon/onpe-api/</code>. Columnas: <code>codigo_mesa, idEleccion, ubigeo, local, estado_acta, electores, emitidos, validos, pipeline_s, n_digitaciones, redigitada, ts_contabilizada</code>.</p>
 
+  <h3>06-B. Cruce: redigitadas del Senado vs resultados presidenciales</h3>
+
+  <p>Las 19 mesas redigitadas del Senado mostraban un patrón aparente: Juntos por el Perú ganaba en el 42.1% de ellas vs 6.7% en mesas normales (+35.4pp). Se verificó si ese patrón se sostenía cruzando con la elección presidencial de esas mismas mesas.</p>
+
+  <div class="table-wrap">
+    <table class="doc-table">
+      <thead><tr><th>Mesa</th><th>Ubigeo / Zona</th><th>Senado (redigitada)</th><th>Presidencial</th><th>Consistencia</th></tr></thead>
+      <tbody>
+        <tr><td>017741</td><td>070917 — Cusco</td><td>Juntos 29.3%</td><td>Juntos 29.8%</td><td class="present">MISMO</td></tr>
+        <tr><td>011067</td><td>051004 — Ayacucho</td><td>Juntos 35.8%</td><td>Juntos 40.4%</td><td class="present">MISMO</td></tr>
+        <tr><td>004407</td><td>030203 — Apurímac</td><td>Juntos 22.3%</td><td>Juntos 25.6%</td><td class="present">MISMO</td></tr>
+        <tr><td>010581</td><td>050406 — Ayacucho</td><td>Juntos 37.7%</td><td>Juntos 44.4%</td><td class="present">MISMO</td></tr>
+        <tr><td>013445</td><td>060703 — Cajamarca</td><td>Juntos 50.6%</td><td>Juntos 46.8%</td><td class="present">MISMO</td></tr>
+        <tr><td>068580</td><td>180108 — Puno</td><td>Juntos 33.1%</td><td>Juntos 37.2%</td><td class="present">MISMO</td></tr>
+        <tr><td>006408</td><td>040106 — Arequipa</td><td>Juntos 29.1%</td><td>Cívico Obras 26.5%</td><td class="partial">DISTINTO</td></tr>
+        <tr><td>025505</td><td>110134 — Ica</td><td>Juntos 17.0%</td><td>Fuerza Popular 20.1%</td><td class="partial">DISTINTO</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Resultado: 6 de 8 mesas donde Juntos gana el Senado redigitado, también gana la presidencial.</strong> Los ubigeos son Cusco, Ayacucho (×2), Apurímac, Cajamarca, Puno — el heartland histórico de la izquierda peruana.</p>
+
+  <div class="doc-quote">
+    La variable de confusión es la geografía. Zona rural/sierra → operadores menos experimentados → más redigitaciones. Zona rural/sierra → base electoral de Juntos. No hay causalidad entre redigitación y resultado.
+  </div>
+
+  <div class="callout warning">
+    Conclusión del análisis de redigitadas:<br><br>
+    — El 10.6% de redigitaciones del Senado DEU es ruido operacional esperado en una elección nueva<br>
+    — La sobre-representación de Juntos en mesas redigitadas es correlación geográfica, no manipulación<br>
+    — Fuerza Popular mantiene exactamente el mismo % en mesas redigitadas y normales (36.8% vs 36.7%)<br>
+    — No hay partido sobre-representado en mesas redigitadas que no tenga base electoral preexistente en esa zona
+  </div>
+
   <!-- FOOTER -->
   <footer class="esquizo-footer">
     <p>ESQUIZOAI &nbsp;///&nbsp; <span class="acid">EL LOKO AKRATA</span> &nbsp;///&nbsp; GPL v3</p>
     <p class="dim">damage_definition.json: FILE NOT FOUND</p>
-    <p class="recon-sig">RECON-01 v2 // EsquizoAI 2026 // scripts: onpe_recon.py · poll.py · mesa_sampler.py // fuente: resultadoelectoral.onpe.gob.pe</p>
+    <p class="recon-sig">RECON-01 v2 // EsquizoAI 2026 // scripts: onpe_recon.py · poll.py · mesa_sampler.py · cruce_redigitadas.py // fuente: resultadoelectoral.onpe.gob.pe</p>
   </footer>
 
 </div>

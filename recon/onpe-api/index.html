@@ -340,6 +340,30 @@ Sec-Fetch-Site: <span class="syn-str">same-origin</span>
     Las URLs del estilo <code>/resumen-general/proceso-electoral-activo</code> que circulan en redes son <em>rutas del router Angular</em>, no endpoints de API. El SPA las intercepta. Por eso curl sin headers correctos devuelve HTML.
   </div>
 
+  <h3>Evidencia empírica del congelado presidencial</h3>
+
+  <p>El script <code>poll.py</code> monitoreó el escrutinio el 2026-04-19 en intervalos de 30 minutos. Los datos muestran el patrón con precisión:</p>
+
+  <div class="code-block">
+    <span class="code-lang">poll.py output — 2026-04-19 UTC</span>
+    <code>[RUN #1] 15:35 UTC
+  PRESIDENCIAL   <span class="syn-num">93.484%</span> → <span class="syn-num">93.484%</span>  [CONGELADO]
+  CONGRESO       <span class="syn-num">83.948%</span> → <span class="syn-num">83.948%</span>  [CONGELADO]
+  SENADO         <span class="syn-num">79.386%</span> → <span class="syn-num">79.386%</span>  [CONGELADO]
+
+[RUN #2] 16:05 UTC
+  PRESIDENCIAL   <span class="syn-num">93.484%</span> → <span class="syn-num">93.485%</span>  [<span class="syn-fn">+1</span> MOVIENDO]
+  CONGRESO       <span class="syn-num">83.948%</span> → <span class="syn-num">83.959%</span>  [<span class="syn-fn">+10</span> MOVIENDO]
+  SENADO         <span class="syn-num">79.386%</span> → <span class="syn-num">79.399%</span>  [<span class="syn-fn">+12</span> MOVIENDO]
+
+[RUN #3] 16:35 UTC
+  PRESIDENCIAL   <span class="syn-num">93.485%</span> → <span class="syn-num">93.485%</span>  [CONGELADO]
+  CONGRESO       <span class="syn-num">83.959%</span> → <span class="syn-num">83.962%</span>  [<span class="syn-fn">+3</span> MOVIENDO]
+  SENADO         <span class="syn-num">79.399%</span> → <span class="syn-num">79.400%</span>  [<span class="syn-fn">+1</span> MOVIENDO]</code>
+  </div>
+
+  <p>En una hora de escrutinio activo: el Congreso sumó <strong>+13 actas</strong>, el Senado <strong>+13 actas</strong>, el presidencial <strong>+1 acta</strong>. Las actas físicas son las mismas — el cuello de botella no es logístico. Es jurídico. Las actas presidenciales impugnadas están en proceso JEE; las legislativas de esas mismas mesas avanzan con normalidad.</p>
+
   <!-- ---------------------------------------------------------------- -->
   <h2 id="sec-expone">01. Qué expone la API</h2>
 

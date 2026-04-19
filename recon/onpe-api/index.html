@@ -193,13 +193,34 @@ body::before{
 .doc-quote::before{content:'" ';color:var(--corrupt);font-size:1.5rem;line-height:.5;vertical-align:-.3rem;}
 .doc-quote::after{content:' "';color:var(--corrupt);font-size:1.5rem;line-height:.5;vertical-align:-.3rem;}
 
-/* ---- DOUBLE TABLE ---- */
-.dual-table{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0;}
-@media(max-width:640px){.dual-table{grid-template-columns:1fr;}}
-.dual-table-label{
-  font-size:8px;letter-spacing:.25em;color:#aa44bb;text-transform:uppercase;
-  margin-bottom:.5rem;border-bottom:1px solid #1a001a;padding-bottom:.3rem;
+/* ---- FULL DATA TABLES ---- */
+.data-section-label{
+  font-size:8px;letter-spacing:.3em;color:#aa44bb;text-transform:uppercase;
+  margin:1.8rem 0 .5rem;border-bottom:1px solid #1a001a;padding-bottom:.3rem;
+  font-family:'Share Tech Mono',monospace;
 }
+.scroll-table-wrap{max-height:420px;overflow-y:auto;margin:0 0 1.5rem;}
+.scroll-table-wrap::-webkit-scrollbar{width:4px;}
+.scroll-table-wrap::-webkit-scrollbar-track{background:#0a000f;}
+.scroll-table-wrap::-webkit-scrollbar-thumb{background:#442244;}
+.bar-cell{position:relative;padding-right:0!important;}
+.bar{display:block;height:2px;background:var(--green-dim);margin-top:3px;transition:width .3s;}
+.bar.red-bar{background:var(--red);}
+.bar.amber-bar{background:var(--amber);}
+.rank-num{color:#442244;font-size:9px;min-width:18px;display:inline-block;}
+
+/* ---- DOWNLOAD GRID ---- */
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:.6rem;margin:1.2rem 0;}
+.dl-card{
+  border:1px solid var(--input-border);border-left:3px solid var(--green-dim);
+  padding:.8rem 1rem;background:var(--surface);
+  display:flex;flex-direction:column;gap:.2rem;
+  text-decoration:none;transition:all .2s;
+}
+.dl-card:hover{border-color:var(--acid);border-bottom:1px solid var(--acid);background:rgba(170,255,0,.03);}
+.dl-name{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--acid);letter-spacing:.06em;}
+.dl-meta{font-size:8px;color:#552255;letter-spacing:.12em;font-family:'Share Tech Mono',monospace;}
+.dl-desc{font-size:11px;color:#aa88aa;line-height:1.5;margin-top:.2rem;font-family:'Courier Prime',monospace;}
 
 /* ---- HTTP STATUS ---- */
 .http-ok{color:var(--green-dim);font-family:'Share Tech Mono',monospace;}
@@ -269,7 +290,8 @@ ul.doc-list li em{color:var(--corrupt);}
     <a href="#sec-expone">01. Qué expone la API — 10 endpoints mapeados</a>
     <a href="#sec-ausente">02. El endpoint ausente — /actas/listar</a>
     <a href="#sec-veredicto">03. Veredicto técnico</a>
-    <a href="#sec-dato">04. El dato que nadie menciona</a>
+    <a href="#sec-dato">04. El dato que nadie menciona — tablas completas</a>
+    <a href="#sec-datos">05. Datos crudos — JSONs disponibles</a>
   </div>
 
   <!-- ---------------------------------------------------------------- -->
@@ -505,78 +527,100 @@ Sec-Fetch-Dest: empty
   <!-- ---------------------------------------------------------------- -->
   <h2 id="sec-dato">04. El dato que nadie menciona</h2>
 
-  <p>Los resultados capturados el 2026-04-19 mediante <code>onpe_recon.py</code> — el mismo sistema, el mismo día, la misma API — muestran el siguiente estado:</p>
+  <p>Los resultados capturados el 2026-04-19 mediante <code>onpe_recon.py</code> — el mismo sistema, el mismo día, la misma API — muestran el siguiente estado. Tablas completas, los 36 candidatos y los 36 partidos.</p>
 
-  <div class="dual-table">
-    <div>
-      <div class="dual-table-label">Presidencial — 93.48% actas contabilizadas</div>
-      <div class="table-wrap">
-        <table class="doc-table">
-          <thead>
-            <tr><th>Candidato</th><th>Partido</th><th>%</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Keiko Fujimori</td>
-              <td>Fuerza Popular</td>
-              <td><strong>17.056%</strong></td>
-            </tr>
-            <tr>
-              <td>Roberto Sánchez</td>
-              <td>Juntos por el Perú</td>
-              <td>12.006%</td>
-            </tr>
-            <tr>
-              <td>Rafael López Aliaga</td>
-              <td>Renovación Popular</td>
-              <td>11.921%</td>
-            </tr>
-            <tr>
-              <td>Jorge Nieto</td>
-              <td>Partido del Buen Gobierno</td>
-              <td>11.063%</td>
-            </tr>
-            <tr>
-              <td>Ricardo Belmont</td>
-              <td>Partido Cívico Obras</td>
-              <td>10.167%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div>
-      <div class="dual-table-label">Congreso Lima Metropolitana — 88.66% actas</div>
-      <div class="table-wrap">
-        <table class="doc-table">
-          <thead>
-            <tr><th>Partido</th><th>%</th></tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Renovación Popular</strong></td>
-              <td style="color:var(--acid);font-weight:700;">19.992%</td>
-            </tr>
-            <tr>
-              <td>Partido del Buen Gobierno</td>
-              <td>16.484%</td>
-            </tr>
-            <tr>
-              <td>Fuerza Popular</td>
-              <td>15.717%</td>
-            </tr>
-            <tr>
-              <td>Ahora Nación</td>
-              <td>8.664%</td>
-            </tr>
-            <tr>
-              <td>Partido Cívico Obras</td>
-              <td>8.481%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+  <div class="data-section-label">PRESIDENCIAL — 93.484% actas contabilizadas — 86,721 / 92,766 actas — 15,757,829 votos válidos</div>
+  <div class="scroll-table-wrap">
+    <table class="doc-table">
+      <thead>
+        <tr><th>#</th><th>Candidato</th><th>Partido</th><th>Votos válidos</th><th>% válidos</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="rank-num">1</span></td><td><strong>Keiko Sofía Fujimori Higuchi</strong></td><td>Fuerza Popular</td><td>2,687,661</td><td><span class="present">17.056%</span><span class="bar" style="width:100%"></span></td></tr>
+        <tr><td><span class="rank-num">2</span></td><td>Roberto Helbert Sánchez Palomino</td><td>Juntos por el Perú</td><td>1,891,908</td><td>12.006%<span class="bar" style="width:70%"></span></td></tr>
+        <tr><td><span class="rank-num">3</span></td><td>Rafael Bernardo López Aliaga Cazorla</td><td>Renovación Popular</td><td>1,878,522</td><td>11.921%<span class="bar" style="width:70%"></span></td></tr>
+        <tr><td><span class="rank-num">4</span></td><td>Jorge Nieto Montesinos</td><td>Partido del Buen Gobierno</td><td>1,743,360</td><td>11.063%<span class="bar" style="width:65%"></span></td></tr>
+        <tr><td><span class="rank-num">5</span></td><td>Ricardo Pablo Belmont Cassinelli</td><td>Partido Cívico Obras</td><td>1,602,051</td><td>10.167%<span class="bar" style="width:60%"></span></td></tr>
+        <tr><td><span class="rank-num">6</span></td><td>Carlos Gonsalo Alvarez Loayza</td><td>Partido País para Todos</td><td>1,242,464</td><td>7.885%<span class="bar" style="width:46%"></span></td></tr>
+        <tr><td><span class="rank-num">7</span></td><td>Pablo Alfonso Lopez Chau Nava</td><td>Ahora Nación - AN</td><td>1,157,955</td><td>7.348%<span class="bar" style="width:43%"></span></td></tr>
+        <tr><td><span class="rank-num">8</span></td><td>Maria Soledad Perez Tello</td><td>Primero la Gente</td><td>540,582</td><td>3.431%<span class="bar" style="width:20%"></span></td></tr>
+        <tr><td><span class="rank-num">9</span></td><td>Alfonso Carlos Espa y Garces-Alvear</td><td>Partido Sicreo</td><td>531,893</td><td>3.375%<span class="bar" style="width:20%"></span></td></tr>
+        <tr><td><span class="rank-num">10</span></td><td>Luis Fernando Olivera Vega</td><td>Frente de la Esperanza 2021</td><td>291,399</td><td>1.849%<span class="bar" style="width:11%"></span></td></tr>
+        <tr><td><span class="rank-num">11</span></td><td>Jose Leon Luna Galvez</td><td>Podemos Perú</td><td>249,197</td><td>1.581%<span class="bar" style="width:9%"></span></td></tr>
+        <tr><td><span class="rank-num">12</span></td><td>Yonhy Lescano Ancieta</td><td>Cooperación Popular</td><td>204,790</td><td>1.300%<span class="bar" style="width:8%"></span></td></tr>
+        <tr><td><span class="rank-num">13</span></td><td>Cesar Acuña Peralta</td><td>Alianza para el Progreso</td><td>178,053</td><td>1.130%<span class="bar" style="width:7%"></span></td></tr>
+        <tr><td><span class="rank-num">14</span></td><td>Pitter Enrique Valderrama Peña</td><td>Partido Aprista Peruano</td><td>150,930</td><td>0.958%<span class="bar" style="width:6%"></span></td></tr>
+        <tr><td><span class="rank-num">15</span></td><td>George Patrick Forsyth Sommer</td><td>Somos Perú</td><td>141,334</td><td>0.897%<span class="bar" style="width:5%"></span></td></tr>
+        <tr><td><span class="rank-num">16</span></td><td>Herbert Caller Gutierrez</td><td>Partido Patriótico del Perú</td><td>135,569</td><td>0.860%<span class="bar" style="width:5%"></span></td></tr>
+        <tr><td><span class="rank-num">17</span></td><td>Mario Enrique Vizcarra Cornejo</td><td>Perú Primero</td><td>134,864</td><td>0.856%<span class="bar" style="width:5%"></span></td></tr>
+        <tr><td><span class="rank-num">18</span></td><td>Ronald Darwin Atencio Sotomayor</td><td>Alianza Electoral Venceremos</td><td>132,518</td><td>0.841%<span class="bar" style="width:5%"></span></td></tr>
+        <tr><td><span class="rank-num">19</span></td><td>Rosario del Pilar Fernandez Bazan</td><td>Un Camino Diferente</td><td>118,110</td><td>0.750%<span class="bar" style="width:4%"></span></td></tr>
+        <tr><td><span class="rank-num">20</span></td><td>Charlie Carrasco Salazar</td><td>Partido Demócrata Unido Perú</td><td>111,953</td><td>0.710%<span class="bar" style="width:4%"></span></td></tr>
+        <tr><td><span class="rank-num">21</span></td><td>Vladimir Roy Cerron Rojas</td><td>Perú Libre</td><td>93,902</td><td>0.596%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">22</span></td><td>Mesias Antonio Guevara Amasifuen</td><td>Partido Morado</td><td>77,228</td><td>0.490%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">23</span></td><td>Roberto Enrique Chiabra Leon</td><td>Unidad Nacional</td><td>63,778</td><td>0.405%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">24</span></td><td>Paul Davis Jaimes Blanco</td><td>Progresemos</td><td>62,094</td><td>0.394%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">25</span></td><td>Wolfgang Mario Grozo Costa</td><td>Integridad Democrática</td><td>59,950</td><td>0.380%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">26</span></td><td>Alex Gonzales Castillo</td><td>Partido Demócrata Verde</td><td>59,709</td><td>0.379%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">27</span></td><td>Rafael Jorge Belaunde Llosa</td><td>Libertad Popular</td><td>38,350</td><td>0.243%<span class="bar" style="width:1%"></span></td></tr>
+        <tr><td><span class="rank-num">28</span></td><td>Jose Daniel Williams Zapata</td><td>Avanza País</td><td>30,680</td><td>0.195%<span class="bar" style="width:1%"></span></td></tr>
+        <tr><td><span class="rank-num">29</span></td><td>Francisco Ernesto Diez-Canseco Távara</td><td>Perú Acción</td><td>29,471</td><td>0.187%<span class="bar" style="width:1%"></span></td></tr>
+        <tr><td><span class="rank-num">30</span></td><td>Fiorella Giannina Molinelli Aristondo</td><td>Fuerza y Libertad</td><td>25,502</td><td>0.162%<span class="bar" style="width:1%"></span></td></tr>
+        <tr><td><span class="rank-num">31</span></td><td>Alvaro Gonzalo Paz de la Barra Freigeiro</td><td>Fe en el Perú</td><td>21,824</td><td>0.138%<span class="bar" style="width:1%"></span></td></tr>
+        <tr><td><span class="rank-num">32</span></td><td>Armando Joaquin Masse Fernandez</td><td>Partido Democrático Federal</td><td>20,360</td><td>0.129%<span class="bar" style="width:1%"></span></td></tr>
+        <tr><td><span class="rank-num">33</span></td><td>Antonio Ortiz Villano</td><td>Salvemos al Perú</td><td>16,393</td><td>0.104%</td></tr>
+        <tr><td><span class="rank-num">34</span></td><td>Walter Gilmer Chirinos Purizaga</td><td>Partido Político PRIN</td><td>13,619</td><td>0.086%</td></tr>
+        <tr><td><span class="rank-num">35</span></td><td>Napoleon Becerra Garcia</td><td>PTE - Perú</td><td>10,727</td><td>0.068%</td></tr>
+        <tr><td><span class="rank-num">36</span></td><td>Carlos Ernesto Jaico Carranza</td><td>Perú Moderno</td><td>9,129</td><td>0.058%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="data-section-label">CONGRESO — LIMA METROPOLITANA — 88.657% actas — 23,377 / 26,368 — 4,202,875 votos válidos</div>
+  <div class="scroll-table-wrap">
+    <table class="doc-table">
+      <thead>
+        <tr><th>#</th><th>Partido</th><th>Votos válidos</th><th>% válidos</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="rank-num">1</span></td><td><strong style="color:var(--acid)">Renovación Popular</strong></td><td>840,224</td><td><span style="color:var(--acid);font-weight:700">19.992%</span><span class="bar" style="width:100%"></span></td></tr>
+        <tr><td><span class="rank-num">2</span></td><td>Partido del Buen Gobierno</td><td>692,789</td><td>16.484%<span class="bar" style="width:82%"></span></td></tr>
+        <tr><td><span class="rank-num">3</span></td><td>Fuerza Popular</td><td>660,575</td><td>15.717%<span class="bar" style="width:79%"></span></td></tr>
+        <tr><td><span class="rank-num">4</span></td><td>Ahora Nación - AN</td><td>364,128</td><td>8.664%<span class="bar" style="width:43%"></span></td></tr>
+        <tr><td><span class="rank-num">5</span></td><td>Partido Cívico Obras</td><td>356,431</td><td>8.481%<span class="bar" style="width:42%"></span></td></tr>
+        <tr><td><span class="rank-num">6</span></td><td>Partido País para Todos</td><td>287,177</td><td>6.833%<span class="bar" style="width:34%"></span></td></tr>
+        <tr><td><span class="rank-num">7</span></td><td>Primero la Gente</td><td>194,907</td><td>4.637%<span class="bar" style="width:23%"></span></td></tr>
+        <tr><td><span class="rank-num">8</span></td><td>Juntos por el Perú</td><td>125,147</td><td>2.978%<span class="bar" style="width:15%"></span></td></tr>
+        <tr><td><span class="rank-num">9</span></td><td>Partido Aprista Peruano</td><td>78,060</td><td>1.857%<span class="bar" style="width:9%"></span></td></tr>
+        <tr><td><span class="rank-num">10</span></td><td>Frente Popular Agrícola FÍA del Perú</td><td>62,824</td><td>1.495%<span class="bar" style="width:7%"></span></td></tr>
+        <tr><td><span class="rank-num">11</span></td><td>Frente de la Esperanza 2021</td><td>57,606</td><td>1.371%<span class="bar" style="width:7%"></span></td></tr>
+        <tr><td><span class="rank-num">12</span></td><td>Podemos Perú</td><td>53,364</td><td>1.270%<span class="bar" style="width:6%"></span></td></tr>
+        <tr><td><span class="rank-num">13</span></td><td>Partido Democrático Somos Perú</td><td>45,889</td><td>1.092%<span class="bar" style="width:5%"></span></td></tr>
+        <tr><td><span class="rank-num">14</span></td><td>Alianza para el Progreso</td><td>39,475</td><td>0.939%<span class="bar" style="width:5%"></span></td></tr>
+        <tr><td><span class="rank-num">15</span></td><td>Progresemos</td><td>36,789</td><td>0.875%<span class="bar" style="width:4%"></span></td></tr>
+        <tr><td><span class="rank-num">16</span></td><td>Partido Morado</td><td>27,430</td><td>0.653%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">17</span></td><td>Avanza País</td><td>26,377</td><td>0.628%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">18</span></td><td>Partido Patriótico del Perú</td><td>25,552</td><td>0.608%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">19</span></td><td>Libertad Popular</td><td>24,604</td><td>0.585%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">20</span></td><td>Perú Primero</td><td>23,599</td><td>0.561%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">21</span></td><td>Unidad Nacional</td><td>22,675</td><td>0.540%<span class="bar" style="width:3%"></span></td></tr>
+        <tr><td><span class="rank-num">22</span></td><td>Partido Demócrata Unido Perú</td><td>21,170</td><td>0.504%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">23</span></td><td>Integridad Democrática</td><td>20,999</td><td>0.500%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">24</span></td><td>Cooperación Popular</td><td>20,882</td><td>0.497%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">25</span></td><td>Alianza Electoral Venceremos</td><td>18,624</td><td>0.443%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">26</span></td><td>Perú Libre</td><td>15,377</td><td>0.366%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">27</span></td><td>Partido Demócrata Verde</td><td>14,242</td><td>0.339%<span class="bar" style="width:2%"></span></td></tr>
+        <tr><td><span class="rank-num">28</span></td><td>Un Camino Diferente</td><td>8,069</td><td>0.192%</td></tr>
+        <tr><td><span class="rank-num">29</span></td><td>Fuerza y Libertad</td><td>7,569</td><td>0.180%</td></tr>
+        <tr><td><span class="rank-num">30</span></td><td>Fe en el Perú</td><td>6,071</td><td>0.144%</td></tr>
+        <tr><td><span class="rank-num">31</span></td><td>Perú Acción</td><td>4,855</td><td>0.116%</td></tr>
+        <tr><td><span class="rank-num">32</span></td><td>Partido Político PRIN</td><td>4,850</td><td>0.115%</td></tr>
+        <tr><td><span class="rank-num">33</span></td><td>Partido Democrático Federal</td><td>4,690</td><td>0.112%</td></tr>
+        <tr><td><span class="rank-num">34</span></td><td>PTE - Perú</td><td>3,930</td><td>0.094%</td></tr>
+        <tr><td><span class="rank-num">35</span></td><td>Perú Moderno</td><td>2,974</td><td>0.071%</td></tr>
+        <tr><td><span class="rank-num">36</span></td><td>Salvemos al Perú</td><td>2,951</td><td>0.070%</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <div class="callout danger">
@@ -593,8 +637,61 @@ Sec-Fetch-Dest: empty
   <hr class="sep">
 
   <p style="font-family:'Share Tech Mono',monospace;font-size:10px;color:#552255;letter-spacing:.08em;">
-    METODOLOGÍA: Los datos fueron capturados vía fetch() desde el dominio <code>resultadoelectoral.onpe.gob.pe</code> con headers <code>Sec-Fetch-Dest: empty</code>. Sin modificación. Sin interpolación. Sin inferencia. Los JSON crudos están en este mismo directorio, con timestamp en el nombre.
+    METODOLOGÍA: Los datos fueron capturados vía fetch() desde el dominio <code>resultadoelectoral.onpe.gob.pe</code> con headers <code>Sec-Fetch-Dest: empty</code>. Sin modificación. Sin interpolación. Sin inferencia.
   </p>
+
+  <!-- ---------------------------------------------------------------- -->
+  <h2 id="sec-datos">05. Datos crudos</h2>
+
+  <p>Los JSON que generó <code>onpe_recon.py</code> el 2026-04-19 06:35 UTC. Respuestas directas de la API, sin procesar. Cada archivo incluye metadatos de captura (timestamp, latencia, status HTTP).</p>
+
+  <div class="dl-grid">
+    <a href="data_presidencial_participantes.json" class="dl-card" download>
+      <span class="dl-name">data_presidencial_participantes.json</span>
+      <span class="dl-meta">idEleccion=10 // 36 candidatos // 9.1 KB</span>
+      <span class="dl-desc">Votos válidos por candidato presidencial. 93.48% actas contabilizadas.</span>
+    </a>
+    <a href="data_presidencial_totales.json" class="dl-card" download>
+      <span class="dl-name">data_presidencial_totales.json</span>
+      <span class="dl-meta">idEleccion=10 // totales nac. // 1.0 KB</span>
+      <span class="dl-desc">Actas contabilizadas, votos emitidos, votos válidos, participación ciudadana, fechaActualizacion.</span>
+    </a>
+    <a href="data_congreso_lima_participantes.json" class="dl-card" download>
+      <span class="dl-name">data_congreso_lima_participantes.json</span>
+      <span class="dl-meta">idEleccion=14 // Lima // 36 partidos // 9.4 KB</span>
+      <span class="dl-desc">Votos por partido en Lima Metropolitana (distrito electoral 15). 88.66% actas.</span>
+    </a>
+    <a href="data_congreso_lima_totales.json" class="dl-card" download>
+      <span class="dl-name">data_congreso_lima_totales.json</span>
+      <span class="dl-meta">idEleccion=14 // Lima // 1.1 KB</span>
+      <span class="dl-desc">Totales Lima Metropolitana Congreso. 5,552,711 votos emitidos. 4,202,875 válidos.</span>
+    </a>
+    <a href="data_congreso_totales.json" class="dl-card" download>
+      <span class="dl-name">data_congreso_totales.json</span>
+      <span class="dl-meta">idEleccion=14 // nac. // 1.0 KB</span>
+      <span class="dl-desc">Totales nacionales Congreso. 83.84% actas. 16,969,678 votos emitidos.</span>
+    </a>
+    <a href="data_senado_deu_totales.json" class="dl-card" download>
+      <span class="dl-name">data_senado_deu_totales.json</span>
+      <span class="dl-meta">idEleccion=15 // Senado DEU // 1.0 KB</span>
+      <span class="dl-desc">Totales Senado Distrito Electoral Único. 79.35% actas. El más rezagado al momento de la captura.</span>
+    </a>
+    <a href="data_proceso_electoral_activo.json" class="dl-card" download>
+      <span class="dl-name">data_proceso_electoral_activo.json</span>
+      <span class="dl-meta">/proceso/proceso-electoral-activo // 0.6 KB</span>
+      <span class="dl-desc">Proceso activo: id=2, EG2026, bicameralidad, idEleccionPrincipal=10, fechaProceso (Unix ms).</span>
+    </a>
+    <a href="data_distritos_electorales.json" class="dl-card" download>
+      <span class="dl-name">data_distritos_electorales.json</span>
+      <span class="dl-meta">/distrito-electoral/distritos // 2.3 KB</span>
+      <span class="dl-desc">Catálogo de 27 distritos electorales (código + nombre). Incluyendo residentes en el extranjero.</span>
+    </a>
+  </div>
+
+  <div class="callout info">
+    Para regenerar con datos frescos: <code>python onpe_recon.py</code><br>
+    Genera nuevos JSONs con timestamp + reporte markdown. Los nombres <code>data_*.json</code> son copias limpias para URLs estables.
+  </div>
 
   <!-- FOOTER -->
   <footer class="esquizo-footer">

@@ -1,0 +1,33 @@
+{
+  "meta": {
+    "url": "https://resultadoelectoral.onpe.gob.pe/presentacion-backend/resumen-general/totales?idEleccion=10&tipoFiltro=eleccion",
+    "timestamp_utc": "2026-04-19T06:35:45.126061+00:00",
+    "status": 200,
+    "latency_ms": 93,
+    "content_type": "application/json",
+    "error": null
+  },
+  "data": {
+    "success": true,
+    "message": "",
+    "data": {
+      "actasContabilizadas": 93.484,
+      "contabilizadas": 86721,
+      "totalActas": 92766,
+      "participacionCiudadana": 69.176,
+      "actasEnviadasJee": 6.212,
+      "enviadasJee": 5763,
+      "actasPendientesJee": 0.304,
+      "pendientesJee": 282,
+      "fechaActualizacion": 1776579849017,
+      "idUbigeoDepartamento": 140000,
+      "idUbigeoProvincia": 140100,
+      "idUbigeoDistrito": 140101,
+      "idUbigeoDistritoElectoral": 15,
+      "totalVotosEmitidos": 18902505,
+      "totalVotosValidos": 15757829,
+      "porcentajeVotosEmitidos": 100,
+      "porcentajeVotosValidos": 100
+    }
+  }
+}

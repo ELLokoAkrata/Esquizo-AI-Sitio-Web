@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "url": "https://resultadoelectoral.onpe.gob.pe/presentacion-backend/proceso/proceso-electoral-activo",
+    "timestamp_utc": "2026-04-19T06:35:43.015728+00:00",
+    "status": 200,
+    "latency_ms": 360,
+    "content_type": "application/json",
+    "error": null
+  },
+  "data": {
+    "success": true,
+    "message": "",
+    "data": {
+      "id": 2,
+      "nombre": "ELECCIONES GENERALES Y PARLAMENTO ANDINO 2026",
+      "acronimo": "EG2026",
+      "fechaProceso": 1775970000000,
+      "idEleccionPrincipal": 10,
+      "tipoProcesoElectoral": "bicameralidad",
+      "activoFechaProceso": true
+    }
+  }
+}

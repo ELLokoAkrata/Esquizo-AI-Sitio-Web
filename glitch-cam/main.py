@@ -134,18 +134,44 @@ def main():
                 out = hyper_liquid_acid(out, LIQUID_LEVELS[state.hyper_liquid_mode], tick)
 
             if state.blnd_mode > 0 and state.prev_frame is not None:
-                a = t * 0.82
+                a = 0.35 + t * 0.55          # 0.35→0.90 — rango más perceptible
                 p = state.prev_frame
-                if state.blnd_mode == 1:   # BLND — addWeighted clásico
+                f  = out.astype(np.float32) / 255.0
+                fp = p.astype(np.float32)   / 255.0
+                if state.blnd_mode == 1:   # BLND — trail suave con prev
                     out = cv2.addWeighted(out, 1 - a, p, a, 0)
-                elif state.blnd_mode == 2: # DIFF — diferencia absoluta con prev
+                elif state.blnd_mode == 2: # DIFF — diferencia absoluta
                     out = cv2.absdiff(out, p)
-                elif state.blnd_mode == 3: # SCRN — screen: 1-(1-a)*(1-b)
-                    f = out.astype(np.float32) / 255.0
-                    fp = p.astype(np.float32) / 255.0
-                    out = np.clip((1.0 - (1.0 - f) * (1.0 - fp * a)) * 255, 0, 255).astype(np.uint8)
-                elif state.blnd_mode == 4: # MPLY — multiply: a*b/255
-                    out = (out.astype(np.float32) * (p.astype(np.float32) * a / 255.0)).clip(0, 255).astype(np.uint8)
+                elif state.blnd_mode == 3: # SCRN — aclara donde ambos son brillantes
+                    scrn = 1.0 - (1.0 - f) * (1.0 - fp)
+                    out  = np.clip(scrn * 255, 0, 255).astype(np.uint8)
+                elif state.blnd_mode == 4: # MPLY — oscurece y satura, ghosting oscuro
+                    mply = f * fp
+                    out  = np.clip((f * (1.0 - a) + mply * a) * 255, 0, 255).astype(np.uint8)
+                elif state.blnd_mode == 5: # ADDUP — seno por luminancia + 50/50 mezcla
+                    alpha = 0.3 + t * 0.7
+                    val   = (f[..., 0] + f[..., 1] + f[..., 2]) * alpha  # luminancia × alpha
+                    val   = val[..., np.newaxis]
+                    addup = f * np.sin(np.clip(val * f / 0.3, -np.pi, np.pi))
+                    addup = np.clip(addup, 0, 1)
+                    out   = np.clip((addup * 0.5 + f * 0.5) * 255, 0, 255).astype(np.uint8)
+                elif state.blnd_mode == 6: # OFST — motion trail por offset UV + XOR color blend
+                    h_f, w_f = out.shape[:2]
+                    # Tres muestras desplazadas en X e Y (blur_offset_color_fade)
+                    off1 = max(1, int(0.01 * w_f))
+                    off2 = max(2, int(0.02 * w_f))
+                    off3 = max(3, int(0.03 * w_f))
+                    c0 = f
+                    c1 = np.roll(f, -off1, axis=1)
+                    c2 = np.roll(f, -off2, axis=1)
+                    c3 = np.roll(f, -off3, axis=1)
+                    trail = c0 * 0.3 + c1 * 0.5 + c2 * 0.3 + c3 * 0.3
+                    trail = np.clip(trail, 0, 1)
+                    # XOR color blend con prev frame
+                    trail_u8 = (trail * 255).astype(np.uint8)
+                    p_u8     = (fp * 255).astype(np.uint8)
+                    xblend   = cv2.bitwise_xor(trail_u8, p_u8)
+                    out      = cv2.addWeighted(trail_u8, 1.0 - a * 0.5, xblend, a * 0.5, 0)
             if state.datamosh_mode > 0:
                 out = MOSH_FUNCS[state.datamosh_mode](out, state.prev_frame, t, tick)
             if state.rgb_mode > 0:
@@ -289,7 +315,7 @@ def main():
         elif key == ord('d'): state.fps_idx   = max(0, state.fps_idx   - 1)
         elif key == ord('.'): state.speed_idx = min(len(state.SPEED_LEVELS) - 1, state.speed_idx + 1)
         elif key == ord(','): state.speed_idx = max(0, state.speed_idx - 1)
-        elif key == ord('b'): state.blnd_mode = (state.blnd_mode + 1) % 5
+        elif key == ord('b'): state.blnd_mode = (state.blnd_mode + 1) % 7
         elif key == ord('m'): state.mirror_mode = (state.mirror_mode + 1) % 5
         elif key == ord('F'):  # Shift+F — cicla REVENTUS
             state.rev_mode    = (state.rev_mode + 1) % 7

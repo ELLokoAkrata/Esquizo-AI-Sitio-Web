@@ -90,7 +90,7 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 | `l` | LQID | OFF → LOW → MED → HI → MAX |
 | `v` | VRTX | OFF → SWRL → ANTI → PULS → EXP → DUAL |
 | `0` | SPRL | OFF → LOGR → TGHT → WAVE → INWD → MLTK |
-| `b` | BLND | OFF → BLND → DIFF → SCRN → MPLY |
+| `b` | BLND | OFF → BLND → DIFF → SCRN → MPLY → ADDUP → OFST |
 | `Shift+F` | REV | OFF → SWRL → ACID → ZOOM → ECHO → DRNK → BALO |
 | `m` | MIRROR | OFF → MIR2 → KL4 → KL8 → KL16 |
 
@@ -192,6 +192,8 @@ Detecta cara via Haar cascade, aplica el efecto solo en esa zona con blend gauss
 - **DIFF** — Diferencia absoluta con prev — zonas sin cambio → negro, cambios → color
 - **SCRN** — Screen blend — los colores se suman y aclaran, nunca oscurecen
 - **MPLY** — Multiply — los colores se multiplican, resultado más oscuro y saturado
+- **ADDUP** — Luminancia suma × alpha → sin(val × color / 0.3), 50/50 con original — distorsión sinusoidal por brillo (`addup_blend.glsl`)
+- **OFST** — Motion trail por desplazamiento UV (×1/×2/×3 píxeles) → weighted average → XOR con prev frame — ghosting óptico con aberración cromática (`blur_offset_color_fade.glsl`)
 
 ### VRTX modes (`v`)
 - **SWRL** — Vórtice clásico: twist horario + succión al centro

@@ -38,7 +38,7 @@ def draw_hud(frame, fps, t):
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 170), 1, cv2.LINE_AA)
     rev_color  = (0, 200, 255) if state.rev_mode    > 0 else (40, 30, 40)
     mirr_color = (255, 140, 0) if state.mirror_mode > 0 else (40, 30, 40)
-    BLND_NAMES = {0: 'OFF', 1: 'BLND', 2: 'DIFF', 3: 'SCRN', 4: 'MPLY'}
+    BLND_NAMES = {0: 'OFF', 1: 'BLND', 2: 'DIFF', 3: 'SCRN', 4: 'MPLY', 5: 'ADDUP', 6: 'OFST'}
     blnd_color = (0, 255, 170) if state.blnd_mode > 0 else (40, 30, 40)
     cv2.putText(frame, f'REV:{REV_NAMES[state.rev_mode]}',
                 (w // 2 - 95, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.38, rev_color,  1, cv2.LINE_AA)
@@ -88,7 +88,7 @@ def draw_hud(frame, fps, t):
         elif k == 'x': label = XOR_NAMES.get(state.xor_mode, 'OFF')
         elif k == 'w': label = WAVE_NAMES.get(state.wave_mode, 'OFF')
         elif k == '0': label = SPIRAL_NAMES.get(state.spiral_mode, 'OFF')
-        elif k == 'b': label = {0:'OFF',1:'BLND',2:'DIFF',3:'SCRN',4:'MPLY'}.get(state.blnd_mode, 'OFF')
+        elif k == 'b': label = {0:'OFF',1:'BLND',2:'DIFF',3:'SCRN',4:'MPLY',5:'ADDUP',6:'OFST'}.get(state.blnd_mode, 'OFF')
         else:          label = name
         cv2.putText(frame, f'[{k}]', (x, h - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.28, color, 1)

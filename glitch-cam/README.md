@@ -59,7 +59,7 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 ### Efectos acid / XOR
 | Tecla | Efecto | Descripción |
 |-------|--------|-------------|
-| `x` | XORF | XOR multi-escala con feedback loop — el look AcidCam |
+| `x` | XORF | XOR — cicla 6 modos (ver abajo) |
 | `a` | FRGB | Frame Blend RGB — canales con delay temporal distinto, fantasmas arcoíris |
 | `l` | LQID | Hyper Liquid Acid Saturation — cicla OFF→LOW→MED→HI→MAX |
 | `k` | KACD | Color Acid (shaders AcidCam GL) — cicla 8 modos (ver abajo) |
@@ -80,8 +80,11 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 ### Modos cíclicos
 | Tecla | Modo | Ciclo |
 |-------|------|-------|
-| `1` | RGB | OFF → H → V → DIAG → TRI → CHOS |
+| `1` | RGB  | OFF → H → V → DIAG → TRI → CHOS |
+| `x` | XORF | OFF → FDBK → INCR → POS → SHT1 → SHT2 → STRB → PROP |
+| `w` | WAVE | OFF → BIDI → RADL → SHCK → DIAG → TURB → ZIGA |
 | `4` | MOSH | OFF → GHST → SOUL → FRAC |
+| `c` | CRPT | OFF → BLK → DSLV → ORG → ALL → PUR |
 | `k` | KACD | OFF → BARS → INCR → TIME → XORT → TVAL → FADE → CRRP → SCAL |
 | `c` | CRPT | OFF → BLK → ORG → ALL → PUR |
 | `l` | LQID | OFF → LOW → MED → HI → MAX |
@@ -127,6 +130,7 @@ R viene del presente, G del pasado reciente, B del pasado lejano — con cruce d
 
 ### CRPT modes
 - **BLK** — Corrupción por bloques geométricos + inversiones
+- **DSLV** — Corrupción full-frame sin formas rectangulares. Blobs orgánicos (bilinear upscale) con XOR variable por canal. Patrón respira entre grueso y fino, paleta de colores rota lentamente. Misma saturación que BLK pero cubriendo toda la pantalla y mutando continuamente.
 - **ORG** — Corrupción orgánica via LUT + máscaras sinusoidales
 - **ALL** — BLK + ORG + scanlines completas + columnas
 - **PUR** — Solo LUT + per-píxel, cero geometría
@@ -139,6 +143,23 @@ Detecta cara via Haar cascade, aplica el efecto solo en esa zona con blend gauss
 - **ECHO** — Residuo lento con buffer persistente
 - **DRNK** — Triple visión de borracho
 - **BALO** — Balloon inflate/deflate cíclico
+
+### XORF modes (`x`) — XOR (shaders AcidCam GL)
+- **FDBK** — XOR multi-escala ×2/×4/×8 con feedback loop acumulado — el look AcidCam original
+- **INCR** — Color × escala animada × 6, XOR con original — pulsaciones de amplitud (`xor_increase.glsl`)
+- **POS** — Peso por posición X/Y del píxel, XOR — el patrón varía según dónde está cada píxel (`xor_positional_offset.glsl`)
+- **SHT1** — Grid 32px modula G y B con samples ×2/×4, XOR consigo mismo, restaura negros (`xorsheet.glsl`)
+- **SHT2** — Grid 64px: `color *= (1 + fract(x/64) + fract(y/64))`, XOR con original (`xorsheet_2.glsl`)
+- **STRB** — Escalado cuadrático por canal (`alpha²`), strobing asíncrono R/G/B (`xorstrobe.glsl`)
+- **PROP** — 4 zonas en anillo (TL→TR→BR→BL→TL), cada una con XOR distinto. La salida de cada zona contamina la siguiente. Los modos rotan lentamente → el patrón migra y muta entre zonas
+
+### WAVE modes (`w`)
+- **BIDI** — Ondas bidireccionales X+Y simultáneas, doble frecuencia horizontal
+- **RADL** — Ondas radiales que irradian desde el centro hacia afuera
+- **SHCK** — Anillo shockwave expansivo desde el centro, se reinicia al salir de cuadro
+- **DIAG** — Ondas a 45°: el desplazamiento depende de x+y
+- **TURB** — Turbulencia: 3 frecuencias superpuestas en X e Y, desfasadas
+- **ZIGA** — Onda triangular (zigzag) en vez de sinusoidal — más dura y angular
 
 ### KACD modes (`k`) — Color Acid (traducción de shaders AcidCam GL)
 - **BARS** — Gradiente horizontal animado por canal + XOR con original (`color_bars.glsl`)
@@ -197,6 +218,10 @@ k:TVAL + x                  →  multi-escala XOR sobre XOR feedback — caos to
 k:TIME + 1:CHOS             →  strobing de canales × chaos RGB
 k:FADE + m:KL4              →  gradiente temporal caleidoscópico
 k:BARS + l:HI + v:SWRL      →  barras acid sobre vórtice líquido
+c:DSLV + x:PROP             →  corrupción full-frame + propagación zonal XOR
+c:DSLV + w:SHCK             →  manchas de color mutantes + shockwave
+w:TURB + x:FDBK             →  turbulencia sobre feedback XOR — máximo caos
+w:ZIGA + v:DUAL             →  zigzag + doble vórtice — imagen destrozada
 ```
 
 ---

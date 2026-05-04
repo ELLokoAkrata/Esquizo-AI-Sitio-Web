@@ -174,20 +174,113 @@ def pixel_sort(frame, t):
 
 
 def wave(frame, t, tick):
-    """Wave bidireccional — ondas X e Y simultáneas, más agresivo que CRT warp."""
+    """BIDI — ondas X e Y simultáneas, doble frecuencia horizontal."""
     h, w = frame.shape[:2]
     ys = np.arange(h, dtype=np.float32)
     xs = np.arange(w, dtype=np.float32)
     amp_x = t * 30 + 6
     amp_y = t * 18 + 4
-    # Desplazamiento horizontal (varía por fila)
     shift_x = (np.sin(ys * (0.025 + t * 0.03) + tick * 0.05) * amp_x +
                np.sin(ys * 0.011 + tick * 0.031) * amp_x * 0.4).reshape(h, 1)
-    # Desplazamiento vertical (varía por columna)
     shift_y = (np.sin(xs * (0.03 + t * 0.02) + tick * 0.038) * amp_y).reshape(1, w)
     map_x = np.clip(np.tile(xs, (h, 1)) + shift_x, 0, w - 1).astype(np.float32)
     map_y = np.clip(np.tile(ys.reshape(h, 1), (1, w)) + shift_y, 0, h - 1).astype(np.float32)
     return cv2.remap(frame, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def wave_radial(frame, t, tick):
+    """RADL — ondas radiales que irradian desde el centro hacia afuera."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    amp   = t * 28 + 5
+    wave_r = amp * np.sin(r * 0.055 - tick * 0.07)
+    new_r  = np.maximum(0.0, r + wave_r)
+    mx = np.clip(cx + new_r * np.cos(angle), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(angle), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def wave_shock(frame, t, tick):
+    """SHCK — anillo shockwave expansivo desde el centro, se reinicia al salir de cuadro."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    max_r = np.sqrt(cx**2 + cy**2)
+    ring_r = (tick * (t * 4 + 1)) % (max_r * 1.4)
+    width  = 35 + t * 55
+    proximity = np.exp(-((r - ring_r)**2) / (2.0 * width**2))
+    amp   = t * 50 * proximity
+    wave_r = amp * np.sin(r * 0.12 - tick * 0.25)
+    new_r  = np.maximum(0.0, r + wave_r)
+    mx = np.clip(cx + new_r * np.cos(angle), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(angle), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def wave_diag(frame, t, tick):
+    """DIAG — ondas a 45°: el desplazamiento depende de x+y (diagonal)."""
+    h, w = frame.shape[:2]
+    ys = np.arange(h, dtype=np.float32)
+    xs = np.arange(w, dtype=np.float32)
+    amp = t * 28 + 5
+    grid_x = np.tile(xs, (h, 1))
+    grid_y = np.tile(ys.reshape(h, 1), (1, w))
+    diag   = grid_x + grid_y
+    shift_x = amp       * np.sin(diag * 0.018 + tick * 0.055)
+    shift_y = amp * 0.7 * np.sin(diag * 0.014 + tick * 0.038 + 1.57)
+    map_x = np.clip(grid_x + shift_x, 0, w - 1).astype(np.float32)
+    map_y = np.clip(grid_y + shift_y, 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def wave_turb(frame, t, tick):
+    """TURB — turbulencia: 3 frecuencias superpuestas en X e Y, desfasadas."""
+    h, w = frame.shape[:2]
+    ys = np.arange(h, dtype=np.float32)
+    xs = np.arange(w, dtype=np.float32)
+    amp = t * 18 + 4
+    shift_x = (np.sin(ys * 0.020 + tick * 0.050) * amp
+             + np.sin(ys * 0.071 + tick * 0.031 + 1.2) * amp * 0.5
+             + np.sin(ys * 0.130 + tick * 0.067 + 2.4) * amp * 0.25).reshape(h, 1)
+    shift_y = (np.sin(xs * 0.028 + tick * 0.042) * amp * 0.8
+             + np.sin(xs * 0.088 + tick * 0.058 + 0.8) * amp * 0.4
+             + np.sin(xs * 0.170 + tick * 0.089 + 1.6) * amp * 0.2).reshape(1, w)
+    map_x = np.clip(np.tile(xs, (h, 1)) + shift_x, 0, w - 1).astype(np.float32)
+    map_y = np.clip(np.tile(ys.reshape(h, 1), (1, w)) + shift_y, 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def wave_ziga(frame, t, tick):
+    """ZIGA — onda triangular (zigzag) en vez de sinusoidal — más dura y angular."""
+    h, w = frame.shape[:2]
+    ys = np.arange(h, dtype=np.float32)
+    xs = np.arange(w, dtype=np.float32)
+    amp = t * 24 + 5
+
+    def tri(x, period):
+        """Onda triangular normalizada a -1..1."""
+        return 2.0 * np.abs(np.mod(x / period, 1.0) - 0.5) * 2.0 - 1.0
+
+    period_y = 38 + t * 22
+    period_x = 48 + t * 28
+    shift_x = (tri(ys + tick * 2.2, period_y) * amp).reshape(h, 1)
+    shift_y = (tri(xs + tick * 1.6, period_x) * amp * 0.75).reshape(1, w)
+    map_x = np.clip(np.tile(xs, (h, 1)) + shift_x, 0, w - 1).astype(np.float32)
+    map_y = np.clip(np.tile(ys.reshape(h, 1), (1, w)) + shift_y, 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+WAVE_FUNCS = {1: wave, 2: wave_radial, 3: wave_shock,
+              4: wave_diag, 5: wave_turb, 6: wave_ziga}
+WAVE_NAMES = {0: 'OFF', 1: 'BIDI', 2: 'RADL', 3: 'SHCK',
+              4: 'DIAG', 5: 'TURB', 6: 'ZIGA'}
 
 
 def vortex(frame, t, tick):

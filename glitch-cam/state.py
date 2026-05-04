@@ -25,14 +25,16 @@ fx = {
     'spiral':        False,  # 0
     'color_trails':  False,  # t
     'pixel_sort':    False,  # s
-    'wave':          False,  # w
-    'xor_feedback':  False,  # x
+    'wave':          False,  # legacy — reemplazado por wave_mode
+    'xor_feedback':  False,  # legacy — reemplazado por xor_mode
     'frame_blend':   False,  # a
 }
 rgb_mode           = 0  # 0=off  1=H  2=V  3=DIAG  4=TRI  5=CHAOS
 vortex_mode        = 0  # 0=off  1=SWRL  2=ANTI  3=PULS  4=EXP  5=DUAL
 color_acid_mode    = 0  # 0=off  1=BARS 2=INCR 3=TIME 4=XORT 5=TVAL 6=FADE 7=CRRP 8=SCAL
-corrupt_mode       = 0  # 0=off  1=bloques  2=orgánico  3=completo  4=puro
+xor_mode           = 0  # 0=off  1=FDBK 2=INCR 3=POS 4=SHT1 5=SHT2 6=STRB 7=PROP
+wave_mode          = 0  # 0=off  1=BIDI 2=RADL 3=SHCK 4=DIAG 5=TURB 6=ZIGA
+corrupt_mode       = 0  # 0=off  1=BLK  2=DSLV  3=ORG  4=ALL  5=PUR
 datamosh_mode      = 0  # 0=off  1=ghst  2=soul  3=frac
 hyper_liquid_mode  = 0  # 0=off  1=LOW  2=MED  3=HI  4=MAX
 blnd_on       = False  # trail base — combina con cualquier modo del 4

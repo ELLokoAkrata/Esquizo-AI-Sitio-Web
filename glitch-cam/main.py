@@ -29,10 +29,10 @@ import state
 from effects.base    import (rgb_split, displacement, noise, color_cycle,
                               scanlines, glitch_blocks, crt_warp, ascii_mode,
                               vortex, spiral, color_trails, pixel_sort, wave,
-                              RGB_FUNCS, VORTEX_FUNCS)
+                              RGB_FUNCS, VORTEX_FUNCS, WAVE_FUNCS)
 import effects.base as base
 from effects.corrupt import CORRUPT_MODES
-from effects.acid       import xor_feedback, frame_blend_rgb, hyper_liquid_acid
+from effects.acid       import xor_feedback, frame_blend_rgb, hyper_liquid_acid, XOR_FUNCS
 import effects.acid as acid
 from effects.color_acid import COLOR_ACID_FUNCS, COLOR_ACID_NAMES
 from effects.ghost   import MOSH_FUNCS
@@ -123,9 +123,10 @@ def main():
             active     = state.fx.copy()
             out        = frame.copy()
 
-            # Acid/XOR primero
-            if active['xor_feedback']:
-                out = xor_feedback(out, t)
+            # XOR / Acid primero
+            if state.xor_mode > 0:
+                out = XOR_FUNCS[state.xor_mode](out, t) if state.xor_mode == 1 \
+                      else XOR_FUNCS[state.xor_mode](out, t, tick)
             if active['frame_blend']:
                 out = frame_blend_rgb(out, t)
             if state.hyper_liquid_mode > 0:
@@ -165,8 +166,8 @@ def main():
                 out = color_trails(out, t)
             if active['pixel_sort']:
                 out = pixel_sort(out, t)
-            if active['wave']:
-                out = wave(out, t, tick)
+            if state.wave_mode > 0:
+                out = WAVE_FUNCS[state.wave_mode](out, t, tick)
             if state.vortex_mode > 0:
                 out = VORTEX_FUNCS[state.vortex_mode](out, t, tick)
             if active['spiral']:
@@ -229,15 +230,16 @@ def main():
         elif key == ord('0'): state.fx['spiral']         = not state.fx['spiral']
         elif key == ord('t'): state.fx['color_trails']   = not state.fx['color_trails']
         elif key == ord('s'): state.fx['pixel_sort']     = not state.fx['pixel_sort']
-        elif key == ord('w'): state.fx['wave']           = not state.fx['wave']
+        elif key == ord('w'): state.wave_mode = (state.wave_mode + 1) % 7
         elif key == ord('x'):
-            state.fx['xor_feedback'] = not state.fx['xor_feedback']
-            acid._xor_buf = None   # reset buffer al activar — empieza limpio
+            state.xor_mode = (state.xor_mode + 1) % 8
+            acid._xor_buf   = None
+            acid._prop_bufs = None
         elif key == ord('a'): state.fx['frame_blend']   = not state.fx['frame_blend']
         elif key == ord('l'):
             state.hyper_liquid_mode = (state.hyper_liquid_mode + 1) % 5
             acid._liquid_buf = None   # reset buffer al cambiar nivel
-        elif key == ord('c'): state.corrupt_mode = (state.corrupt_mode + 1) % 5
+        elif key == ord('c'): state.corrupt_mode = (state.corrupt_mode + 1) % 6
         elif key == ord('k'): state.color_acid_mode = (state.color_acid_mode + 1) % 9
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
@@ -250,6 +252,9 @@ def main():
             state.vortex_mode     = 0
             state.datamosh_mode   = 0
             state.color_acid_mode = 0
+            state.xor_mode        = 0
+            state.wave_mode       = 0
+            acid._prop_bufs       = None
             state.blnd_on    = False
             state.prev_frame = None
             ghost._mosh_buf = None

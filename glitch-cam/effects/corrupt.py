@@ -30,7 +30,73 @@ def color_corrupt_blocks(frame, t):
     return result
 
 
-# ─── MODO 2: ORGÁNICO (sin rayas ni bloques) ──────────────────────────────────
+# ─── MODO 2: DISSOLVE (corrupción full-frame, blobs orgánicos mutantes) ───────
+_dslv_tick = 0
+
+def color_corrupt_dissolve(frame, t):
+    """DSLV — misma corrupción XOR que BLK pero full-frame y sin formas rectangulares.
+    Ruido a baja resolución escalado con bilinear → blobs orgánicos sin bordes rectos.
+    Cada canal R/G/B cambia a distinta velocidad → se desincronizan → misma
+    saturación corrupta que BLK pero cubriendo toda la pantalla y mutando.
+    """
+    global _dslv_tick
+    _dslv_tick += 1
+    k = _dslv_tick
+
+    h, w = frame.shape[:2]
+
+    # ── Tamaño de blob oscilante — el patrón respira entre grueso y fino ──────
+    blob_base = 22 - t * 14
+    blob_osc  = np.sin(k * 0.018) * 6   # oscila lentamente entre -6 y +6
+    blob = max(4, int(blob_base + blob_osc))
+    nh, nw = max(3, h // blob), max(3, w // blob)
+
+    # ── Rango XOR variable por canal — cada canal tiene su propio "estado" ────
+    # Los rangos oscilan: a veces valores oscuros (sutil), a veces brillantes (brutal)
+    lo_r = int(20  + abs(np.sin(k * 0.011)) * 80)
+    hi_r = int(180 + abs(np.sin(k * 0.009)) * 70)
+    lo_g = int(20  + abs(np.sin(k * 0.017 + 2.09)) * 80)
+    hi_g = int(180 + abs(np.sin(k * 0.013 + 2.09)) * 70)
+    lo_b = int(20  + abs(np.sin(k * 0.023 + 4.19)) * 80)
+    hi_b = int(180 + abs(np.sin(k * 0.019 + 4.19)) * 70)
+
+    # Cada canal evoluciona a distinta velocidad → desincronización cromática
+    r_lo = np.random.default_rng(k // 2        ).integers(lo_r, max(lo_r+1, hi_r), (nh, nw), dtype=np.uint8)
+    g_lo = np.random.default_rng(k // 3 + 1111 ).integers(lo_g, max(lo_g+1, hi_g), (nh, nw), dtype=np.uint8)
+    b_lo = np.random.default_rng(k // 5 + 2222 ).integers(lo_b, max(lo_b+1, hi_b), (nh, nw), dtype=np.uint8)
+
+    # Bilinear upscale → bordes disueltos, sin aristas rectas
+    r_pat = cv2.resize(r_lo.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR).astype(np.uint8)
+    g_pat = cv2.resize(g_lo.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR).astype(np.uint8)
+    b_pat = cv2.resize(b_lo.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR).astype(np.uint8)
+
+    xor_mask = np.stack([b_pat, g_pat, r_pat], axis=2)
+
+    # ── Offset global de paleta que rota lentamente ───────────────────────────
+    # XOR con un valor distinto por canal que cicla → toda la paleta se desplaza
+    pal_r = np.uint8(int(k * 2.3 * t) % 256)
+    pal_g = np.uint8(int(k * 3.7 * t + 85)  % 256)
+    pal_b = np.uint8(int(k * 1.9 * t + 170) % 256)
+    xor_mask[:, :, 2] ^= pal_r
+    xor_mask[:, :, 1] ^= pal_g
+    xor_mask[:, :, 0] ^= pal_b
+
+    result = frame ^ xor_mask
+
+    # Inversión orgánica a intensidad alta
+    if t > 0.5:
+        inv_lo = np.random.default_rng(k // 4 + 3333).integers(0, 2, (max(2, nh//2), max(2, nw//2)), dtype=np.uint8)
+        inv_mask = cv2.resize(inv_lo.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR)
+        inv_mask = (inv_mask > 0.5).astype(np.float32)[:, :, np.newaxis] * (t - 0.5) * 1.8
+        result = (result.astype(np.float32) * (1 - inv_mask)
+                  + (255 - result).astype(np.float32) * inv_mask).clip(0, 255).astype(np.uint8)
+
+    alpha = 0.25 + t * 0.75
+    return (frame.astype(np.float32) * (1.0 - alpha)
+            + result.astype(np.float32) * alpha).clip(0, 255).astype(np.uint8)
+
+
+# ─── MODO 3: ORGÁNICO (sin rayas ni bloques) ──────────────────────────────────
 def color_corrupt_organic(frame, t):
     result = frame.copy()
     h, w = frame.shape[:2]
@@ -100,7 +166,8 @@ def color_corrupt_pure(frame, t):
 
 
 CORRUPT_MODES = {1: color_corrupt_blocks,
-                 2: color_corrupt_organic,
-                 3: color_corrupt_full,
-                 4: color_corrupt_pure}
-CORRUPT_NAMES = {0: 'OFF', 1: 'BLK', 2: 'ORG', 3: 'ALL', 4: 'PUR'}
+                 2: color_corrupt_dissolve,
+                 3: color_corrupt_organic,
+                 4: color_corrupt_full,
+                 5: color_corrupt_pure}
+CORRUPT_NAMES = {0: 'OFF', 1: 'BLK', 2: 'DSLV', 3: 'ORG', 4: 'ALL', 5: 'PUR'}

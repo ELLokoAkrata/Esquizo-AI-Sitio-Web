@@ -70,7 +70,9 @@ def main():
 
     WIN = 'GLITCH.CAM | EsquizoAI — [q] salir'
     cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(WIN, actual_w, actual_h)
+    win_w = state.args.win_width  if state.args.win_width  else actual_w
+    win_h = state.args.win_height if state.args.win_height else actual_h
+    cv2.resizeWindow(WIN, win_w, win_h)
 
     # Face detection setup
     face_cascade = cv2.CascadeClassifier(

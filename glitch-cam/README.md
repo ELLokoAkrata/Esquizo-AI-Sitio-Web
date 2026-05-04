@@ -29,6 +29,15 @@ python main.py --video "C:/ruta/al/video.mp4"
 
 # Opciones adicionales
 python main.py --width 1280 --height 720 --intensity 70
+
+# Ventana más chica que la captura (menos lag visual, procesamiento igual)
+python main.py --win-width 854 --win-height 480
+
+# Captura y ventana reducidas (menos lag real — recomendado para combinar muchos efectos)
+python main.py --width 640 --height 360
+
+# Captura full HD, ventana pequeña
+python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 ```
 
 ---

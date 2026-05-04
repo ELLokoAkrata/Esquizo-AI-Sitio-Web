@@ -7,6 +7,8 @@ parser.add_argument('--video',     type=str,   default=None, help='Path a video 
 parser.add_argument('--width',     type=int,   default=1280, help='Ancho captura')
 parser.add_argument('--height',    type=int,   default=720,  help='Alto captura')
 parser.add_argument('--intensity', type=int,   default=50,   help='Intensidad inicial 0-100')
+parser.add_argument('--win-width',  type=int,   default=None, help='Ancho ventana display (default: igual a captura)')
+parser.add_argument('--win-height', type=int,   default=None, help='Alto ventana display (default: igual a captura)')
 args = parser.parse_args()
 
 # ─── ESTADO DE EFECTOS ────────────────────────────────────────────────────────

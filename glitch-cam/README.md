@@ -58,7 +58,7 @@ python main.py --width 1280 --height 720 --intensity 70
 | Tecla | Efecto | Descripción |
 |-------|--------|-------------|
 | `w` | WAVE | Onda bidireccional X+Y agresiva |
-| `v` | VRTX | Vórtice — succión rotacional desde el centro |
+| `v` | VRTX | Vórtice — cicla 5 variaciones (ver abajo) |
 | `0` | SPRL | Espiral logarítmica pulsante |
 
 ### Efectos de color / tiempo
@@ -70,9 +70,11 @@ python main.py --width 1280 --height 720 --intensity 70
 ### Modos cíclicos
 | Tecla | Modo | Ciclo |
 |-------|------|-------|
+| `1` | RGB | OFF → H → V → DIAG → TRI → CHOS |
 | `4` | MOSH | OFF → GHST → SOUL → FRAC |
 | `c` | CRPT | OFF → BLK → ORG → ALL → PUR |
 | `l` | LQID | OFF → LOW → MED → HI → MAX |
+| `v` | VRTX | OFF → SWRL → ANTI → PULS → EXP → DUAL |
 | `Shift+F` | REV | OFF → SWRL → ACID → ZOOM → ECHO → DRNK → BALO |
 | `m` | MIRROR | OFF → MIR2 → KL4 → KL8 → KL16 |
 
@@ -127,6 +129,20 @@ Detecta cara via Haar cascade, aplica el efecto solo en esa zona con blend gauss
 - **DRNK** — Triple visión de borracho
 - **BALO** — Balloon inflate/deflate cíclico
 
+### RGB modes (`1`)
+- **H** — Horizontal clásico: R derecha, B izquierda
+- **V** — Vertical: R arriba, B abajo
+- **DIAG** — Diagonal: R arriba-derecha, B abajo-izquierda
+- **TRI** — 3 canales separados a 120° entre sí — máxima separación cromática
+- **CHOS** — Chaos: cada canal con offset sinusoidal animado independiente
+
+### VRTX modes (`v`)
+- **SWRL** — Vórtice clásico: twist horario + succión al centro
+- **ANTI** — Anti-horario con expansión desde el centro
+- **PULS** — Twist pulsante que alterna colapso y expansión
+- **EXP** — Explosión radial: el centro se derrite hacia afuera
+- **DUAL** — Dos vórtices opuestos en izquierda y derecha que compiten
+
 ### MIRROR modes
 - **MIR2** — Espejo bilateral
 - **KL4** — Kaleido 4 cuadrantes
@@ -149,11 +165,13 @@ La tecla `.` acelera el `tick` interno que controla todas las animaciones. No ti
 ## Combinaciones recomendadas
 
 ```
-x + a + l:MAX          →  AcidCam completo
-l:HI + v + t           →  liquid vortex arcoíris
-x + c:ALL + s          →  XOR corruption sorted
-4:GHST + t + 1         →  ghost rainbow RGB
-m:KL8 + l:MED          →  kaleido líquido
+x + a + l:MAX               →  AcidCam completo
+l:HI + v:SWRL + t           →  liquid vortex arcoíris
+l:HI + v:DUAL + m:KL4       →  doble vórtice caleidoscópico
+x + c:ALL + s               →  XOR corruption sorted
+4:GHST + t + 1:CHOS         →  ghost rainbow RGB chaos
+m:KL8 + l:MED               →  kaleido líquido
+v:PULS + 0 + l:MED          →  espiral respirante líquida
 ```
 
 ---

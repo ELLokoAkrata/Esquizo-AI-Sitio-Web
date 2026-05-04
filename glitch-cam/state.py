@@ -11,7 +11,7 @@ args = parser.parse_args()
 
 # ─── ESTADO DE EFECTOS ────────────────────────────────────────────────────────
 fx = {
-    'rgb_split':     False,  # 1
+    'rgb_split':     False,  # legacy — reemplazado por rgb_mode
     'displacement':  False,  # 2
     'scanlines':     False,  # 3
     'noise':         False,  # 5
@@ -19,7 +19,7 @@ fx = {
     'crt_warp':      False,  # 7
     'color_cycle':   False,  # 8
     'ascii':         False,  # 9
-    'vortex':        False,  # v
+    'vortex':        False,  # legacy — reemplazado por vortex_mode
     'spiral':        False,  # 0
     'color_trails':  False,  # t
     'pixel_sort':    False,  # s
@@ -27,6 +27,8 @@ fx = {
     'xor_feedback':  False,  # x
     'frame_blend':   False,  # a
 }
+rgb_mode           = 0  # 0=off  1=H  2=V  3=DIAG  4=TRI  5=CHAOS
+vortex_mode        = 0  # 0=off  1=SWRL  2=ANTI  3=PULS  4=EXP  5=DUAL
 corrupt_mode       = 0  # 0=off  1=bloques  2=orgánico  3=completo  4=puro
 datamosh_mode      = 0  # 0=off  1=ghst  2=soul  3=frac
 hyper_liquid_mode  = 0  # 0=off  1=LOW  2=MED  3=HI  4=MAX

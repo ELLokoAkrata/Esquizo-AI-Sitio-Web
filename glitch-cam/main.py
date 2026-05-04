@@ -28,7 +28,8 @@ import sys
 import state
 from effects.base    import (rgb_split, displacement, noise, color_cycle,
                               scanlines, glitch_blocks, crt_warp, ascii_mode,
-                              vortex, spiral, color_trails, pixel_sort, wave)
+                              vortex, spiral, color_trails, pixel_sort, wave,
+                              RGB_FUNCS, VORTEX_FUNCS)
 import effects.base as base
 from effects.corrupt import CORRUPT_MODES
 from effects.acid    import xor_feedback, frame_blend_rgb, hyper_liquid_acid
@@ -131,8 +132,9 @@ def main():
                 out = cv2.addWeighted(out, 1 - t * 0.82, state.prev_frame, t * 0.82, 0)
             if state.datamosh_mode > 0:
                 out = MOSH_FUNCS[state.datamosh_mode](out, state.prev_frame, t, tick)
-            if active['rgb_split']:
-                out = rgb_split(out, t)
+            if state.rgb_mode > 0:
+                fn = RGB_FUNCS[state.rgb_mode]
+                out = fn(out, t, tick) if state.rgb_mode == 5 else fn(out, t)
             if active['displacement']:
                 out = displacement(out, t)
             if active['noise']:
@@ -160,8 +162,8 @@ def main():
                 out = pixel_sort(out, t)
             if active['wave']:
                 out = wave(out, t, tick)
-            if active['vortex']:
-                out = vortex(out, t, tick)
+            if state.vortex_mode > 0:
+                out = VORTEX_FUNCS[state.vortex_mode](out, t, tick)
             if active['spiral']:
                 out = spiral(out, t, tick)
 
@@ -206,7 +208,7 @@ def main():
 
         if key == ord('q') or key == 27:
             break
-        elif key == ord('1'): state.fx['rgb_split']    = not state.fx['rgb_split']
+        elif key == ord('1'): state.rgb_mode = (state.rgb_mode + 1) % 6
         elif key == ord('2'): state.fx['displacement']  = not state.fx['displacement']
         elif key == ord('3'): state.fx['scanlines']     = not state.fx['scanlines']
         elif key == ord('4'):
@@ -218,7 +220,7 @@ def main():
         elif key == ord('7'): state.fx['crt_warp']      = not state.fx['crt_warp']
         elif key == ord('8'): state.fx['color_cycle']   = not state.fx['color_cycle']
         elif key == ord('9'): state.fx['ascii']          = not state.fx['ascii']
-        elif key == ord('v'): state.fx['vortex']         = not state.fx['vortex']
+        elif key == ord('v'): state.vortex_mode = (state.vortex_mode + 1) % 6
         elif key == ord('0'): state.fx['spiral']         = not state.fx['spiral']
         elif key == ord('t'): state.fx['color_trails']   = not state.fx['color_trails']
         elif key == ord('s'): state.fx['pixel_sort']     = not state.fx['pixel_sort']
@@ -238,6 +240,8 @@ def main():
         elif key == ord('h'): state.hud_on = not state.hud_on
         elif key == ord('r'):
             state.fx = {k: False for k in state.fx}
+            state.rgb_mode      = 0
+            state.vortex_mode   = 0
             state.datamosh_mode = 0
             state.blnd_on    = False
             state.prev_frame = None

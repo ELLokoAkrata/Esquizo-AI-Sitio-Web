@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 import state
+from effects.base     import RGB_NAMES, VORTEX_NAMES
 from effects.corrupt  import CORRUPT_NAMES
 from effects.ghost    import MOSH_NAMES
 from effects.reventus import REV_NAMES
@@ -61,16 +62,20 @@ def draw_hud(frame, fps, t):
     cell_w = w // len(LABELS)
     for i, (k, name) in enumerate(LABELS):
         x = i * cell_w + 4
-        if k == 'c':   is_active = state.corrupt_mode > 0
+        if k == '1':   is_active = state.rgb_mode > 0
+        elif k == 'c': is_active = state.corrupt_mode > 0
         elif k == '4': is_active = state.datamosh_mode > 0
         elif k == 'l': is_active = state.hyper_liquid_mode > 0
+        elif k == 'v': is_active = state.vortex_mode > 0
         else:          is_active = state.fx.get(FX_KEYS[i], False) if i < len(FX_KEYS) and FX_KEYS[i] else False
         color    = (0, 255, 170) if is_active else (60, 30, 60)
         bg_color = (20, 50, 10) if is_active else (8, 0, 4)
         cv2.rectangle(frame, (i * cell_w, h - bar_h), ((i + 1) * cell_w - 1, h), bg_color, -1)
-        if k == 'c':   label = CORRUPT_NAMES.get(state.corrupt_mode, 'OFF')
+        if k == '1':   label = RGB_NAMES.get(state.rgb_mode, 'OFF')
+        elif k == 'c': label = CORRUPT_NAMES.get(state.corrupt_mode, 'OFF')
         elif k == '4': label = MOSH_NAMES.get(state.datamosh_mode, 'OFF')
         elif k == 'l': label = LIQUID_NAMES.get(state.hyper_liquid_mode, 'OFF')
+        elif k == 'v': label = VORTEX_NAMES.get(state.vortex_mode, 'OFF')
         else:          label = name
         cv2.putText(frame, f'[{k}]', (x, h - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.28, color, 1)

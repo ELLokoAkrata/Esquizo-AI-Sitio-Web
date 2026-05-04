@@ -8,13 +8,72 @@ _trail_b = None
 
 
 def rgb_split(frame, t):
+    """H — horizontal clásico: R derecha, B izquierda."""
     off = int(t * 25) + 2
     b, g, r = cv2.split(frame)
     h, w = frame.shape[:2]
-    M = lambda dx: np.float32([[1, 0, dx], [0, 1, 0]])
-    r2 = cv2.warpAffine(r, M( off), (w, h), borderMode=cv2.BORDER_REFLECT)
-    b2 = cv2.warpAffine(b, M(-off), (w, h), borderMode=cv2.BORDER_REFLECT)
+    Mx = lambda dx: np.float32([[1, 0, dx], [0, 1,  0]])
+    r2 = cv2.warpAffine(r, Mx( off), (w, h), borderMode=cv2.BORDER_REFLECT)
+    b2 = cv2.warpAffine(b, Mx(-off), (w, h), borderMode=cv2.BORDER_REFLECT)
     return cv2.merge([b2, g, r2])
+
+
+def rgb_split_v(frame, t):
+    """V — vertical: R arriba, B abajo, G quieto."""
+    off = int(t * 25) + 2
+    b, g, r = cv2.split(frame)
+    h, w = frame.shape[:2]
+    My = lambda dy: np.float32([[1, 0, 0], [0, 1, dy]])
+    r2 = cv2.warpAffine(r, My(-off), (w, h), borderMode=cv2.BORDER_REFLECT)
+    b2 = cv2.warpAffine(b, My( off), (w, h), borderMode=cv2.BORDER_REFLECT)
+    return cv2.merge([b2, g, r2])
+
+
+def rgb_split_diag(frame, t):
+    """DIAG — diagonal: R arriba-derecha, B abajo-izquierda, G quieto."""
+    off = int(t * 18) + 2
+    b, g, r = cv2.split(frame)
+    h, w = frame.shape[:2]
+    M = lambda dx, dy: np.float32([[1, 0, dx], [0, 1, dy]])
+    r2 = cv2.warpAffine(r, M( off, -off), (w, h), borderMode=cv2.BORDER_REFLECT)
+    b2 = cv2.warpAffine(b, M(-off,  off), (w, h), borderMode=cv2.BORDER_REFLECT)
+    return cv2.merge([b2, g, r2])
+
+
+def rgb_split_tri(frame, t):
+    """TRI — 3 canales a 120° entre sí, máxima separación cromática."""
+    off = int(t * 22) + 2
+    b, g, r = cv2.split(frame)
+    h, w = frame.shape[:2]
+    M = lambda dx, dy: np.float32([[1, 0, dx], [0, 1, dy]])
+    # R → 0°, G → 120°, B → 240°
+    r2 = cv2.warpAffine(r, M( off,    0  ), (w, h), borderMode=cv2.BORDER_REFLECT)
+    g2 = cv2.warpAffine(g, M(-off//2, int(off * 0.87)), (w, h), borderMode=cv2.BORDER_REFLECT)
+    b2 = cv2.warpAffine(b, M(-off//2,-int(off * 0.87)), (w, h), borderMode=cv2.BORDER_REFLECT)
+    return cv2.merge([b2, g2, r2])
+
+
+def rgb_split_chaos(frame, t, tick):
+    """CHAOS — cada canal tiene su propio offset sinusoidal animado."""
+    h, w = frame.shape[:2]
+    b, g, r = cv2.split(frame)
+    amp = t * 30 + 4
+    M = lambda dx, dy: np.float32([[1, 0, dx], [0, 1, dy]])
+    ox_r = int(amp * np.sin(tick * 0.031))
+    oy_r = int(amp * 0.4 * np.cos(tick * 0.019))
+    ox_g = int(amp * 0.5 * np.sin(tick * 0.047 + 2.09))
+    oy_g = int(amp * 0.6 * np.cos(tick * 0.023 + 2.09))
+    ox_b = int(amp * np.sin(tick * 0.038 + 4.19))
+    oy_b = int(amp * 0.4 * np.cos(tick * 0.027 + 4.19))
+    r2 = cv2.warpAffine(r, M(ox_r, oy_r), (w, h), borderMode=cv2.BORDER_REFLECT)
+    g2 = cv2.warpAffine(g, M(ox_g, oy_g), (w, h), borderMode=cv2.BORDER_REFLECT)
+    b2 = cv2.warpAffine(b, M(ox_b, oy_b), (w, h), borderMode=cv2.BORDER_REFLECT)
+    return cv2.merge([b2, g2, r2])
+
+
+RGB_FUNCS = {1: rgb_split, 2: rgb_split_v, 3: rgb_split_diag,
+             4: rgb_split_tri, 5: rgb_split_chaos}
+RGB_NAMES = {0: 'OFF', 1: 'H', 2: 'V', 3: 'DIAG', 4: 'TRI', 5: 'CHOS'}
 
 
 def displacement(frame, t):
@@ -132,24 +191,107 @@ def wave(frame, t, tick):
 
 
 def vortex(frame, t, tick):
-    """Vórtice — rotación que succiona la imagen hacia el centro, twist creciente."""
+    """SWRL — twist horario + succión al centro."""
     h, w = frame.shape[:2]
     cx, cy = w / 2.0, h / 2.0
     y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
     dx = x_g - cx;  dy = y_g - cy
     r     = np.sqrt(dx**2 + dy**2) + 0.001
     angle = np.arctan2(dy, dx)
-    # Twist máximo en el centro, decae con radio
     twist = t * 5.5 * np.pi / (1.0 + r * 0.006)
-    # Rotación global animada
     spin  = tick * 0.025 * t
     new_a = angle + twist + spin
-    # Leve succión hacia el centro a intensidad alta
     pull  = 1.0 - t * 0.22 * np.exp(-r * 0.004)
     new_r = np.maximum(0.0, r * pull)
     mx = np.clip(cx + new_r * np.cos(new_a), 0, w - 1).astype(np.float32)
     my = np.clip(cy + new_r * np.sin(new_a), 0, h - 1).astype(np.float32)
     return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def vortex_anti(frame, t, tick):
+    """ANTI — twist anti-horario + expansión desde el centro."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    twist = -t * 5.5 * np.pi / (1.0 + r * 0.006)
+    spin  = -tick * 0.025 * t
+    new_a = angle + twist + spin
+    push  = 1.0 + t * 0.18 * np.exp(-r * 0.004)
+    new_r = np.maximum(0.0, r * push)
+    mx = np.clip(cx + new_r * np.cos(new_a), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(new_a), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def vortex_pulse(frame, t, tick):
+    """PULS — twist pulsante que respira entre colapso y expansión."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    phase = np.sin(tick * 0.04)                             # -1 → 1
+    twist = t * 6.0 * np.pi * phase / (1.0 + r * 0.005)
+    spin  = tick * 0.02 * t
+    new_a = angle + twist + spin
+    breathe = 1.0 + t * 0.28 * np.sin(tick * 0.04 + r * 0.003)
+    new_r = np.maximum(0.0, r * breathe)
+    mx = np.clip(cx + new_r * np.cos(new_a), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(new_a), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def vortex_exp(frame, t, tick):
+    """EXP — explosión radial + twist suave, la imagen se derrite hacia afuera."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    twist = t * 2.5 * np.pi / (1.0 + r * 0.003)
+    spin  = tick * 0.018 * t
+    new_a = angle + twist + spin
+    # Expansión no-lineal: los píxeles del centro se estiran más
+    push  = 1.0 + t * 0.45 / (1.0 + r * 0.012)
+    new_r = np.maximum(0.0, r * push)
+    mx = np.clip(cx + new_r * np.cos(new_a), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(new_a), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def vortex_dual(frame, t, tick):
+    """DUAL — dos vórtices opuestos en izq/der que compiten."""
+    h, w = frame.shape[:2]
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+
+    def _apply_vortex(x_g, y_g, cx, cy, sign):
+        dx = x_g - cx;  dy = y_g - cy
+        r     = np.sqrt(dx**2 + dy**2) + 0.001
+        angle = np.arctan2(dy, dx)
+        twist = sign * t * 4.5 * np.pi / (1.0 + r * 0.008)
+        spin  = sign * tick * 0.022 * t
+        new_a = angle + twist + spin
+        pull  = 1.0 - t * 0.18 * np.exp(-r * 0.006)
+        new_r = np.maximum(0.0, r * pull)
+        return cx + new_r * np.cos(new_a), cy + new_r * np.sin(new_a)
+
+    mx_l, my_l = _apply_vortex(x_g, y_g, w * 0.28, h * 0.5,  1)
+    mx_r, my_r = _apply_vortex(x_g, y_g, w * 0.72, h * 0.5, -1)
+    # Blend: lado izquierdo domina en x<w/2, derecho en x>=w/2
+    blend = np.clip((x_g - w * 0.5) / (w * 0.3) + 0.5, 0, 1)   # 0→1 de izq a der
+    mx = np.clip(mx_l * (1 - blend) + mx_r * blend, 0, w - 1).astype(np.float32)
+    my = np.clip(my_l * (1 - blend) + my_r * blend, 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+VORTEX_FUNCS = {1: vortex, 2: vortex_anti, 3: vortex_pulse,
+                4: vortex_exp, 5: vortex_dual}
+VORTEX_NAMES = {0: 'OFF', 1: 'SWRL', 2: 'ANTI', 3: 'PULS', 4: 'EXP', 5: 'DUAL'}
 
 
 def spiral(frame, t, tick):

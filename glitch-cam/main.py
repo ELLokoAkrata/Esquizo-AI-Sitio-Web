@@ -32,8 +32,9 @@ from effects.base    import (rgb_split, displacement, noise, color_cycle,
                               RGB_FUNCS, VORTEX_FUNCS)
 import effects.base as base
 from effects.corrupt import CORRUPT_MODES
-from effects.acid    import xor_feedback, frame_blend_rgb, hyper_liquid_acid
+from effects.acid       import xor_feedback, frame_blend_rgb, hyper_liquid_acid
 import effects.acid as acid
+from effects.color_acid import COLOR_ACID_FUNCS, COLOR_ACID_NAMES
 from effects.ghost   import MOSH_FUNCS
 import effects.ghost as ghost
 from effects.reventus import REV_FUNCS, REV_USE_TICK
@@ -143,6 +144,8 @@ def main():
                 out = color_cycle(out, t, tick)
             if state.corrupt_mode > 0:
                 out = CORRUPT_MODES[state.corrupt_mode](out, t)
+            if state.color_acid_mode > 0:
+                out = COLOR_ACID_FUNCS[state.color_acid_mode](out, t, tick)
 
             state.prev_frame = out.copy()
 
@@ -233,6 +236,7 @@ def main():
             state.hyper_liquid_mode = (state.hyper_liquid_mode + 1) % 5
             acid._liquid_buf = None   # reset buffer al cambiar nivel
         elif key == ord('c'): state.corrupt_mode = (state.corrupt_mode + 1) % 5
+        elif key == ord('k'): state.color_acid_mode = (state.color_acid_mode + 1) % 9
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
         elif key == ord('-'): state.intensity = max(0.0, state.intensity - 0.05)
@@ -240,9 +244,10 @@ def main():
         elif key == ord('h'): state.hud_on = not state.hud_on
         elif key == ord('r'):
             state.fx = {k: False for k in state.fx}
-            state.rgb_mode      = 0
-            state.vortex_mode   = 0
-            state.datamosh_mode = 0
+            state.rgb_mode        = 0
+            state.vortex_mode     = 0
+            state.datamosh_mode   = 0
+            state.color_acid_mode = 0
             state.blnd_on    = False
             state.prev_frame = None
             ghost._mosh_buf = None

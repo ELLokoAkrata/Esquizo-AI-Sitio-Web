@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 
 import state
-from effects.base     import RGB_NAMES, VORTEX_NAMES
+from effects.base      import RGB_NAMES, VORTEX_NAMES
+from effects.color_acid import COLOR_ACID_NAMES
 from effects.corrupt  import CORRUPT_NAMES
 from effects.ghost    import MOSH_NAMES
 from effects.reventus import REV_NAMES
@@ -11,12 +12,12 @@ from effects.mirror   import MIRROR_NAMES
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
           ('5', 'NOIS'), ('6', 'BLOK'), ('7', 'CRT'), ('8', 'COLR'),
-          ('9', 'ASCI'), ('c', 'CRPT'), ('v', 'VRTX'), ('0', 'SPRL'),
-          ('t', 'TRAL'), ('s', 'SORT'), ('w', 'WAVE'),
+          ('9', 'ASCI'), ('c', 'CRPT'), ('k', 'KACD'), ('v', 'VRTX'),
+          ('0', 'SPRL'), ('t', 'TRAL'), ('s', 'SORT'), ('w', 'WAVE'),
           ('x', 'XORF'), ('a', 'FRGB'), ('l', 'LQID')]
 FX_KEYS = ['rgb_split', 'displacement', 'scanlines', None,
            'noise', 'glitch_blocks', 'crt_warp', 'color_cycle', 'ascii', None,
-           'vortex', 'spiral', 'color_trails', 'pixel_sort', 'wave',
+           None, None, 'spiral', 'color_trails', 'pixel_sort', 'wave',
            'xor_feedback', 'frame_blend', None]
 
 LIQUID_NAMES = {0: 'OFF', 1: 'LOW', 2: 'MED', 3: 'HI', 4: 'MAX'}
@@ -67,6 +68,7 @@ def draw_hud(frame, fps, t):
         elif k == '4': is_active = state.datamosh_mode > 0
         elif k == 'l': is_active = state.hyper_liquid_mode > 0
         elif k == 'v': is_active = state.vortex_mode > 0
+        elif k == 'k': is_active = state.color_acid_mode > 0
         else:          is_active = state.fx.get(FX_KEYS[i], False) if i < len(FX_KEYS) and FX_KEYS[i] else False
         color    = (0, 255, 170) if is_active else (60, 30, 60)
         bg_color = (20, 50, 10) if is_active else (8, 0, 4)
@@ -76,6 +78,7 @@ def draw_hud(frame, fps, t):
         elif k == '4': label = MOSH_NAMES.get(state.datamosh_mode, 'OFF')
         elif k == 'l': label = LIQUID_NAMES.get(state.hyper_liquid_mode, 'OFF')
         elif k == 'v': label = VORTEX_NAMES.get(state.vortex_mode, 'OFF')
+        elif k == 'k': label = COLOR_ACID_NAMES.get(state.color_acid_mode, 'OFF')
         else:          label = name
         cv2.putText(frame, f'[{k}]', (x, h - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.28, color, 1)

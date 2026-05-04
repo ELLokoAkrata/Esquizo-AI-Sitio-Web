@@ -29,6 +29,7 @@ fx = {
 }
 rgb_mode           = 0  # 0=off  1=H  2=V  3=DIAG  4=TRI  5=CHAOS
 vortex_mode        = 0  # 0=off  1=SWRL  2=ANTI  3=PULS  4=EXP  5=DUAL
+color_acid_mode    = 0  # 0=off  1=BARS 2=INCR 3=TIME 4=XORT 5=TVAL 6=FADE 7=CRRP 8=SCAL
 corrupt_mode       = 0  # 0=off  1=bloques  2=orgánico  3=completo  4=puro
 datamosh_mode      = 0  # 0=off  1=ghst  2=soul  3=frac
 hyper_liquid_mode  = 0  # 0=off  1=LOW  2=MED  3=HI  4=MAX

@@ -53,6 +53,7 @@ python main.py --width 1280 --height 720 --intensity 70
 | `x` | XORF | XOR multi-escala con feedback loop — el look AcidCam |
 | `a` | FRGB | Frame Blend RGB — canales con delay temporal distinto, fantasmas arcoíris |
 | `l` | LQID | Hyper Liquid Acid Saturation — cicla OFF→LOW→MED→HI→MAX |
+| `k` | KACD | Color Acid (shaders AcidCam GL) — cicla 8 modos (ver abajo) |
 
 ### Efectos de distorsión
 | Tecla | Efecto | Descripción |
@@ -72,6 +73,7 @@ python main.py --width 1280 --height 720 --intensity 70
 |-------|------|-------|
 | `1` | RGB | OFF → H → V → DIAG → TRI → CHOS |
 | `4` | MOSH | OFF → GHST → SOUL → FRAC |
+| `k` | KACD | OFF → BARS → INCR → TIME → XORT → TVAL → FADE → CRRP → SCAL |
 | `c` | CRPT | OFF → BLK → ORG → ALL → PUR |
 | `l` | LQID | OFF → LOW → MED → HI → MAX |
 | `v` | VRTX | OFF → SWRL → ANTI → PULS → EXP → DUAL |
@@ -129,6 +131,16 @@ Detecta cara via Haar cascade, aplica el efecto solo en esa zona con blend gauss
 - **DRNK** — Triple visión de borracho
 - **BALO** — Balloon inflate/deflate cíclico
 
+### KACD modes (`k`) — Color Acid (traducción de shaders AcidCam GL)
+- **BARS** — Gradiente horizontal animado por canal + XOR con original (`color_bars.glsl`)
+- **INCR** — `(color×0.5) + 0.5×fract(color×time)` — posterización evolutiva (`color_increase.glsl`)
+- **TIME** — Cada canal: `1.5×c × fract(alpha_i×tick)` — strobing asíncrono R/G/B (`color_time.glsl`)
+- **XORT** — Como TIME pero XOR con original al final — más destructivo (`color_xor.glsl`)
+- **TVAL** — Muestra el frame a ×1, ×2, ×4, cruza canales entre escalas + XOR (`color_timeval.glsl`)
+- **FADE** — R uniforme / G gradiente horizontal / B gradiente vertical × valor fract animado (`color_shift_fade.glsl`)
+- **CRRP** — Ruido per-pixel con ajuste de balance R+/G- (`color_corruption.glsl`)
+- **SCAL** — Píxeles sobre umbral se comprimen y remapean, resultado ×2 (`color_scale.glsl`)
+
 ### RGB modes (`1`)
 - **H** — Horizontal clásico: R derecha, B izquierda
 - **V** — Vertical: R arriba, B abajo
@@ -172,6 +184,10 @@ x + c:ALL + s               →  XOR corruption sorted
 4:GHST + t + 1:CHOS         →  ghost rainbow RGB chaos
 m:KL8 + l:MED               →  kaleido líquido
 v:PULS + 0 + l:MED          →  espiral respirante líquida
+k:TVAL + x                  →  multi-escala XOR sobre XOR feedback — caos total
+k:TIME + 1:CHOS             →  strobing de canales × chaos RGB
+k:FADE + m:KL4              →  gradiente temporal caleidoscópico
+k:BARS + l:HI + v:SWRL      →  barras acid sobre vórtice líquido
 ```
 
 ---

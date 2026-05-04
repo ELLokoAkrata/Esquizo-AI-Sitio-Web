@@ -388,23 +388,91 @@ VORTEX_NAMES = {0: 'OFF', 1: 'SWRL', 2: 'ANTI', 3: 'PULS', 4: 'EXP', 5: 'DUAL'}
 
 
 def spiral(frame, t, tick):
-    """Espiral — desenrollado logarítmico pulsante con respiración orgánica."""
+    """LOGR — espiral logarítmica pulsante con respiración orgánica."""
     h, w = frame.shape[:2]
     cx, cy = w / 2.0, h / 2.0
     y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
     dx = x_g - cx;  dy = y_g - cy
     r     = np.sqrt(dx**2 + dy**2) + 0.001
     angle = np.arctan2(dy, dx)
-    # Espiral logarítmica: twist proporcional a log(r)
-    phase = np.sin(tick * 0.018) * 0.5 + 0.5   # 0→1 oscilando
-    twist = t * 3.8 * np.log1p(r * 0.025) * (phase * 1.4 + 0.3)
-    # Respiración radial — ondulación concéntrica
+    phase   = np.sin(tick * 0.018) * 0.5 + 0.5
+    twist   = t * 3.8 * np.log1p(r * 0.025) * (phase * 1.4 + 0.3)
     breathe = 1.0 + t * 0.18 * np.sin(tick * 0.035 + r * 0.018)
-    new_a = angle + twist
-    new_r = np.maximum(0.0, r * breathe)
-    mx = np.clip(cx + new_r * np.cos(new_a), 0, w - 1).astype(np.float32)
-    my = np.clip(cy + new_r * np.sin(new_a), 0, h - 1).astype(np.float32)
+    new_r   = np.maximum(0.0, r * breathe)
+    mx = np.clip(cx + new_r * np.cos(angle + twist), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(angle + twist), 0, h - 1).astype(np.float32)
     return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def spiral_tight(frame, t, tick):
+    """TGHT — twist agresivo uniforme (no logarítmico) + rotación continua rápida."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    twist = t * 7.0 * np.pi / (1.0 + r * 0.003)
+    spin  = tick * 0.045 * t
+    mx = np.clip(cx + r * np.cos(angle + twist + spin), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + r * np.sin(angle + twist + spin), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def spiral_wave(frame, t, tick):
+    """WAVE — espiral con onda radial superpuesta: el brazo ondula al girar."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    twist   = t * 4.0 * np.log1p(r * 0.02)
+    wave_r  = r + t * 25 * np.sin(r * 0.04 - tick * 0.06)
+    spin    = tick * 0.022 * t
+    new_r   = np.maximum(0.0, wave_r)
+    mx = np.clip(cx + new_r * np.cos(angle + twist + spin), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(angle + twist + spin), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def spiral_inward(frame, t, tick):
+    """INWD — succión espiral agresiva hacia el centro, imagen se colapsa."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    twist = t * 5.0 * np.log1p(r * 0.018)
+    pull  = 1.0 - t * 0.35 * np.exp(-r * 0.003)
+    spin  = tick * 0.03 * t
+    new_r = np.maximum(0.0, r * pull)
+    mx = np.clip(cx + new_r * np.cos(angle + twist + spin), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + new_r * np.sin(angle + twist + spin), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+def spiral_multi(frame, t, tick):
+    """MLTK — multi-brazo: el ángulo se multiplica creando N brazos simultáneos."""
+    h, w = frame.shape[:2]
+    cx, cy = w / 2.0, h / 2.0
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    dx = x_g - cx;  dy = y_g - cy
+    r     = np.sqrt(dx**2 + dy**2) + 0.001
+    angle = np.arctan2(dy, dx)
+    arms  = 3
+    twist = t * 3.5 * np.log1p(r * 0.022)
+    # Multiplicar el ángulo crea brazos — mod 2pi para mantener continuidad
+    multi_a = np.mod(angle * arms + twist + tick * 0.028 * t, 2 * np.pi) / arms
+    mx = np.clip(cx + r * np.cos(multi_a), 0, w - 1).astype(np.float32)
+    my = np.clip(cy + r * np.sin(multi_a), 0, h - 1).astype(np.float32)
+    return cv2.remap(frame, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+
+
+SPIRAL_FUNCS = {1: spiral, 2: spiral_tight, 3: spiral_wave,
+                4: spiral_inward, 5: spiral_multi}
+SPIRAL_NAMES = {0: 'OFF', 1: 'LOGR', 2: 'TGHT', 3: 'WAVE', 4: 'INWD', 5: 'MLTK'}
 
 
 ASCII_CHARS = " .'`-_:,;!|/()?1iltfr*<>+=oxzXYUJCQ0OZmwqbdkh#%@"

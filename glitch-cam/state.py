@@ -22,7 +22,7 @@ fx = {
     'color_cycle':   False,  # 8
     'ascii':         False,  # 9
     'vortex':        False,  # legacy — reemplazado por vortex_mode
-    'spiral':        False,  # 0
+    'spiral':        False,  # legacy — reemplazado por spiral_mode
     'color_trails':  False,  # t
     'pixel_sort':    False,  # s
     'wave':          False,  # legacy — reemplazado por wave_mode
@@ -34,6 +34,8 @@ vortex_mode        = 0  # 0=off  1=SWRL  2=ANTI  3=PULS  4=EXP  5=DUAL
 color_acid_mode    = 0  # 0=off  1=BARS 2=INCR 3=TIME 4=XORT 5=TVAL 6=FADE 7=CRRP 8=SCAL
 xor_mode           = 0  # 0=off  1=FDBK 2=INCR 3=POS 4=SHT1 5=SHT2 6=STRB 7=PROP
 wave_mode          = 0  # 0=off  1=BIDI 2=RADL 3=SHCK 4=DIAG 5=TURB 6=ZIGA
+spiral_mode        = 0  # 0=off  1=LOGR 2=TGHT 3=WAVE 4=INWD 5=MLTK
+blnd_mode          = 0  # 0=off  1=BLND 2=DIFF 3=SCRN 4=MPLY
 corrupt_mode       = 0  # 0=off  1=BLK  2=DSLV  3=ORG  4=ALL  5=PUR
 datamosh_mode      = 0  # 0=off  1=ghst  2=soul  3=frac
 hyper_liquid_mode  = 0  # 0=off  1=LOW  2=MED  3=HI  4=MAX

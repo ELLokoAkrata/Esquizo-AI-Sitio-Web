@@ -89,6 +89,8 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 | `c` | CRPT | OFF → BLK → ORG → ALL → PUR |
 | `l` | LQID | OFF → LOW → MED → HI → MAX |
 | `v` | VRTX | OFF → SWRL → ANTI → PULS → EXP → DUAL |
+| `0` | SPRL | OFF → LOGR → TGHT → WAVE → INWD → MLTK |
+| `b` | BLND | OFF → BLND → DIFF → SCRN → MPLY |
 | `Shift+F` | REV | OFF → SWRL → ACID → ZOOM → ECHO → DRNK → BALO |
 | `m` | MIRROR | OFF → MIR2 → KL4 → KL8 → KL16 |
 
@@ -177,6 +179,19 @@ Detecta cara via Haar cascade, aplica el efecto solo en esa zona con blend gauss
 - **DIAG** — Diagonal: R arriba-derecha, B abajo-izquierda
 - **TRI** — 3 canales separados a 120° entre sí — máxima separación cromática
 - **CHOS** — Chaos: cada canal con offset sinusoidal animado independiente
+
+### SPRL modes (`0`)
+- **LOGR** — Espiral logarítmica pulsante con respiración orgánica (la original)
+- **TGHT** — Twist agresivo uniforme + rotación rápida continua
+- **WAVE** — Espiral con onda radial superpuesta — el brazo ondula al girar
+- **INWD** — Succión espiral hacia el centro — la imagen colapsa
+- **MLTK** — Multi-brazo (3): el ángulo se multiplica creando N espirales simultáneas
+
+### BLND modes (`b`)
+- **BLND** — addWeighted clásico — trail suave con el frame anterior
+- **DIFF** — Diferencia absoluta con prev — zonas sin cambio → negro, cambios → color
+- **SCRN** — Screen blend — los colores se suman y aclaran, nunca oscurecen
+- **MPLY** — Multiply — los colores se multiplican, resultado más oscuro y saturado
 
 ### VRTX modes (`v`)
 - **SWRL** — Vórtice clásico: twist horario + succión al centro

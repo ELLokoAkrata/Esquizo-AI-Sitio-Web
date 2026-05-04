@@ -29,7 +29,8 @@ import state
 from effects.base    import (rgb_split, displacement, noise, color_cycle,
                               scanlines, glitch_blocks, crt_warp, ascii_mode,
                               vortex, spiral, color_trails, pixel_sort, wave,
-                              RGB_FUNCS, VORTEX_FUNCS, WAVE_FUNCS)
+                              RGB_FUNCS, VORTEX_FUNCS, WAVE_FUNCS,
+                              SPIRAL_FUNCS, SPIRAL_NAMES)
 import effects.base as base
 from effects.corrupt import CORRUPT_MODES
 from effects.acid       import xor_feedback, frame_blend_rgb, hyper_liquid_acid, XOR_FUNCS
@@ -132,8 +133,19 @@ def main():
             if state.hyper_liquid_mode > 0:
                 out = hyper_liquid_acid(out, LIQUID_LEVELS[state.hyper_liquid_mode], tick)
 
-            if state.blnd_on and state.prev_frame is not None:
-                out = cv2.addWeighted(out, 1 - t * 0.82, state.prev_frame, t * 0.82, 0)
+            if state.blnd_mode > 0 and state.prev_frame is not None:
+                a = t * 0.82
+                p = state.prev_frame
+                if state.blnd_mode == 1:   # BLND — addWeighted clásico
+                    out = cv2.addWeighted(out, 1 - a, p, a, 0)
+                elif state.blnd_mode == 2: # DIFF — diferencia absoluta con prev
+                    out = cv2.absdiff(out, p)
+                elif state.blnd_mode == 3: # SCRN — screen: 1-(1-a)*(1-b)
+                    f = out.astype(np.float32) / 255.0
+                    fp = p.astype(np.float32) / 255.0
+                    out = np.clip((1.0 - (1.0 - f) * (1.0 - fp * a)) * 255, 0, 255).astype(np.uint8)
+                elif state.blnd_mode == 4: # MPLY — multiply: a*b/255
+                    out = (out.astype(np.float32) * (p.astype(np.float32) * a / 255.0)).clip(0, 255).astype(np.uint8)
             if state.datamosh_mode > 0:
                 out = MOSH_FUNCS[state.datamosh_mode](out, state.prev_frame, t, tick)
             if state.rgb_mode > 0:
@@ -170,8 +182,8 @@ def main():
                 out = WAVE_FUNCS[state.wave_mode](out, t, tick)
             if state.vortex_mode > 0:
                 out = VORTEX_FUNCS[state.vortex_mode](out, t, tick)
-            if active['spiral']:
-                out = spiral(out, t, tick)
+            if state.spiral_mode > 0:
+                out = SPIRAL_FUNCS[state.spiral_mode](out, t, tick)
 
             # ─── REVENTUS ─────────────────────────────────────────────────────
             if state.rev_mode > 0:
@@ -227,7 +239,7 @@ def main():
         elif key == ord('8'): state.fx['color_cycle']   = not state.fx['color_cycle']
         elif key == ord('9'): state.fx['ascii']          = not state.fx['ascii']
         elif key == ord('v'): state.vortex_mode = (state.vortex_mode + 1) % 6
-        elif key == ord('0'): state.fx['spiral']         = not state.fx['spiral']
+        elif key == ord('0'): state.spiral_mode = (state.spiral_mode + 1) % 6
         elif key == ord('t'): state.fx['color_trails']   = not state.fx['color_trails']
         elif key == ord('s'): state.fx['pixel_sort']     = not state.fx['pixel_sort']
         elif key == ord('w'): state.wave_mode = (state.wave_mode + 1) % 7
@@ -255,7 +267,8 @@ def main():
             state.xor_mode        = 0
             state.wave_mode       = 0
             acid._prop_bufs       = None
-            state.blnd_on    = False
+            state.blnd_mode  = 0
+            state.spiral_mode = 0
             state.prev_frame = None
             ghost._mosh_buf = None
             ghost._frac_buf = None
@@ -276,7 +289,7 @@ def main():
         elif key == ord('d'): state.fps_idx   = max(0, state.fps_idx   - 1)
         elif key == ord('.'): state.speed_idx = min(len(state.SPEED_LEVELS) - 1, state.speed_idx + 1)
         elif key == ord(','): state.speed_idx = max(0, state.speed_idx - 1)
-        elif key == ord('b'): state.blnd_on = not state.blnd_on
+        elif key == ord('b'): state.blnd_mode = (state.blnd_mode + 1) % 5
         elif key == ord('m'): state.mirror_mode = (state.mirror_mode + 1) % 5
         elif key == ord('F'):  # Shift+F — cicla REVENTUS
             state.rev_mode    = (state.rev_mode + 1) % 7

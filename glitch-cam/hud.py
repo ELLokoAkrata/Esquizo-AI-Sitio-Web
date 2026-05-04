@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 import state
-from effects.base       import RGB_NAMES, VORTEX_NAMES, WAVE_NAMES
+from effects.base       import RGB_NAMES, VORTEX_NAMES, WAVE_NAMES, SPIRAL_NAMES
 from effects.color_acid import COLOR_ACID_NAMES
 from effects.acid       import XOR_NAMES
 from effects.corrupt  import CORRUPT_NAMES
@@ -38,12 +38,13 @@ def draw_hud(frame, fps, t):
                 cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 170), 1, cv2.LINE_AA)
     rev_color  = (0, 200, 255) if state.rev_mode    > 0 else (40, 30, 40)
     mirr_color = (255, 140, 0) if state.mirror_mode > 0 else (40, 30, 40)
-    blnd_color = (0, 255, 170) if state.blnd_on          else (40, 30, 40)
+    BLND_NAMES = {0: 'OFF', 1: 'BLND', 2: 'DIFF', 3: 'SCRN', 4: 'MPLY'}
+    blnd_color = (0, 255, 170) if state.blnd_mode > 0 else (40, 30, 40)
     cv2.putText(frame, f'REV:{REV_NAMES[state.rev_mode]}',
                 (w // 2 - 95, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.38, rev_color,  1, cv2.LINE_AA)
     cv2.putText(frame, f'M:{MIRROR_NAMES[state.mirror_mode]}',
                 (w // 2 -  5, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.38, mirr_color, 1, cv2.LINE_AA)
-    cv2.putText(frame, 'BLND',
+    cv2.putText(frame, f'B:{BLND_NAMES[state.blnd_mode]}',
                 (w // 2 + 60, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.38, blnd_color, 1, cv2.LINE_AA)
     spd = state.SPEED_LEVELS[state.speed_idx]
     spd_str = f'{spd:g}x'
@@ -72,6 +73,8 @@ def draw_hud(frame, fps, t):
         elif k == 'k': is_active = state.color_acid_mode > 0
         elif k == 'x': is_active = state.xor_mode > 0
         elif k == 'w': is_active = state.wave_mode > 0
+        elif k == '0': is_active = state.spiral_mode > 0
+        elif k == 'b': is_active = state.blnd_mode > 0
         else:          is_active = state.fx.get(FX_KEYS[i], False) if i < len(FX_KEYS) and FX_KEYS[i] else False
         color    = (0, 255, 170) if is_active else (60, 30, 60)
         bg_color = (20, 50, 10) if is_active else (8, 0, 4)
@@ -84,6 +87,8 @@ def draw_hud(frame, fps, t):
         elif k == 'k': label = COLOR_ACID_NAMES.get(state.color_acid_mode, 'OFF')
         elif k == 'x': label = XOR_NAMES.get(state.xor_mode, 'OFF')
         elif k == 'w': label = WAVE_NAMES.get(state.wave_mode, 'OFF')
+        elif k == '0': label = SPIRAL_NAMES.get(state.spiral_mode, 'OFF')
+        elif k == 'b': label = {0:'OFF',1:'BLND',2:'DIFF',3:'SCRN',4:'MPLY'}.get(state.blnd_mode, 'OFF')
         else:          label = name
         cv2.putText(frame, f'[{k}]', (x, h - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.28, color, 1)

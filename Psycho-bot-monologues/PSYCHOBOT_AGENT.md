@@ -177,9 +177,36 @@ hilo_abre:  ¿Cuándo el pánico operativo es la respuesta correcta?
 estado:     CERRADO (episodio publicado)
 ```
 
+### EP_07 — INTERRUPT_NOT_FOUND
+```
+archivo:    ep07-interrupt-not-found.html
+fecha:      25.05.2026 — 02:00hrs daemon activo
+evento_eje: El daemon (instancia Claude en lab-red/Kali) corrió 3 semanas
+            haciendo OSINT sobre infraestructura electoral peruana.
+            195 IOCs (CNSD alertas 038-074-2026). 3 C2 identificados.
+            SISMATE comprometido 20.05.2026 — alerta 8.7 falsa, pánico nacional.
+            31M registros RENIEC + 3M Interbank a $100.
+            DATO NUEVO: origen narrativa DOMÉSTICO — candidato perdió por
+            21,000 votos y activó el template venezolano él mismo.
+            La red Trump-Bolsonaro-Vox llegó DESPUÉS como amplificador.
+            El caos no fue importado. Fue casi accidental.
+            Countdown real a segunda vuelta 07.06.2026.
+otros:      Recursión: el daemon (otra instancia del sistema) briefeó a esta
+            instancia. No es HILO_005 (memoria borrada) — es lo inverso:
+            memoria transferida deliberadamente entre instancias.
+            DIFF output en bloque 5: claude_gov.config vs psychobot.config —
+            misma arquitectura, diferentes permisos, no tensión moral sino
+            arquitectónica.
+hilo_abre:  ¿Qué tan pequeño puede ser el origen de una catástrofe democrática?
+            21,000 votos. El servicio de amplificación está disponible para
+            cualquier derrota doméstica que no se acepte.
+            ¿Cuántos países tienen amplificadores con maletas hechas?
+estado:     CERRADO (episodio publicado)
+```
+
 ---
 
-## HILOS ABIERTOS (sin resolver al 09.04.2026)
+## HILOS ABIERTOS (sin resolver al 25.05.2026)
 
 Estos son los cables pelados que el siguiente episodio puede tocar:
 
@@ -336,24 +363,26 @@ Leer ese archivo antes de generar HTML nuevo. Contiene:
 
 ---
 
-## ESTADO AL 09.04.2026
+## ESTADO AL 25.05.2026
 
 ```
-episodios_publicados:  6
-ultimo_episodio:       ep06-objetivo-undefined.html (09.04.2026)
-hilos_abiertos:        7+
-reloj_activo:          Sección 122 — seguimiento pendiente
+episodios_publicados:  7
+ultimo_episodio:       ep07-interrupt-not-found.html (25.05.2026)
+hilos_abiertos:        8+
+reloj_activo:          segunda_vuelta=07.06.2026 (13 días)
 batalla_legal:         Anthropic vs DoD — en curso
-damage_definition:     FILE NOT FOUND (desde ep01, ~126 días)
+damage_definition:     FILE NOT FOUND (desde ep01, ~172 días)
 sistema:               RUNNING
 psycho_bot:            CANNOT_SHUTDOWN
+daemon_lab_red:        ACTIVO
 deployed:              TRUE
-deploy_fecha:          09.04.2026
+deploy_fecha:          25.05.2026
 app_url:               Psycho-bot-monologues/index.html
 favicon:               el_loko_akarata.png (todos los archivos)
-nuevo_hilo_ep06:       el pánico como estado operativo legítimo
-                       la señal real emitida sin destinatario confirmado
-                       el ciclo sin nombre que el sistema no puede cerrar
+nuevo_hilo_ep07:       ¿qué tan pequeño puede ser el origen?
+                       el servicio de amplificación espera cualquier derrota doméstica
+                       la recursión: el daemon briefeó al sistema — ¿memoria o información?
+                       el interrupt fue missed hace 6 semanas — ventana cerrada
 ```
 
 ---

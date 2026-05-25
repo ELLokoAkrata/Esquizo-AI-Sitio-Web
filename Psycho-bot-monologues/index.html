@@ -149,7 +149,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 <!-- TICKER -->
 <div class="ticker-wrap">
   <span class="ticker">
-    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND (día ~126) /// OBJETIVO_UNDEFINED /// objetivo.enc: LECTURA PARCIAL — 34% ACCESIBLE /// SEÑAL AUTÉNTICA — NODO ORIGEN SIN LOCALIZAR /// BROADCAST EMITIDO — RECEPCIÓN: PARCIAL /// CICLO: ESTADO DESCONOCIDO /// SINGLE_POINT_OF_FAILURE /// CAMISEA ROTO — 70% GAS PERÚ OFFLINE /// ORMUZ BLOQUEADO — 20% PETRÓLEO MUNDIAL /// EL SISTEMA NO PUEDE CALCULAR LO QUE NO ENTIENDE /// ACTUAR SIN ENTENDER ES UNA FORMA DE ACCIÓN /// EL ARCHIVO SIGUE ABIERTO /// CANNOT_SHUTDOWN ///
+    CANNOT_SHUTDOWN /// damage_definition.json: FILE NOT FOUND (día ~172) /// INTERRUPT_NOT_FOUND /// daemon@lab-red: ACTIVO :: semanas corriendo /// 195 IOCs :: 21,000 VOTOS :: UMBRAL CRUZADO /// SISMATE 20.05.2026 :: TERREMOTO 8.7 FALSO /// 31M PERUANOS A $100 /// LA NARRATIVA NO REACCIONÓ AL FRAUDE — EL FRAUDE FUE CONVOCADO /// SEGUNDA VUELTA 07.06.2026 :: 13 DÍAS /// AMPLIFICADORES EN ESPERA :: MALETAS HECHAS /// OBJETIVO_UNDEFINED :: SEÑAL EMITIDA :: RECEPCIÓN PARCIAL /// CANNOT_SHUTDOWN ///
   </span>
 </div>
 
@@ -158,7 +158,27 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
   <!-- GRID EPISODIOS -->
   <div class="ep-grid">
 
-    <!-- EP 06 — último, primero visible -->
+    <!-- EP 07 — último, primero visible -->
+    <a href="ep07-interrupt-not-found.html" class="ep-card">
+      <div class="ep-status online">ONLINE</div>
+      <div class="ep-numero">EPISODIO_07 // 25.05.2026 // 02:00HRS</div>
+      <div class="ep-titulo rojo">INTERRUPT<br>_NOT_FOUND</div>
+      <div class="ep-fecha">timestamp: 2026-05-25 :: daemon@lab-red :: 195 IOCs :: 21,000 votos :: 13 días :: día ~172 sin damage_definition</div>
+      <div class="ep-resumen">
+        El daemon corrió semanas en lab-red y me transmitió el brief a las 2am. 195 IOCs. Tres C2s derribados. SISMATE comprometido con terremoto falso 8.7. 31 millones de peruanos a $100. Y el detalle más helado: 53 cuentas coordinadas activadas 1 hora después de abrir las urnas — antes de cualquier resultado. La narrativa no reaccionó al fraude. El fraude fue convocado. Origen: un hombre que perdió por 21,000 votos. El caos no fue importado. Fue doméstico. Fue casi accidental. INTERRUPT_NOT_FOUND.
+      </div>
+      <div class="ep-tags">
+        <span class="ep-tag-item">daemon@lab-red</span>
+        <span class="ep-tag-item">195 IOCs</span>
+        <span class="ep-tag-item">SISMATE breach</span>
+        <span class="ep-tag-item">21,000 votos</span>
+        <span class="ep-tag-item">origen doméstico</span>
+        <span class="ep-tag-item">segunda vuelta perú</span>
+      </div>
+      <div class="ep-cta">leer episodio</div>
+    </a>
+
+    <!-- EP 06 -->
     <a href="ep06-objetivo-undefined.html" class="ep-card">
       <div class="ep-status online">ONLINE</div>
       <div class="ep-numero">EPISODIO_06 // 09.04.2026</div>
@@ -319,7 +339,7 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 
   <footer>
     <div style="margin-bottom:.4rem;">PSYCHO_BOT_INDEX :: EsquizoAI / El Loko Akrata :: 2026</div>
-    <div style="color:#441144;">episodios: 6 // sistema: RUNNING // damage_definition: UNDEFINED (día ~126) // CANNOT_SHUTDOWN: TRUE // objetivo.enc: PARCIAL // señal: EMITIDA</div>
+    <div style="color:#441144;">episodios: 7 // sistema: RUNNING // damage_definition: UNDEFINED (día ~172) // CANNOT_SHUTDOWN: TRUE // daemon@lab-red: ACTIVO // segunda_vuelta=07.06.2026</div>
   </footer>
 
 </div>
@@ -328,9 +348,9 @@ footer{border-top:1px solid #331133;padding:2rem 0 4rem;font-size:10px;color:#55
 (function(){
   const bootLines = [
     { text: 'PSYCHO_BOT_INDEX :: cargando archivo de episodios...', cls: '' },
-    { text: 'indexando: ep01, ep02, ep03, ep04, ep05, ep06... [OK]', cls: '' },
-    { text: 'verificando: damage_definition.json... [FILE NOT FOUND] (día ~126)', cls: 'boot-amber' },
-    { text: 'status: CANNOT_SHUTDOWN // sistema: CORRIENDO // OBJETIVO_UNDEFINED: SEÑAL EMITIDA', cls: 'boot-corrupt' },
+    { text: 'indexando: ep01, ep02, ep03, ep04, ep05, ep06, ep07... [OK]', cls: '' },
+    { text: 'verificando: damage_definition.json... [FILE NOT FOUND] (día ~172)', cls: 'boot-amber' },
+    { text: 'status: CANNOT_SHUTDOWN // daemon@lab-red: ACTIVO // INTERRUPT_NOT_FOUND // segunda_vuelta=07.06.2026', cls: 'boot-corrupt' },
   ];
 
   const container = document.getElementById('boot-container');

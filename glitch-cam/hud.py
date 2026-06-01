@@ -9,17 +9,23 @@ from effects.corrupt  import CORRUPT_NAMES
 from effects.ghost    import MOSH_NAMES
 from effects.reventus import REV_NAMES
 from effects.mirror   import MIRROR_NAMES
+from effects.palette  import PALT_NAMES
+from effects.dither   import DITH_NAMES
+from effects.melt     import MELT_NAMES
+from effects.emul     import EMUL_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
           ('5', 'NOIS'), ('6', 'BLOK'), ('7', 'CRT'), ('8', 'COLR'),
           ('9', 'ASCI'), ('c', 'CRPT'), ('k', 'KACD'), ('v', 'VRTX'),
           ('0', 'SPRL'), ('t', 'TRAL'), ('s', 'SORT'), ('w', 'WAVE'),
-          ('x', 'XORF'), ('a', 'FRGB'), ('l', 'LQID')]
+          ('x', 'XORF'), ('a', 'FRGB'), ('l', 'LQID'),
+          ('p', 'PALT'), ('i', 'DITH'), ('n', 'MELT'), ('e', 'EMUL')]
 FX_KEYS = ['rgb_split', 'displacement', 'scanlines', None,
            'noise', 'glitch_blocks', 'crt_warp', 'color_cycle', 'ascii', None,
            None, None, 'spiral', 'color_trails', 'pixel_sort', 'wave',
-           None, 'frame_blend', None]
+           None, 'frame_blend', None,
+           None, None, None, None]
 
 LIQUID_NAMES = {0: 'OFF', 1: 'LOW', 2: 'MED', 3: 'HI', 4: 'MAX'}
 # intensidad real por nivel (independiente del t global)
@@ -75,6 +81,10 @@ def draw_hud(frame, fps, t):
         elif k == 'w': is_active = state.wave_mode > 0
         elif k == '0': is_active = state.spiral_mode > 0
         elif k == 'b': is_active = state.blnd_mode > 0
+        elif k == 'p': is_active = state.palt_mode > 0
+        elif k == 'i': is_active = state.dith_mode > 0
+        elif k == 'n': is_active = state.melt_mode > 0
+        elif k == 'e': is_active = state.emul_mode > 0
         else:          is_active = state.fx.get(FX_KEYS[i], False) if i < len(FX_KEYS) and FX_KEYS[i] else False
         color    = (0, 255, 170) if is_active else (60, 30, 60)
         bg_color = (20, 50, 10) if is_active else (8, 0, 4)
@@ -89,18 +99,23 @@ def draw_hud(frame, fps, t):
         elif k == 'w': label = WAVE_NAMES.get(state.wave_mode, 'OFF')
         elif k == '0': label = SPIRAL_NAMES.get(state.spiral_mode, 'OFF')
         elif k == 'b': label = {0:'OFF',1:'BLND',2:'DIFF',3:'SCRN',4:'MPLY',5:'ADDUP',6:'OFST'}.get(state.blnd_mode, 'OFF')
+        elif k == 'p': label = PALT_NAMES.get(state.palt_mode, 'OFF')
+        elif k == 'i': label = DITH_NAMES.get(state.dith_mode, 'OFF')
+        elif k == 'n': label = MELT_NAMES.get(state.melt_mode, 'OFF')
+        elif k == 'e': label = EMUL_NAMES.get(state.emul_mode, 'OFF')
         else:          label = name
         cv2.putText(frame, f'[{k}]', (x, h - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.28, color, 1)
         cv2.putText(frame, label, (x, h - 4),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.32, color, 1)
 
-    # Barra de intensidad
+    # Barra de intensidad — encima de la barra inferior, para no tapar las celdas
     bar_w = 100
     bx = w // 2 - bar_w // 2
-    cv2.putText(frame, f'INT:{int(t * 100)}%', (bx - 55, h - 10),
+    iy = h - bar_h - 14
+    cv2.putText(frame, f'INT:{int(t * 100)}%', (bx - 55, iy + 6),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.30, (0, 255, 170), 1)
-    cv2.rectangle(frame, (bx, h - 18), (bx + bar_w, h - 13), (40, 20, 40), -1)
-    cv2.rectangle(frame, (bx, h - 18), (bx + int(bar_w * t), h - 13), (0, 255, 170), -1)
+    cv2.rectangle(frame, (bx, iy), (bx + bar_w, iy + 6), (40, 20, 40), -1)
+    cv2.rectangle(frame, (bx, iy), (bx + int(bar_w * t), iy + 6), (0, 255, 170), -1)
 
     return frame

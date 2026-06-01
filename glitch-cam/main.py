@@ -41,6 +41,11 @@ import effects.ghost as ghost
 from effects.reventus import REV_FUNCS, REV_USE_TICK
 import effects.reventus as reventus
 from effects.mirror  import MIRROR_FUNCS
+from effects.palette import PALT_FUNCS
+from effects.dither  import DITH_FUNCS
+from effects.melt    import MELT_FUNCS
+import effects.melt as melt
+from effects.emul    import draw_acid_os
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -187,6 +192,11 @@ def main():
                 out = CORRUPT_MODES[state.corrupt_mode](out, t)
             if state.color_acid_mode > 0:
                 out = COLOR_ACID_FUNCS[state.color_acid_mode](out, t, tick)
+            if state.palt_mode > 0:
+                fn = PALT_FUNCS[state.palt_mode]
+                out = fn(out, t, tick) if state.palt_mode == 4 else fn(out, t)
+            if state.dith_mode > 0:
+                out = DITH_FUNCS[state.dith_mode](out, t)
 
             state.prev_frame = out.copy()
 
@@ -210,6 +220,8 @@ def main():
                 out = VORTEX_FUNCS[state.vortex_mode](out, t, tick)
             if state.spiral_mode > 0:
                 out = SPIRAL_FUNCS[state.spiral_mode](out, t, tick)
+            if state.melt_mode > 0:
+                out = MELT_FUNCS[state.melt_mode](out, t, tick)
 
             # ─── REVENTUS ─────────────────────────────────────────────────────
             if state.rev_mode > 0:
@@ -236,6 +248,10 @@ def main():
             # ─── MIRROR FULL-SCREEN ───────────────────────────────────────────
             if state.mirror_mode > 0:
                 out = MIRROR_FUNCS[state.mirror_mode](out)
+
+            # ─── EMUL — overlay acid-OS (contenido creativo, se hornea) ───────
+            if state.emul_mode > 0:
+                out = draw_acid_os(out, t, tick, state.emul_mode)
 
             held_frame = out
 
@@ -279,6 +295,12 @@ def main():
             acid._liquid_buf = None   # reset buffer al cambiar nivel
         elif key == ord('c'): state.corrupt_mode = (state.corrupt_mode + 1) % 6
         elif key == ord('k'): state.color_acid_mode = (state.color_acid_mode + 1) % 9
+        elif key == ord('p'): state.palt_mode = (state.palt_mode + 1) % 7
+        elif key == ord('i'): state.dith_mode = (state.dith_mode + 1) % 4
+        elif key == ord('n'):
+            state.melt_mode = (state.melt_mode + 1) % 4
+            melt._wax_buf = None
+        elif key == ord('e'): state.emul_mode = (state.emul_mode + 1) % 3
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
         elif key == ord('-'): state.intensity = max(0.0, state.intensity - 0.05)
@@ -307,6 +329,12 @@ def main():
             acid._rgb_g_buf  = None
             acid._rgb_b_buf  = None
             acid._liquid_buf = None
+            state.palt_mode  = 0
+            state.dith_mode  = 0
+            state.melt_mode  = 0
+            state.emul_mode  = 0
+            state.rev_mode   = 0
+            melt._wax_buf    = None
         elif key == ord('f'):
             state.fullscreen = not state.fullscreen
             prop = cv2.WINDOW_FULLSCREEN if state.fullscreen else cv2.WINDOW_NORMAL
@@ -318,7 +346,7 @@ def main():
         elif key == ord('b'): state.blnd_mode = (state.blnd_mode + 1) % 7
         elif key == ord('m'): state.mirror_mode = (state.mirror_mode + 1) % 5
         elif key == ord('F'):  # Shift+F — cicla REVENTUS
-            state.rev_mode    = (state.rev_mode + 1) % 7
+            state.rev_mode    = (state.rev_mode + 1) % 9
             last_face         = None
             reventus._rev_echo_buf = None
 

@@ -44,6 +44,11 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 
 ## Controles
 
+> **Activación rápida de los filtros acid-OS:** `p` PALT · `i` DITH · `n` MELT · `e` EMUL.
+> Cada tecla **cicla** sus modos (vuelve a OFF al final) y se pueden **acumular**.
+> Los 2 modos de rostro nuevos (**ACDF**, **MELT**) están al final del ciclo de `Shift+F` y
+> necesitan una cara detectada en cuadro. Combo recomendado: `p`→512 + `i`→CLR + `e`→FULL.
+
 ### Efectos base (toggle)
 | Tecla | Efecto | Descripción |
 |-------|--------|-------------|
@@ -77,6 +82,14 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 | `t` | TRAL | Color trails — R/G/B con decay independiente |
 | `s` | SORT | Pixel sort vertical por luminancia |
 
+### Efectos acid-OS (inspirados en `inspirations/`)
+| Tecla | Efecto | Descripción |
+|-------|--------|-------------|
+| `p` | PALT | Paleta acid — cicla 6 modos (verde tóxico / 512-colores / magenta / acid / ghoul / pink) |
+| `i` | DITH | Dithering Bayer ordenado — cicla 3 modos (B&W / verde / color indexado) |
+| `n` | MELT | Derretimiento de realidad full-frame — cicla 3 modos (drip / wax / liquid) |
+| `e` | EMUL | Overlay Acid-OS — cicla SLIM → FULL (ventanas fake, slogans, taskbar 666, Ⓐ) |
+
 ### Modos cíclicos
 | Tecla | Modo | Ciclo |
 |-------|------|-------|
@@ -91,8 +104,12 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 | `v` | VRTX | OFF → SWRL → ANTI → PULS → EXP → DUAL |
 | `0` | SPRL | OFF → LOGR → TGHT → WAVE → INWD → MLTK |
 | `b` | BLND | OFF → BLND → DIFF → SCRN → MPLY → ADDUP → OFST |
-| `Shift+F` | REV | OFF → SWRL → ACID → ZOOM → ECHO → DRNK → BALO |
+| `Shift+F` | REV | OFF → SWRL → ACID → ZOOM → ECHO → DRNK → BALO → ACDF → MELT |
 | `m` | MIRROR | OFF → MIR2 → KL4 → KL8 → KL16 |
+| `p` | PALT | OFF → GRN → 512 → MGTA → ACID → GHUL → PNK |
+| `i` | DITH | OFF → BW → GRN → CLR |
+| `n` | MELT | OFF → DRIP → WAX → LIQD |
+| `e` | EMUL | OFF → SLIM → FULL |
 
 ### Sistema
 | Tecla | Función |
@@ -145,6 +162,34 @@ Detecta cara via Haar cascade, aplica el efecto solo en esa zona con blend gauss
 - **ECHO** — Residuo lento con buffer persistente
 - **DRNK** — Triple visión de borracho
 - **BALO** — Balloon inflate/deflate cíclico
+- **ACDF** — Paleta acid + dither sólo en el rostro + halo de símbolos anarquía (Ⓐ) girando alrededor de la cara. El rostro gritando central de los acid-OS emulators.
+- **MELT** — El rostro chorrea hacia abajo: estiramiento vertical creciente desde la cara al borde inferior, ondulando con `tick`. Derretimiento *de rostro* (≠ `n`:MELT, que derrite todo el cuadro).
+
+### PALT (`p`) — Paleta acid
+Reduce el frame a paletas limitadas vía LUT de luminancia (`gray → lut[gray]`) — el look dominante de las inspiraciones. Real-time (una indexación por frame).
+- **GRN** — Duotone negro→verde tóxico (#00ff41), terminal fosforado.
+- **512** — Posterizado a 8 niveles/canal (8³=512 colores) por máscara de bits. A más intensidad baja a 4 niveles.
+- **MGTA** — Duotone negro→verde→magenta: sombras verdes, luces magenta.
+- **ACID** — Rampa de 6 colores acid (crimson/amber/yellow/green/magenta) mapeada por luminancia; `tick` rota la paleta → muta sola.
+- **GHUL** — 3 tonos: negro / verde tóxico / crimson (calavera acid).
+- **PNK** — Duotone negro→bruised purple→wet pink.
+
+### DITH (`i`) — Dithering Bayer ordenado
+Cuantización con matriz de Bayer tilada (vectorizado). La textura granulosa pixelada retro-PC. Combina con PALT.
+- **BW** — Umbral 1-bit blanco/negro con Bayer 4×4. La intensidad sesga el umbral.
+- **GRN** — Dither 1-bit a negro / verde tóxico (terminal fosforado).
+- **CLR** — Cuantización a pocos niveles/canal (4→3 según intensidad) **con** dither Bayer 8×8 → look indexado clásico.
+
+### MELT (`n`) — Derretimiento de realidad (full-frame)
+La realidad chorrea, vía `cv2.remap` + buffer de feedback. Es el derretimiento *de todo el cuadro* (≠ REV:MELT, centrado en rostro).
+- **DRIP** — Cada columna se estira hacia abajo, más cuanto más profunda; el goteo ondula y migra con `tick`.
+- **WAX** — Feedback persistente: el buffer baja cada frame y se queda con `max(rastro, frame)` → las zonas brillantes chorrean y dejan estela de cera.
+- **LIQD** — Liquify guiado por la propia luminancia (suavizada): el color del frame decide cuánto se desplaza cada píxel.
+
+### EMUL (`e`) — Overlay Acid-OS
+Chrome de escritorio fake psycho-anarco-punk dibujado al final del pipeline (como el HUD, pero es contenido creativo: se hornea en el frame y **no** se oculta con `Tab`). Layout estable que muta cada ~200 ticks.
+- **SLIM** — Taskbar inferior ("START · DEPROGRAMMED · I HATE EVERYONE.EXE · 666:CHAOS"), 3 slogans glitch flotantes y símbolo anarquía Ⓐ.
+- **FULL** — Además 4 ventanas Win95 flotantes (barra de título magenta, texto "ACID EMULATOR v0.666 / MIND.EXE / DELETING SOCIETY", barra de progreso animada), bordes verde tóxico y aberración cromática en los textos.
 
 ### XORF modes (`x`) — XOR (shaders AcidCam GL)
 - **FDBK** — XOR multi-escala ×2/×4/×8 con feedback loop acumulado — el look AcidCam original
@@ -239,6 +284,12 @@ c:DSLV + x:PROP             →  corrupción full-frame + propagación zonal XOR
 c:DSLV + w:SHCK             →  manchas de color mutantes + shockwave
 w:TURB + x:FDBK             →  turbulencia sobre feedback XOR — máximo caos
 w:ZIGA + v:DUAL             →  zigzag + doble vórtice — imagen destrozada
+p:ACID + i:CLR              →  look "512 colours" dithered — el acid-OS clásico
+e:FULL + p:GRN              →  escritorio acid verde fosforado con ventanas fake
+e:FULL + p:512 + i:CLR      →  emulador acid-OS completo (paleta + dither + chrome)
+n:WAX + p:MGTA              →  realidad derritiéndose en verde/magenta
+n:DRIP + i:GRN              →  terminal fosforado chorreando
+Shift+F:ACDF + e:SLIM       →  rostro acid con halo anarquía + chrome de OS
 ```
 
 ---
@@ -258,7 +309,11 @@ glitch-cam/
 │   ├── ghost.py         ← fx_ghst, fx_soul, fx_frac, MOSH_FUNCS
 │   ├── reventus.py      ← rev_*, REV_FUNCS (efectos centrados en rostro)
 │   ├── mirror.py        ← screen_mir2, screen_kl4/8/16, MIRROR_FUNCS
-│   └── acid.py          ← xor_feedback, frame_blend_rgb, hyper_liquid_acid
+│   ├── acid.py          ← xor_feedback, frame_blend_rgb, hyper_liquid_acid
+│   ├── palette.py       ← palt_* (paleta acid vía LUT), PALT_FUNCS
+│   ├── dither.py        ← dith_* (Bayer ordenado), DITH_FUNCS
+│   ├── melt.py          ← melt_* (derretimiento full-frame), MELT_FUNCS
+│   └── emul.py          ← draw_acid_os (overlay Acid-OS), EMUL_NAMES
 └── README.md
 ```
 

@@ -3,6 +3,8 @@ import numpy as np
 import inspect
 
 from effects.corrupt import color_corrupt_pure
+from effects.palette import palt_acid, GREEN
+from effects.dither  import dith_color
 
 
 _rev_echo_buf = None  # buffer persistente para ECHO
@@ -157,9 +159,50 @@ def rev_balo(frame, bbox, t, tick):
     return _blend(frame, inflated, _face_mask(frame.shape, bbox, 1.1))
 
 
+def rev_acidface(frame, bbox, t, tick):
+    """ACDF — paleta acid + dither sólo en el rostro + halo de símbolos anarquía
+    girando alrededor. La cara central gritando de los acid-OS emulators."""
+    eff = palt_acid(frame, max(0.5, t), tick)
+    eff = dith_color(eff, t)
+    out = _blend(frame, eff, _face_mask(frame.shape, bbox, 1.1))
+
+    bx, by, bw, bh = bbox
+    cx, cy = bx + bw / 2.0, by + bh / 2.0
+    radius = max(bw, bh) * 0.85
+    n = 8
+    sym_r = max(6, int(bw * 0.10))
+    for i in range(n):
+        ang = tick * 0.03 + i * (2 * np.pi / n)
+        px = int(cx + radius * np.cos(ang))
+        py = int(cy + radius * np.sin(ang))
+        cv2.circle(out, (px, py), sym_r, GREEN, 1, cv2.LINE_AA)
+        cv2.putText(out, 'A', (px - sym_r // 2, py + sym_r // 2),
+                    cv2.FONT_HERSHEY_SIMPLEX, sym_r / 18.0, GREEN, 1, cv2.LINE_AA)
+    return out
+
+
+def rev_melt(frame, bbox, t, tick):
+    """MELT — el rostro chorrea hacia abajo: estiramiento vertical creciente desde
+    la cara hacia el borde inferior + ondulación animada. Derretimiento de rostro."""
+    h, w = frame.shape[:2]
+    bx, by, bw, bh = bbox
+    x = np.arange(w, dtype=np.float32)
+    drip = (np.sin(x * 0.05 + tick * 0.06) + np.sin(x * 0.017 + tick * 0.03) * 0.5)
+    drip = (drip * 0.5 + 0.5)
+    amp  = (0.4 + t) * bh * 0.9
+    drip = (drip * amp).reshape(1, w)
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    depth = np.clip((y_g - by) / max(1.0, h - by), 0.0, 1.0)   # 0 sobre la cara, 1 abajo
+    map_y = np.clip(y_g - drip * depth, 0, h - 1).astype(np.float32)
+    eff = cv2.remap(frame, x_g, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    return _blend(frame, eff, _face_mask(frame.shape, bbox, 1.3))
+
+
 REV_FUNCS    = {1: rev_swrl, 2: rev_acid, 3: rev_zoom,
-                4: rev_echo, 5: rev_drunk, 6: rev_balo}
+                4: rev_echo, 5: rev_drunk, 6: rev_balo,
+                7: rev_acidface, 8: rev_melt}
 REV_NAMES    = {0: 'OFF', 1: 'SWRL', 2: 'ACID', 3: 'ZOOM',
-                4: 'ECHO', 5: 'DRNK', 6: 'BALO'}
+                4: 'ECHO', 5: 'DRNK', 6: 'BALO',
+                7: 'ACDF', 8: 'MELT'}
 REV_USE_TICK = {k for k, fn in REV_FUNCS.items()
                 if 'tick' in inspect.signature(fn).parameters}

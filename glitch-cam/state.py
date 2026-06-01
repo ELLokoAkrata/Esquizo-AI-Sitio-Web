@@ -40,8 +40,12 @@ corrupt_mode       = 0  # 0=off  1=BLK  2=DSLV  3=ORG  4=ALL  5=PUR
 datamosh_mode      = 0  # 0=off  1=ghst  2=soul  3=frac
 hyper_liquid_mode  = 0  # 0=off  1=LOW  2=MED  3=HI  4=MAX
 blnd_on       = False  # trail base — combina con cualquier modo del 4
-rev_mode      = 0  # REVENTUS: 0=off 1=swrl 2=acid 3=zoom 4=echo 5=drnk 6=balo
+rev_mode      = 0  # REVENTUS: 0=off 1=swrl 2=acid 3=zoom 4=echo 5=drnk 6=balo 7=acdf 8=melt
 mirror_mode   = 0  # MIRROR full-screen: 0=off 1=mir2 2=kl4 3=kl8 4=kl16
+palt_mode     = 0  # PALT paleta acid: 0=off 1=GRN 2=512 3=MGTA 4=ACID 5=GHUL 6=PNK
+dith_mode     = 0  # DITH dithering Bayer: 0=off 1=BW 2=GRN 3=CLR
+melt_mode     = 0  # MELT derretimiento realidad: 0=off 1=DRIP 2=WAX 3=LIQD
+emul_mode     = 0  # EMUL overlay acid-OS: 0=off 1=SLIM 2=FULL
 
 # ─── ESTADO GENERAL ───────────────────────────────────────────────────────────
 intensity  = args.intensity / 100.0

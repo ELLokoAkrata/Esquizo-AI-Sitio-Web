@@ -52,6 +52,7 @@ from effects.slitscan import SLIT_FUNCS
 import effects.slitscan as slitscan
 from effects.feedback import FB_FUNCS
 import effects.feedback as feedback
+from effects.tunnel  import TUNNEL_FUNCS
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -68,6 +69,7 @@ def reload_effects():
     global CORRUPT_MODES, COLOR_ACID_FUNCS, COLOR_ACID_NAMES, MOSH_FUNCS
     global REV_FUNCS, REV_USE_TICK, MIRROR_FUNCS
     global PALT_FUNCS, DITH_FUNCS, MELT_FUNCS, SLIT_FUNCS, FB_FUNCS, draw_acid_os
+    global TUNNEL_FUNCS
     global displacement, noise, color_cycle, scanlines, glitch_blocks
     global crt_warp, ascii_mode, color_trails, pixel_sort
     global draw_hud, LIQUID_LEVELS
@@ -76,7 +78,7 @@ def reload_effects():
              'effects.color_acid', 'effects.acid', 'effects.corrupt',
              'effects.ghost', 'effects.mirror', 'effects.melt',
              'effects.emul', 'effects.reventus', 'effects.slitscan',
-             'effects.feedback', 'hud']
+             'effects.feedback', 'effects.tunnel', 'hud']
     try:
         for name in order:
             if name in sys.modules:
@@ -90,7 +92,7 @@ def reload_effects():
     ca, gh, rv = m['effects.color_acid'], m['effects.ghost'], m['effects.reventus']
     mi, pa, di = m['effects.mirror'], m['effects.palette'], m['effects.dither']
     me, em, sl = m['effects.melt'], m['effects.emul'], m['effects.slitscan']
-    fb = m['effects.feedback']
+    fb, tu = m['effects.feedback'], m['effects.tunnel']
     hu = m['hud']
     # re-vincular lo que el pipeline usa por nombre (los alias de módulo se
     # actualizan solos porque reload reusa el mismo objeto módulo)
@@ -108,6 +110,7 @@ def reload_effects():
     MIRROR_FUNCS = mi.MIRROR_FUNCS
     PALT_FUNCS, DITH_FUNCS, MELT_FUNCS = pa.PALT_FUNCS, di.DITH_FUNCS, me.MELT_FUNCS
     draw_acid_os, SLIT_FUNCS, FB_FUNCS = em.draw_acid_os, sl.SLIT_FUNCS, fb.FB_FUNCS
+    TUNNEL_FUNCS = tu.TUNNEL_FUNCS
     draw_hud, LIQUID_LEVELS = hu.draw_hud, hu.LIQUID_LEVELS
     print('[RELOAD] efectos + hud recargados OK')
 
@@ -287,6 +290,8 @@ def main():
                 out = SLIT_FUNCS[state.slit_mode](out, t, tick)
             if state.fb_mode > 0:
                 out = FB_FUNCS[state.fb_mode](out, t, tick)
+            if state.tunnel_mode > 0:
+                out = TUNNEL_FUNCS[state.tunnel_mode](out, t, tick)
             if state.melt_mode > 0:
                 out = MELT_FUNCS[state.melt_mode](out, t, tick)
 
@@ -380,6 +385,10 @@ def main():
                 state.slit_mode = (state.slit_mode + 1) % 5   # A·j = SLIT-SCAN
                 slitscan.reset()
             # else: B·j = STUTTER+STROBE (pendiente)
+        elif key == ord('o'):
+            if state.bank == 0:
+                state.tunnel_mode = (state.tunnel_mode + 1) % 4   # A·o = TUNNEL
+            # else: B·o = SOLAR (pendiente)
         elif key == ord('R'): reload_effects()  # Shift+R — hot-reload effects/* + hud
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
@@ -415,9 +424,10 @@ def main():
             state.emul_mode  = 0
             state.rev_mode   = 0
             melt._wax_buf    = None
-            state.slit_mode  = 0
-            state.fb_mode    = 0
-            state.bank       = 0
+            state.slit_mode    = 0
+            state.fb_mode      = 0
+            state.tunnel_mode  = 0
+            state.bank         = 0
             slitscan.reset()
             feedback.reset()
         elif key == ord('f'):

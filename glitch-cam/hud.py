@@ -15,6 +15,7 @@ from effects.melt     import MELT_NAMES
 from effects.emul     import EMUL_NAMES
 from effects.slitscan import SLIT_NAMES
 from effects.feedback import FB_NAMES
+from effects.tunnel   import TUNNEL_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -34,9 +35,9 @@ FX_KEYS = ['rgb_split', 'displacement', 'scanlines', None,
 # Pendientes (sin implementar): mode=0, names=None → muestran su abreviatura dim.
 def _bank_cells():
     if state.bank == 0:
-        return [('g', state.fb_mode,   FB_NAMES,   'FBCK'),
-                ('j', state.slit_mode, SLIT_NAMES, 'SLIT'),
-                ('o', 0, None, 'TUNL'),
+        return [('g', state.fb_mode,     FB_NAMES,     'FBCK'),
+                ('j', state.slit_mode,   SLIT_NAMES,   'SLIT'),
+                ('o', state.tunnel_mode, TUNNEL_NAMES, 'TUNL'),
                 ('y', 0, None, 'KALD'),
                 ('z', 0, None, 'BLOM')]
     return [('g', 0, None, 'VHS'),

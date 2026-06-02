@@ -55,6 +55,14 @@ bank          = 0  # 0=A  1=B   (futuro botón físico ESP32)
 # Banco B:  g=vhs       j=stutter o=solar  y=edge     z=halftone
 slit_mode     = 0  # SLIT-SCAN time-displacement: 0=off 1=ROWS 2=COLS 3=RADL 4=CHAOS
 fb_mode       = 0  # FEEDBACK recursión: 0=off 1=ZOOM 2=ROTZ 3=DROST 4=ECHO
+tunnel_mode   = 0  # TUNNEL polar: 0=off 1=TUNL 2=TWST 3=POLR
+kaleido_mode  = 0  # KALEIDO simetría radial: 0=off 1=K4 2=K6 3=K8 4=MIRR
+bloom_mode    = 0  # BLOOM glow: 0=off 1=GLOW 2=NEON 3=HALO
+vhs_mode      = 0  # VHS decay analógico: 0=off 1=TRAK 2=CHRM 3=DROP 4=FULL
+stutter_mode  = 0  # STUTTER+STROBE: 0=off 1=HOLD 2=RWND 3=ECHO 4=STRB 5=INVS
+solar_mode    = 0  # SOLAR/THERMAL falso color: 0=off 1=SOLR 2=THRM 3=INVT
+edge_mode     = 0  # EDGE rotoscopio: 0=off 1=NEON 2=CMIC 3=GHST
+halftone_mode = 0  # HALFTONE imprenta: 0=off 1=DOT 2=CMYK 3=LINE
 
 # ─── ESTADO GENERAL ───────────────────────────────────────────────────────────
 intensity  = args.intensity / 100.0

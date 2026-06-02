@@ -421,6 +421,42 @@
                         <label for="double">Double-Struck</label>
                     </div>
                     <div class="checkbox-item">
+                        <input type="checkbox" id="italic">
+                        <label for="italic">Italic 𝐼𝑎</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="boldserif">
+                        <label for="boldserif">Bold Serif 𝐀𝐚</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="bolditalic">
+                        <label for="bolditalic">Bold Italic 𝑨𝒂</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sansbolditalic">
+                        <label for="sansbolditalic">Sans Bold Italic 𝘼𝙖</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="fullwidth">
+                        <label for="fullwidth">Fullwidth Ａａ</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="circled">
+                        <label for="circled">Circled Ⓐⓐ</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="flip">
+                        <label for="flip">Upside-Down ɐ</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="strike">
+                        <label for="strike">Strikethrough a̶</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="underline">
+                        <label for="underline">Underline a̲</label>
+                    </div>
+                    <div class="checkbox-item">
                         <input type="checkbox" id="normal">
                         <label for="normal">Texto Normal</label>
                     </div>
@@ -556,6 +592,103 @@
             return result;
         }
 
+        function toItalic(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += (code - 97 === 7) ? 'ℎ' : String.fromCodePoint(0x1D44E + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D434 + (code - 65));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toBoldSerif(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D41A + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D400 + (code - 65));
+                else if (code >= 48 && code <= 57) result += String.fromCodePoint(0x1D7CE + (code - 48));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toBoldItalic(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D482 + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D468 + (code - 65));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toSansBoldItalic(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 97 && code <= 122) result += String.fromCodePoint(0x1D656 + (code - 97));
+                else if (code >= 65 && code <= 90) result += String.fromCodePoint(0x1D63C + (code - 65));
+                else result += char;
+            }
+            return result;
+        }
+
+        function toFullwidth(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (char === ' ') result += '　';
+                else if (code >= 0x21 && code <= 0x7E) result += String.fromCodePoint(code + 0xFEE0);
+                else result += char;
+            }
+            return result;
+        }
+
+        function toCircled(text) {
+            let result = '';
+            for (let char of text) {
+                const code = char.charCodeAt(0);
+                if (code >= 65 && code <= 90) result += String.fromCodePoint(0x24B6 + (code - 65));
+                else if (code >= 97 && code <= 122) result += String.fromCodePoint(0x24D0 + (code - 97));
+                else if (char === '0') result += '⓪';
+                else if (code >= 49 && code <= 57) result += String.fromCodePoint(0x2460 + (code - 49));
+                else result += char;
+            }
+            return result;
+        }
+
+        const flipMap = {
+            "a":"ɐ","b":"q","c":"ɔ","d":"p","e":"ǝ","f":"ɟ","g":"ƃ","h":"ɥ",
+            "i":"ᴉ","j":"ɾ","k":"ʞ","l":"l","m":"ɯ","n":"u","o":"o","p":"d","q":"b",
+            "r":"ɹ","s":"s","t":"ʇ","u":"n","v":"ʌ","w":"ʍ","x":"x","y":"ʎ","z":"z",
+            "A":"∀","B":"q","C":"Ɔ","D":"◖","E":"Ǝ","F":"Ⅎ","G":"⅁","H":"H",
+            "I":"I","J":"ſ","K":"⋊","L":"˥","M":"W","N":"N","O":"O","P":"Ԁ","Q":"Ò",
+            "R":"ᴚ","S":"S","T":"⊥","U":"∩","V":"Λ","W":"M","X":"X","Y":"⅄","Z":"Z",
+            ".":"˙",",":"'","?":"¿","!":"¡","'":",","\"":"„","(":")",")":"(",
+            "[":"]","]":"[","{":"}","}":"{","<":">",">":"<","_":"‾","&":"⅋","3":"Ɛ"
+        };
+        function toFlip(text) {
+            const out = [];
+            for (let char of text) out.push(flipMap[char] || flipMap[char.toLowerCase()] || char);
+            return out.reverse().join('');
+        }
+
+        function toStrike(text) {
+            let result = '';
+            for (let char of text) result += char + '̶';
+            return result;
+        }
+
+        function toUnderline(text) {
+            let result = '';
+            for (let char of text) result += char + '̲';
+            return result;
+        }
+
         const glitchMarks = [
             '\u0300', '\u0301', '\u0302', '\u0303', '\u0304', '\u0305',
             '\u0306', '\u0307', '\u0308', '\u0309', '\u030A', '\u030B',
@@ -622,6 +755,15 @@
                 mono: { fn: toMono, name: 'Monospace' },
                 script: { fn: toScript, name: 'Script' },
                 double: { fn: toDouble, name: 'Double-Struck' },
+                italic: { fn: toItalic, name: 'Italic' },
+                boldserif: { fn: toBoldSerif, name: 'Bold Serif' },
+                bolditalic: { fn: toBoldItalic, name: 'Bold Italic' },
+                sansbolditalic: { fn: toSansBoldItalic, name: 'Sans Bold Italic' },
+                fullwidth: { fn: toFullwidth, name: 'Fullwidth' },
+                circled: { fn: toCircled, name: 'Circled' },
+                flip: { fn: toFlip, name: 'Upside-Down' },
+                strike: { fn: toStrike, name: 'Strikethrough' },
+                underline: { fn: toUnderline, name: 'Underline' },
                 normal: { fn: (t) => t, name: 'Texto Normal' }
             };
 

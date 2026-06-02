@@ -13,6 +13,7 @@ from effects.palette  import PALT_NAMES
 from effects.dither   import DITH_NAMES
 from effects.melt     import MELT_NAMES
 from effects.emul     import EMUL_NAMES
+from effects.slitscan import SLIT_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -20,12 +21,14 @@ LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
           ('9', 'ASCI'), ('c', 'CRPT'), ('k', 'KACD'), ('v', 'VRTX'),
           ('0', 'SPRL'), ('t', 'TRAL'), ('s', 'SORT'), ('w', 'WAVE'),
           ('x', 'XORF'), ('a', 'FRGB'), ('l', 'LQID'),
-          ('p', 'PALT'), ('i', 'DITH'), ('n', 'MELT'), ('e', 'EMUL')]
+          ('p', 'PALT'), ('i', 'DITH'), ('n', 'MELT'), ('e', 'EMUL'),
+          ('j', 'SLIT')]
 FX_KEYS = ['rgb_split', 'displacement', 'scanlines', None,
            'noise', 'glitch_blocks', 'crt_warp', 'color_cycle', 'ascii', None,
            None, None, 'spiral', 'color_trails', 'pixel_sort', 'wave',
            None, 'frame_blend', None,
-           None, None, None, None]
+           None, None, None, None,
+           None]
 
 LIQUID_NAMES = {0: 'OFF', 1: 'LOW', 2: 'MED', 3: 'HI', 4: 'MAX'}
 # intensidad real por nivel (independiente del t global)
@@ -40,26 +43,31 @@ def draw_hud(frame, fps, t):
     cv2.rectangle(bar, (0, 0), (w, 28), (8, 0, 4), -1)
     frame[:28] = cv2.addWeighted(bar, 0.75, frame[:28], 0.25, 0)
 
-    cv2.putText(frame, 'ESQUIZOAI // GLITCH.CAM', (10, 18),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 255, 170), 1, cv2.LINE_AA)
+    cv2.putText(frame, 'ESQUIZOAI // GLITCH.CAM', (8, 17),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 255, 170), 1, cv2.LINE_AA)
     rev_color  = (0, 200, 255) if state.rev_mode    > 0 else (40, 30, 40)
     mirr_color = (255, 140, 0) if state.mirror_mode > 0 else (40, 30, 40)
     BLND_NAMES = {0: 'OFF', 1: 'BLND', 2: 'DIFF', 3: 'SCRN', 4: 'MPLY', 5: 'ADDUP', 6: 'OFST'}
     blnd_color = (0, 255, 170) if state.blnd_mode > 0 else (40, 30, 40)
     cv2.putText(frame, f'REV:{REV_NAMES[state.rev_mode]}',
-                (w // 2 - 95, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.38, rev_color,  1, cv2.LINE_AA)
+                (w // 2 - 118, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.32, rev_color,  1, cv2.LINE_AA)
     cv2.putText(frame, f'M:{MIRROR_NAMES[state.mirror_mode]}',
-                (w // 2 -  5, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.38, mirr_color, 1, cv2.LINE_AA)
+                (w // 2 -  42, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.32, mirr_color, 1, cv2.LINE_AA)
     cv2.putText(frame, f'B:{BLND_NAMES[state.blnd_mode]}',
-                (w // 2 + 60, 18), cv2.FONT_HERSHEY_SIMPLEX, 0.38, blnd_color, 1, cv2.LINE_AA)
+                (w // 2 + 22, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.32, blnd_color, 1, cv2.LINE_AA)
+    # Banco activo (ESPACIO alterna) — A verde, B ámbar. En el hueco antes de spd/fps.
+    bank_label = 'A' if state.bank == 0 else 'B'
+    bank_color = (0, 255, 170) if state.bank == 0 else (0, 176, 255)
+    cv2.putText(frame, f'BNK:{bank_label}', (w - 232, 17),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.34, bank_color, 1, cv2.LINE_AA)
     spd = state.SPEED_LEVELS[state.speed_idx]
     spd_str = f'{spd:g}x'
     spd_color = (0, 255, 170) if spd != 1.0 else (40, 30, 40)
-    cv2.putText(frame, spd_str, (w - 200, 18),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.40, spd_color, 1, cv2.LINE_AA)
+    cv2.putText(frame, spd_str, (w - 162, 17),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.34, spd_color, 1, cv2.LINE_AA)
     target_fps = state.FPS_LEVELS[state.fps_idx]
-    cv2.putText(frame, f'{target_fps}fps / {fps}', (w - 140, 18),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.40, (0, 50, 255), 1, cv2.LINE_AA)
+    cv2.putText(frame, f'{target_fps}fps / {fps}', (w - 118, 17),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.34, (0, 50, 255), 1, cv2.LINE_AA)
 
     # Barra inferior
     bar_h = 26
@@ -85,6 +93,7 @@ def draw_hud(frame, fps, t):
         elif k == 'i': is_active = state.dith_mode > 0
         elif k == 'n': is_active = state.melt_mode > 0
         elif k == 'e': is_active = state.emul_mode > 0
+        elif k == 'j': is_active = state.slit_mode > 0
         else:          is_active = state.fx.get(FX_KEYS[i], False) if i < len(FX_KEYS) and FX_KEYS[i] else False
         color    = (0, 255, 170) if is_active else (60, 30, 60)
         bg_color = (20, 50, 10) if is_active else (8, 0, 4)
@@ -103,6 +112,7 @@ def draw_hud(frame, fps, t):
         elif k == 'i': label = DITH_NAMES.get(state.dith_mode, 'OFF')
         elif k == 'n': label = MELT_NAMES.get(state.melt_mode, 'OFF')
         elif k == 'e': label = EMUL_NAMES.get(state.emul_mode, 'OFF')
+        elif k == 'j': label = SLIT_NAMES.get(state.slit_mode, 'OFF')
         else:          label = name
         cv2.putText(frame, f'[{k}]', (x, h - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.28, color, 1)

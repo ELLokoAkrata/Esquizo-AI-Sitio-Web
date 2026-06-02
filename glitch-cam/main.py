@@ -46,6 +46,8 @@ from effects.dither  import DITH_FUNCS
 from effects.melt    import MELT_FUNCS
 import effects.melt as melt
 from effects.emul    import draw_acid_os
+from effects.slitscan import SLIT_FUNCS
+import effects.slitscan as slitscan
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -220,6 +222,8 @@ def main():
                 out = VORTEX_FUNCS[state.vortex_mode](out, t, tick)
             if state.spiral_mode > 0:
                 out = SPIRAL_FUNCS[state.spiral_mode](out, t, tick)
+            if state.slit_mode > 0:
+                out = SLIT_FUNCS[state.slit_mode](out, t, tick)
             if state.melt_mode > 0:
                 out = MELT_FUNCS[state.melt_mode](out, t, tick)
 
@@ -301,6 +305,12 @@ def main():
             state.melt_mode = (state.melt_mode + 1) % 4
             melt._wax_buf = None
         elif key == ord('e'): state.emul_mode = (state.emul_mode + 1) % 3
+        # ─── BANCOS (ESPACIO alterna A↔B; g/j/o/y/z enrutan según banco) ──────
+        elif key == ord(' '): state.bank ^= 1
+        elif key == ord('j'):
+            if state.bank == 0:
+                state.slit_mode = (state.slit_mode + 1) % 5   # A·j = SLIT-SCAN
+            # else: B·j = STUTTER+STROBE (pendiente)
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
         elif key == ord('-'): state.intensity = max(0.0, state.intensity - 0.05)
@@ -335,6 +345,9 @@ def main():
             state.emul_mode  = 0
             state.rev_mode   = 0
             melt._wax_buf    = None
+            state.slit_mode  = 0
+            state.bank       = 0
+            slitscan.reset()
         elif key == ord('f'):
             state.fullscreen = not state.fullscreen
             prop = cv2.WINDOW_FULLSCREEN if state.fullscreen else cv2.WINDOW_NORMAL

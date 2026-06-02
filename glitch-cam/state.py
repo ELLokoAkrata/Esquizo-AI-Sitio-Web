@@ -47,6 +47,14 @@ dith_mode     = 0  # DITH dithering Bayer: 0=off 1=BW 2=GRN 3=CLR
 melt_mode     = 0  # MELT derretimiento realidad: 0=off 1=DRIP 2=WAX 3=LIQD
 emul_mode     = 0  # EMUL overlay acid-OS: 0=off 1=SLIM 2=FULL
 
+# ─── BANCOS DE TECLAS (ROADMAP_EFECTOS_NUEVOS) ─────────────────────────────────
+# ESPACIO alterna banco; las 5 teclas g/j/o/y/z enrutan según el banco activo.
+# Cambiar de banco NO apaga efectos, solo cambia qué controlan las teclas.
+bank          = 0  # 0=A  1=B   (futuro botón físico ESP32)
+# Banco A:  g=feedback  j=slit  o=tunnel  y=kaleido  z=bloom
+# Banco B:  g=vhs       j=stutter o=solar  y=edge     z=halftone
+slit_mode     = 0  # SLIT-SCAN time-displacement: 0=off 1=ROWS 2=COLS 3=RADL 4=CHAOS
+
 # ─── ESTADO GENERAL ───────────────────────────────────────────────────────────
 intensity  = args.intensity / 100.0
 hud_on     = True

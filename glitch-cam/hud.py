@@ -17,6 +17,7 @@ from effects.slitscan import SLIT_NAMES
 from effects.feedback import FB_NAMES
 from effects.tunnel   import TUNNEL_NAMES
 from effects.kaleido  import KALEIDO_NAMES
+from effects.bloom    import BLOOM_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -40,7 +41,7 @@ def _bank_cells():
                 ('j', state.slit_mode,   SLIT_NAMES,   'SLIT'),
                 ('o', state.tunnel_mode,  TUNNEL_NAMES,  'TUNL'),
                 ('y', state.kaleido_mode, KALEIDO_NAMES, 'KALD'),
-                ('z', 0, None, 'BLOM')]
+                ('z', state.bloom_mode,   BLOOM_NAMES,   'BLOM')]
     return [('g', 0, None, 'VHS'),
             ('j', 0, None, 'STUT'),
             ('o', 0, None, 'SOLR'),

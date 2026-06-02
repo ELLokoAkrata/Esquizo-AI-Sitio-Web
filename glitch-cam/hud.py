@@ -22,6 +22,7 @@ from effects.vhs      import VHS_NAMES
 from effects.stutter  import STUTTER_NAMES
 from effects.solar    import SOLAR_NAMES
 from effects.edge     import EDGE_NAMES
+from effects.halftone import HALFTONE_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -49,8 +50,8 @@ def _bank_cells():
     return [('g', state.vhs_mode,     VHS_NAMES,     'VHS'),
             ('j', state.stutter_mode, STUTTER_NAMES, 'STUT'),
             ('o', state.solar_mode, SOLAR_NAMES, 'SOLR'),
-            ('y', state.edge_mode,  EDGE_NAMES,  'EDGE'),
-            ('z', 0, None, 'HALF')]
+            ('y', state.edge_mode,     EDGE_NAMES,     'EDGE'),
+            ('z', state.halftone_mode, HALFTONE_NAMES, 'HALF')]
 
 LIQUID_NAMES = {0: 'OFF', 1: 'LOW', 2: 'MED', 3: 'HI', 4: 'MAX'}
 # intensidad real por nivel (independiente del t global)

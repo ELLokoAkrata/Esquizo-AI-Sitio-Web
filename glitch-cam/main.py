@@ -61,6 +61,7 @@ import effects.stutter as stutter
 from effects.solar   import SOLAR_FUNCS
 from effects.edge    import EDGE_FUNCS
 import effects.edge as edge
+from effects.halftone import HALFTONE_FUNCS
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -78,7 +79,7 @@ def reload_effects():
     global REV_FUNCS, REV_USE_TICK, MIRROR_FUNCS
     global PALT_FUNCS, DITH_FUNCS, MELT_FUNCS, SLIT_FUNCS, FB_FUNCS, draw_acid_os
     global TUNNEL_FUNCS, KALEIDO_FUNCS, BLOOM_FUNCS, VHS_FUNCS, STUTTER_FUNCS
-    global SOLAR_FUNCS, EDGE_FUNCS
+    global SOLAR_FUNCS, EDGE_FUNCS, HALFTONE_FUNCS
     global displacement, noise, color_cycle, scanlines, glitch_blocks
     global crt_warp, ascii_mode, color_trails, pixel_sort
     global draw_hud, LIQUID_LEVELS
@@ -89,7 +90,7 @@ def reload_effects():
              'effects.emul', 'effects.reventus', 'effects.slitscan',
              'effects.feedback', 'effects.tunnel', 'effects.kaleido',
              'effects.bloom', 'effects.vhs', 'effects.stutter',
-             'effects.solar', 'effects.edge', 'hud']
+             'effects.solar', 'effects.edge', 'effects.halftone', 'hud']
     try:
         for name in order:
             if name in sys.modules:
@@ -107,6 +108,7 @@ def reload_effects():
     ka, bl = m['effects.kaleido'], m['effects.bloom']
     vh, st = m['effects.vhs'], m['effects.stutter']
     so, ed = m['effects.solar'], m['effects.edge']
+    ht = m['effects.halftone']
     hu = m['hud']
     # re-vincular lo que el pipeline usa por nombre (los alias de módulo se
     # actualizan solos porque reload reusa el mismo objeto módulo)
@@ -127,7 +129,7 @@ def reload_effects():
     TUNNEL_FUNCS, KALEIDO_FUNCS = tu.TUNNEL_FUNCS, ka.KALEIDO_FUNCS
     BLOOM_FUNCS, VHS_FUNCS = bl.BLOOM_FUNCS, vh.VHS_FUNCS
     STUTTER_FUNCS, SOLAR_FUNCS = st.STUTTER_FUNCS, so.SOLAR_FUNCS
-    EDGE_FUNCS = ed.EDGE_FUNCS
+    EDGE_FUNCS, HALFTONE_FUNCS = ed.EDGE_FUNCS, ht.HALFTONE_FUNCS
     draw_hud, LIQUID_LEVELS = hu.draw_hud, hu.LIQUID_LEVELS
     print('[RELOAD] efectos + hud recargados OK')
 
@@ -319,6 +321,8 @@ def main():
                 out = SOLAR_FUNCS[state.solar_mode](out, t, tick)
             if state.edge_mode > 0:
                 out = EDGE_FUNCS[state.edge_mode](out, t, tick)
+            if state.halftone_mode > 0:
+                out = HALFTONE_FUNCS[state.halftone_mode](out, t, tick)
             if state.bloom_mode > 0:
                 out = BLOOM_FUNCS[state.bloom_mode](out, t, tick)
 
@@ -437,7 +441,8 @@ def main():
         elif key == ord('z'):
             if state.bank == 0:
                 state.bloom_mode = (state.bloom_mode + 1) % 4      # A·z = BLOOM
-            # else: B·z = HALFTONE (pendiente)
+            else:
+                state.halftone_mode = (state.halftone_mode + 1) % 4  # B·z = HALFTONE
         elif key == ord('R'): reload_effects()  # Shift+R — hot-reload effects/* + hud
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
@@ -481,8 +486,9 @@ def main():
             state.vhs_mode     = 0
             state.stutter_mode = 0
             state.solar_mode   = 0
-            state.edge_mode    = 0
-            state.bank         = 0
+            state.edge_mode     = 0
+            state.halftone_mode = 0
+            state.bank          = 0
             slitscan.reset()
             feedback.reset()
             stutter.reset()

@@ -154,6 +154,7 @@ requiere reiniciar.) Si un archivo tiene error de sintaxis, lo atrapa y mantiene
 | Tecla | Función |
 |-------|---------|
 | `ESPACIO` | Alterna BANCO A ⇄ B (enruta `g j o y z`) |
+| `L` | LOWLIGHT — realce de poca luz/oscuridad (OFF→GAIN→CLAHE→MAX). Se aplica ANTES de los efectos |
 | `R` | Hot-reload de `effects/*` + `hud.py` sin reiniciar (mantiene modos) |
 | `b` | Toggle BLND — trail base que se combina con todo |
 | `+` / `-` | Intensidad global (0% → 100%) |

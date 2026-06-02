@@ -23,6 +23,7 @@ from effects.stutter  import STUTTER_NAMES
 from effects.solar    import SOLAR_NAMES
 from effects.edge     import EDGE_NAMES
 from effects.halftone import HALFTONE_NAMES
+from effects.lowlight import LOWLIGHT_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -155,6 +156,11 @@ def draw_hud(frame, fps, t):
         cv2.putText(frame, txt, (cx, by), cv2.FONT_HERSHEY_SIMPLEX, 0.34, col, 1, cv2.LINE_AA)
         (tw, _), _ = cv2.getTextSize(txt, cv2.FONT_HERSHEY_SIMPLEX, 0.34, 1)
         cx += tw + 13
+
+    # LOWLIGHT (Shift+L) — solo se muestra cuando está activo (lado derecho de la fila)
+    if state.lowlight_mode > 0:
+        cv2.putText(frame, f'LITE:{LOWLIGHT_NAMES[state.lowlight_mode]}', (w - 120, by),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.34, (0, 230, 255), 1, cv2.LINE_AA)
 
     # Barra de intensidad — encima de la barra inferior, para no tapar las celdas
     bar_w = 100

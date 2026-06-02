@@ -62,6 +62,7 @@ from effects.solar   import SOLAR_FUNCS
 from effects.edge    import EDGE_FUNCS
 import effects.edge as edge
 from effects.halftone import HALFTONE_FUNCS
+from effects.lowlight import LOWLIGHT_FUNCS
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -79,7 +80,7 @@ def reload_effects():
     global REV_FUNCS, REV_USE_TICK, MIRROR_FUNCS
     global PALT_FUNCS, DITH_FUNCS, MELT_FUNCS, SLIT_FUNCS, FB_FUNCS, draw_acid_os
     global TUNNEL_FUNCS, KALEIDO_FUNCS, BLOOM_FUNCS, VHS_FUNCS, STUTTER_FUNCS
-    global SOLAR_FUNCS, EDGE_FUNCS, HALFTONE_FUNCS
+    global SOLAR_FUNCS, EDGE_FUNCS, HALFTONE_FUNCS, LOWLIGHT_FUNCS
     global displacement, noise, COLR_FUNCS, scanlines, glitch_blocks
     global crt_warp, ascii_mode, color_trails, pixel_sort
     global draw_hud, LIQUID_LEVELS
@@ -90,7 +91,8 @@ def reload_effects():
              'effects.emul', 'effects.reventus', 'effects.slitscan',
              'effects.feedback', 'effects.tunnel', 'effects.kaleido',
              'effects.bloom', 'effects.vhs', 'effects.stutter',
-             'effects.solar', 'effects.edge', 'effects.halftone', 'hud']
+             'effects.solar', 'effects.edge', 'effects.halftone',
+             'effects.lowlight', 'hud']
     try:
         for name in order:
             if name in sys.modules:
@@ -108,7 +110,7 @@ def reload_effects():
     ka, bl = m['effects.kaleido'], m['effects.bloom']
     vh, st = m['effects.vhs'], m['effects.stutter']
     so, ed = m['effects.solar'], m['effects.edge']
-    ht = m['effects.halftone']
+    ht, ll = m['effects.halftone'], m['effects.lowlight']
     hu = m['hud']
     # re-vincular lo que el pipeline usa por nombre (los alias de módulo se
     # actualizan solos porque reload reusa el mismo objeto módulo)
@@ -130,6 +132,7 @@ def reload_effects():
     BLOOM_FUNCS, VHS_FUNCS = bl.BLOOM_FUNCS, vh.VHS_FUNCS
     STUTTER_FUNCS, SOLAR_FUNCS = st.STUTTER_FUNCS, so.SOLAR_FUNCS
     EDGE_FUNCS, HALFTONE_FUNCS = ed.EDGE_FUNCS, ht.HALFTONE_FUNCS
+    LOWLIGHT_FUNCS = ll.LOWLIGHT_FUNCS
     draw_hud, LIQUID_LEVELS = hu.draw_hud, hu.LIQUID_LEVELS
     print('[RELOAD] efectos + hud recargados OK')
 
@@ -213,6 +216,11 @@ def main():
             t          = state.intensity
             active     = state.fx.copy()
             out        = frame.copy()
+
+            # ─── LOWLIGHT — realce de poca luz ANTES de todo (los efectos se
+            #     combinan sobre la imagen ya iluminada) ─────────────────────────
+            if state.lowlight_mode > 0:
+                out = LOWLIGHT_FUNCS[state.lowlight_mode](out, t)
 
             # XOR / Acid primero
             if state.xor_mode > 0:
@@ -444,6 +452,7 @@ def main():
                 state.bloom_mode = (state.bloom_mode + 1) % 4      # A·z = BLOOM
             else:
                 state.halftone_mode = (state.halftone_mode + 1) % 4  # B·z = HALFTONE
+        elif key == ord('L'): state.lowlight_mode = (state.lowlight_mode + 1) % 4  # Shift+L — realce poca luz
         elif key == ord('R'): reload_effects()  # Shift+R — hot-reload effects/* + hud
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
@@ -454,6 +463,7 @@ def main():
             state.fx = {k: False for k in state.fx}
             state.rgb_mode        = 0
             state.color_cycle_mode = 0
+            state.lowlight_mode   = 0
             state.vortex_mode     = 0
             state.datamosh_mode   = 0
             state.color_acid_mode = 0

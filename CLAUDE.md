@@ -122,6 +122,8 @@ Según `esquizo_core.json`, las directivas core son:
 4. `// TRABAJO VISUAL` - Animaciones y experiencias interactivas
 
 > ⚠️ **Al agregar/mover un artefacto:** actualizar el catálogo `FS` en `index.html` (OS) — y si querés mantenerlo en paridad, también `inicio-classic.html`.
+>
+> 📖 **Detalle técnico completo del OS** (FS, `openApp`, retorno por framing, WM, responsive, gotchas, cómo testear): `Claude-Knowledge/ESCRITORIO_OS_TECH.md`.
 
 ---
 
@@ -263,6 +265,7 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 | Archivo | Contenido |
 |---------|-----------|
 | `DAEMON_INTEL_BRIEF.md` | **LEER PRIMERO** — Inteligencia OP-001+OP-002, semilla EP_07, contexto daemon |
+| `ESCRITORIO_OS_TECH.md` | **Portal `index.html`** — escritorio Win98: catálogo `FS`, `openApp`/ventanas-iframe, retorno por framing, WM, responsive, cómo extender y testear |
 | `DENTAKORV_PROMPTING_SYSTEM.md` | Manual completo DENTAKORV |
 | `VERCEL_WORKFLOW.md` | Deploy, Edge Functions, IA ASSIST |
 | `GALERIA_EL_LOKO_TECH.md` | Galería 3D raycasting |

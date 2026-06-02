@@ -436,7 +436,10 @@ glitch-cam/
 │   ├── stutter.py       ← stut_* (tiempo roto + strobe), STUTTER_FUNCS [B·j]
 │   ├── solar.py         ← solar_* (falso color), SOLAR_FUNCS          [B·o]
 │   ├── edge.py          ← edge_* (rotoscopio), EDGE_FUNCS              [B·y]
-│   └── halftone.py      ← half_* (imprenta), HALFTONE_FUNCS            [B·z]
+│   ├── halftone.py      ← half_* (imprenta), HALFTONE_FUNCS            [B·z]
+│   ├── lowlight.py      ← ll_* (poca luz + visión nocturna NVG/AMBR/THRM)  [Shift+L]
+│   └── lighttrack.py    ← find_light (REVENTUS sigue la linterna)         [Shift+T]
+├── CLAUDE_glitch.md           ← guía operativa del subproyecto
 ├── ROADMAP_EFECTOS_NUEVOS.md  ← plan/estado del lote de efectos nuevos
 └── README.md
 ```

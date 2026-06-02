@@ -18,9 +18,12 @@ Horror visual, acid psychedelic, corrupción digital — la estética terminal v
 
 ```bash
 python main.py --width 640 --height 360          # webcam (arranque por defecto del usuario)
-python main.py --video tmpi1u3rohe.mp4 --win-width 640 --win-height 360   # video
+python main.py --video tmpi1u3rohe.mp4           # video (ya procesa a 640x360 → explota igual que cam)
 ```
-> En video, `--width/--height` no aplican (es la cámara); el tamaño de ventana es `--win-width/--win-height`.
+> `--width/--height` = **resolución de PROCESAMIENTO** (cam y video): el frame se redimensiona a eso
+> al entrar al loop (`main.py`, tras `cap.read()`). Es CLAVE: los efectos tienen parámetros en px
+> tuneados para ~640; procesar el video a su resolución nativa los debilita y baja los FPS.
+> `--win-width/--win-height` solo cambian el tamaño de la ventana, no el procesamiento.
 
 ## 🗂️ ARQUITECTURA
 

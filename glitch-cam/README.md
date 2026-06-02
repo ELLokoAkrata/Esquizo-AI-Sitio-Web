@@ -27,18 +27,22 @@ python main.py --video video.mp4
 # Video con ruta completa
 python main.py --video "C:/ruta/al/video.mp4"
 
-# Opciones adicionales
-python main.py --width 1280 --height 720 --intensity 70
+# --width/--height = RESOLUCIÓN DE PROCESAMIENTO (cam Y video). El frame se redimensiona
+# a esto antes del pipeline. Default 640x360. Más bajo = efectos más fuertes y más FPS.
+python main.py --width 640 --height 360 --intensity 70
 
-# Ventana más chica que la captura (menos lag visual, procesamiento igual)
-python main.py --win-width 854 --win-height 480
+# Video: por defecto YA procesa a 640x360 → los efectos explotan igual que en cam
+python main.py --video video.mp4
+python main.py --video video.mp4 --win-width 854 --win-height 480   # ventana más grande
 
-# Captura y ventana reducidas (menos lag real — recomendado para combinar muchos efectos)
-python main.py --width 640 --height 360
-
-# Captura full HD, ventana pequeña
-python main.py --width 1280 --height 720 --win-width 640 --win-height 360
+# Procesar más fino (más detalle, menos pop de efectos, más lento)
+python main.py --video video.mp4 --width 960 --height 540
 ```
+
+> **Importante (cam vs video):** los efectos usan desplazamientos en píxeles tuneados para ~640px.
+> Por eso el frame SIEMPRE se procesa a `--width × --height` (default 640×360), redimensionando el
+> video nativo. Procesar un 1080p completo haría que los efectos se vean débiles y bajaría los FPS.
+> `--win-width/--win-height` solo cambian el tamaño de la **ventana** (no el procesamiento).
 
 ---
 

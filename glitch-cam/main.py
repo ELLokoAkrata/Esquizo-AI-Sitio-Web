@@ -157,10 +157,14 @@ def main():
         print(f'ERROR: No se pudo abrir {src}')
         sys.exit(1)
 
-    actual_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    actual_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    native_w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    native_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    # Resolución de PROCESAMIENTO: el frame se redimensiona a esto al entrar al loop,
+    # tanto en cam como en video → los efectos (parámetros en px) explotan igual + más FPS.
+    proc_w, proc_h = state.args.width, state.args.height
+    actual_w, actual_h = proc_w, proc_h        # dims canónicas del pipeline
     src_label = 'VIDEO' if is_video else 'CAM'
-    print(f'{src_label}: {actual_w}x{actual_h}')
+    print(f'{src_label}: {native_w}x{native_h} -> proc {proc_w}x{proc_h}')
     print('Controles: 1-9 efectos | ESPACIO banco A/B | j SLIT | c corrupt | 4 mosh | b blnd | Shift+F reventus | m mirror | +/- intensidad | h HUD | Tab clean | r reset | R hot-reload | f fullscreen | q salir')
 
     WIN = 'GLITCH.CAM | EsquizoAI — [q] salir'
@@ -198,6 +202,9 @@ def main():
                 continue
             print('WARNING: frame perdido')
             continue
+        # Procesar SIEMPRE a la resolución de proceso (cam casi no-op; video downscale)
+        if frame.shape[1] != proc_w or frame.shape[0] != proc_h:
+            frame = cv2.resize(frame, (proc_w, proc_h))
 
         # ─── FPS counter ─────────────────────────────────────────────────────
         fps_count += 1

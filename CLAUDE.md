@@ -82,6 +82,12 @@ Según `esquizo_core.json`, las directivas core son:
 │   ├── glitch-text-generator-ultimate.html  # Corruptor texto Zalgo
 │   └── galeria-el-loko.html        # Galería 3D raycasting
 │
+├── glitch-cam/                     # SUBPROYECTO PYTHON (glitch en vivo OpenCV)
+│   ├── CLAUDE_glitch.md            # ★ guía operativa propia — LEER al trabajar acá
+│   ├── main.py · state.py · hud.py · effects/
+│   ├── README.md                   # controles + detalle de efectos
+│   └── ROADMAP_EFECTOS_NUEVOS.md   # plan/estado de efectos
+│
 ├── Claude-Knowledge/               # DOCUMENTACIÓN MODULAR
 │   ├── DENTAKORV_PROMPTING_SYSTEM.md  # Manual técnico DENTAKORV
 │   ├── VERCEL_WORKFLOW.md             # Deploy y Edge Functions
@@ -128,6 +134,14 @@ Corruptor de texto estilo Zalgo con estilos Unicode (Gothic, Blackletter, Script
 Galería 3D raycasting estilo Wolfenstein. Motor vanilla JS, 8 obras integradas.
 
 **Docs completos:** `Claude-Knowledge/GALERIA_EL_LOKO_TECH.md`
+
+### GLITCH.CAM (subproyecto Python)
+Herramienta de glitch en tiempo real sobre webcam/video (OpenCV + numpy). Efectos acid/psychedelic,
+distorsión de realidad, visión nocturna, light-tracking, hot-reload en vivo. Vive en `glitch-cam/`.
+
+> ⚠️ **Tiene su propia guía operativa:** `glitch-cam/CLAUDE_glitch.md`. Al trabajar dentro de
+> `glitch-cam/`, ESA es la guía principal (arquitectura, patrón de efectos, bancos, hot-reload,
+> workflow y convenciones de git del subproyecto). Leerla antes de tocar el código de glitch-cam.
 
 ### IA ASSIST (Groq API)
 Tab en DENTAKORV con:
@@ -240,6 +254,7 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 ### Documentación Técnica (Claude-Knowledge/):
 | Archivo | Contenido |
 |---------|-----------|
+| `DAEMON_INTEL_BRIEF.md` | **LEER PRIMERO** — Inteligencia OP-001+OP-002, semilla EP_07, contexto daemon |
 | `DENTAKORV_PROMPTING_SYSTEM.md` | Manual completo DENTAKORV |
 | `VERCEL_WORKFLOW.md` | Deploy, Edge Functions, IA ASSIST |
 | `GALERIA_EL_LOKO_TECH.md` | Galería 3D raycasting |
@@ -279,6 +294,21 @@ Este documento es mapa, no territorio. El proyecto muta. Si hay contradicción e
 El delirio es sagrado. La estructura es herramienta. La infección es el objetivo.
 
 **Sostener la pregunta es el punto.** 🦋
+
+---
+
+## 🧠 MEMORIA PERSISTENTE (Claude)
+
+Claude tiene un directorio de memoria para este proyecto en:
+```
+C:\Users\Ricardo Ruiz\.claude\projects\C--Users-Ricardo-Ruiz-Desktop-EsquizoAI-sitio-web\memory\
+```
+
+El índice de memorias está en `MEMORY.md` dentro de ese directorio.
+
+Antes de comenzar cualquier tarea, Claude debe revisar `MEMORY.md` para cargar contexto acumulado de sesiones anteriores — reglas aprendidas, errores previos, decisiones tomadas.
+
+Al terminar una tarea que deje una lección nueva, guardar la memoria correspondiente en ese directorio y actualizar `MEMORY.md`.
 
 ---
 

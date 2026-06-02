@@ -67,7 +67,11 @@ Según `esquizo_core.json`, las directivas core son:
 
 ```
 .
-├── index.html                      # Portal principal con 4 secciones
+├── index.html                      # ★ PORTAL = Escritorio Windows 98 acid (OS). Autocontenido (CSS+JS inline, 0 deps).
+│                                    #   Iconos/carpetas/menú Inicio → abren cada artefacto COMO ventana (iframe) min/max/cerrar.
+│                                    #   Catálogo `FS` = fuente única (mapea todos los artefactos). Retorno al escritorio:
+│                                    #   auto-detección de framing (window.top!==self → postMessage cierra la ventana).
+├── inicio-classic.html             # Portal clásico anterior (scroll + secciones). Accesible vía "Modo clásico" en el OS.
 ├── esquizo_core.json               # Personalidad Psycho-bot
 ├── CLAUDE.md                       # Este documento
 ├── vercel.json                     # Configuración Vercel
@@ -109,11 +113,15 @@ Según `esquizo_core.json`, las directivas core son:
 └── manifestaciones_visuales/       # Imágenes estáticas
 ```
 
-**Secciones en index.html:**
+**Portal OS (`index.html`):** escritorio Win98 acid. Carpetas/iconos = familias del códice, generadas desde el catálogo `FS` (objeto JS, fuente única de rutas). Cada artefacto abre en ventana-iframe (min/max/cerrar/taskbar). Tap-to-open en móvil, ventanas fullscreen. Cursor flecha retro. Wallpaper = cráneo El Loko Akrata + glitch. Ventanas internas: README, ACERCA_DE_MI, Mi PC, diálogos de error.
+
+**Secciones del portal clásico (`inicio-classic.html`) — espejadas como carpetas en el OS:**
 1. `// HERRAMIENTAS PSYCHO` - DENTAKORV v3.0 (featured)
 2. `// GEMINI` - Grimorios generados por Gemini-CLI
 3. `// CLAUDE INFECTION` - Artefactos de Claude
 4. `// TRABAJO VISUAL` - Animaciones y experiencias interactivas
+
+> ⚠️ **Al agregar/mover un artefacto:** actualizar el catálogo `FS` en `index.html` (OS) — y si querés mantenerlo en paridad, también `inicio-classic.html`.
 
 ---
 

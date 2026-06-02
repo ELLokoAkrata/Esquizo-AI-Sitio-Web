@@ -21,6 +21,7 @@ from effects.bloom    import BLOOM_NAMES
 from effects.vhs      import VHS_NAMES
 from effects.stutter  import STUTTER_NAMES
 from effects.solar    import SOLAR_NAMES
+from effects.edge     import EDGE_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -48,7 +49,7 @@ def _bank_cells():
     return [('g', state.vhs_mode,     VHS_NAMES,     'VHS'),
             ('j', state.stutter_mode, STUTTER_NAMES, 'STUT'),
             ('o', state.solar_mode, SOLAR_NAMES, 'SOLR'),
-            ('y', 0, None, 'EDGE'),
+            ('y', state.edge_mode,  EDGE_NAMES,  'EDGE'),
             ('z', 0, None, 'HALF')]
 
 LIQUID_NAMES = {0: 'OFF', 1: 'LOW', 2: 'MED', 3: 'HI', 4: 'MAX'}

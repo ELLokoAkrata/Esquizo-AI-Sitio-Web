@@ -32,7 +32,7 @@ controlan las 5 teclas (cada efecto guarda su propio modo → se pueden apilar e
 | 6 | **VHS** (decay analógico) | B·`g` | `effects/vhs.py` | TRAK · CHRM · DROP · FULL | ✅ |
 | 7 | **STUTTER+STROBE** (tiempo roto) | B·`j` | `effects/stutter.py` | HOLD · RWND · ECHO · STRB · INVS | ✅ |
 | 8 | **SOLARIZE / THERMAL** (falso color) | B·`o` | `effects/solar.py` | SOLR · THRM · INVT | ✅ |
-| 9 | **EDGE** (rotoscopio neón) | B·`y` | `effects/edge.py` | NEON · CMIC · GHST | ⬜ |
+| 9 | **EDGE** (rotoscopio neón) | B·`y` | `effects/edge.py` | NEON · CMIC · GHST | ✅ |
 | 10 | **HALFTONE** (puntos imprenta) | B·`z` | `effects/halftone.py` | DOT · CMYK · LINE | ⬜ |
 | 11 | **BODY-HORROR** (más REVENTUS) | `Shift+F` | `effects/reventus.py` | MULT · EYES · MOUTH | ⬜ |
 | 12 | **AUDIO-REACTIVE** (instrumento en vivo) | — | `audio.py` (arquitectura nueva) | — | ⬜ |

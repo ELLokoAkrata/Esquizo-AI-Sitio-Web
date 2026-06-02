@@ -19,6 +19,7 @@ from effects.tunnel   import TUNNEL_NAMES
 from effects.kaleido  import KALEIDO_NAMES
 from effects.bloom    import BLOOM_NAMES
 from effects.vhs      import VHS_NAMES
+from effects.stutter  import STUTTER_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -43,8 +44,8 @@ def _bank_cells():
                 ('o', state.tunnel_mode,  TUNNEL_NAMES,  'TUNL'),
                 ('y', state.kaleido_mode, KALEIDO_NAMES, 'KALD'),
                 ('z', state.bloom_mode,   BLOOM_NAMES,   'BLOM')]
-    return [('g', state.vhs_mode, VHS_NAMES, 'VHS'),
-            ('j', 0, None, 'STUT'),
+    return [('g', state.vhs_mode,     VHS_NAMES,     'VHS'),
+            ('j', state.stutter_mode, STUTTER_NAMES, 'STUT'),
             ('o', 0, None, 'SOLR'),
             ('y', 0, None, 'EDGE'),
             ('z', 0, None, 'HALF')]

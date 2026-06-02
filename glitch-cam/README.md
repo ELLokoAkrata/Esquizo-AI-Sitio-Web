@@ -49,6 +49,28 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 > Los 2 modos de rostro nuevos (**ACDF**, **MELT**) están al final del ciclo de `Shift+F` y
 > necesitan una cara detectada en cuadro. Combo recomendado: `p`→512 + `i`→CLR + `e`→FULL.
 
+### 🎛️ Bancos de teclas (distorsión de realidad)
+`ESPACIO` alterna **BANCO A ↔ BANCO B**. Las 5 teclas `g j o y z` controlan un efecto
+distinto según el banco activo. El HUD muestra el banco (`BNK:A` verde / `BNK:B` ámbar) y una
+tira con las 5 teclas. **Cambiar de banco NO apaga efectos** — solo cambia qué controlan las
+teclas, así que puedes apilar efectos de ambos bancos a la vez.
+
+| tecla | BANCO A | BANCO B |
+|-------|---------|---------|
+| `g` | FEEDBACK — túnel recursivo | VHS — decay analógico de cinta |
+| `j` | SLIT-SCAN — time-displacement | STUTTER+STROBE — tiempo roto ⚠️ |
+| `o` | TUNNEL — remap polar | SOLAR/THERMAL — falso color |
+| `y` | KALEIDO — mandala radial | EDGE — rotoscopio neón |
+| `z` | BLOOM — glow sangrante | HALFTONE — imprenta |
+
+> ⚠️ **STUTTER** (banco B, `j`) incluye **STRB**/**INVS** → parpadeo fuerte. Fotosensibilidad.
+
+### 🔄 Hot-reload (iterar sin reiniciar)
+La tecla **`R`** (Shift+R) recarga en caliente todos los `effects/*` y `hud.py` mientras el
+programa corre — la cámara/ventana y los modos activos sobreviven. Editas un efecto, guardas,
+pulsas `R` y ves el cambio. (NO recarga `main.py`/`state.py`: agregar un efecto *nuevo* sí
+requiere reiniciar.) Si un archivo tiene error de sintaxis, lo atrapa y mantiene el código previo.
+
 ### Efectos base (toggle)
 | Tecla | Efecto | Descripción |
 |-------|--------|-------------|
@@ -104,16 +126,28 @@ python main.py --width 1280 --height 720 --win-width 640 --win-height 360
 | `v` | VRTX | OFF → SWRL → ANTI → PULS → EXP → DUAL |
 | `0` | SPRL | OFF → LOGR → TGHT → WAVE → INWD → MLTK |
 | `b` | BLND | OFF → BLND → DIFF → SCRN → MPLY → ADDUP → OFST |
-| `Shift+F` | REV | OFF → SWRL → ACID → ZOOM → ECHO → DRNK → BALO → ACDF → MELT |
+| `Shift+F` | REV | OFF → SWRL → ACID → ZOOM → ECHO → DRNK → BALO → ACDF → MELT → MULT → EYES → MOUT |
 | `m` | MIRROR | OFF → MIR2 → KL4 → KL8 → KL16 |
 | `p` | PALT | OFF → GRN → 512 → MGTA → ACID → GHUL → PNK |
 | `i` | DITH | OFF → BW → GRN → CLR |
 | `n` | MELT | OFF → DRIP → WAX → LIQD |
 | `e` | EMUL | OFF → SLIM → FULL |
+| `g` (A) | FBCK | OFF → ZOOM → ROTZ → DROST → ECHO |
+| `j` (A) | SLIT | OFF → ROWS → COLS → RADL → CHAOS |
+| `o` (A) | TUNL | OFF → TUNL → TWST → POLR |
+| `y` (A) | KALD | OFF → K4 → K6 → K8 → MIRR |
+| `z` (A) | BLOM | OFF → GLOW → NEON → HALO |
+| `g` (B) | VHS  | OFF → TRAK → CHRM → DROP → FULL |
+| `j` (B) | STUT | OFF → HOLD → RWND → ECHO → STRB → INVS |
+| `o` (B) | SOLR | OFF → SOLR → THRM → INVT |
+| `y` (B) | EDGE | OFF → NEON → CMIC → GHST |
+| `z` (B) | HALF | OFF → DOT → CMYK → LINE |
 
 ### Sistema
 | Tecla | Función |
 |-------|---------|
+| `ESPACIO` | Alterna BANCO A ⇄ B (enruta `g j o y z`) |
+| `R` | Hot-reload de `effects/*` + `hud.py` sin reiniciar (mantiene modos) |
 | `b` | Toggle BLND — trail base que se combina con todo |
 | `+` / `-` | Intensidad global (0% → 100%) |
 | `.` | Velocidad de efectos — sube (0.1x → 0.25x → 0.5x → 1x → 2x → 4x → 8x → 16x → 32x) |
@@ -164,6 +198,9 @@ Detecta cara via Haar cascade, aplica el efecto solo en esa zona con blend gauss
 - **BALO** — Balloon inflate/deflate cíclico
 - **ACDF** — Paleta acid + dither sólo en el rostro + halo de símbolos anarquía (Ⓐ) girando alrededor de la cara. El rostro gritando central de los acid-OS emulators.
 - **MELT** — El rostro chorrea hacia abajo: estiramiento vertical creciente desde la cara al borde inferior, ondulando con `tick`. Derretimiento *de rostro* (≠ `n`:MELT, que derrite todo el cuadro).
+- **MULT** — Clona la cara en una rejilla (2–4 según intensidad) dentro del bbox. Body horror: caras dentro de la cara.
+- **EYES** — Banda de ojos (tercio superior del rostro) duplicada y desplazada a izquierda/derecha → mirada múltiple.
+- **MOUT** — La boca (tercio inferior) se estira hacia abajo ondulando con `tick`. Derretimiento localizado de boca.
 
 ### PALT (`p`) — Paleta acid
 Reduce el frame a paletas limitadas vía LUT de luminancia (`gray → lut[gray]`) — el look dominante de las inspiraciones. Real-time (una indexación por frame).
@@ -255,6 +292,56 @@ Chrome de escritorio fake psycho-anarco-punk dibujado al final del pipeline (com
 
 ---
 
+## Distorsión de realidad — bancos (`ESPACIO` alterna A/B)
+
+Efectos que rompen el **tiempo**, la **recursión** y la **simetría**. Todos vectorizados
+(`remap` / LUT / buffers / `applyColorMap`) → ≥30fps a 640×360. La intensidad (`+`/`-`) dosifica.
+
+### FBCK (A·`g`) — Feedback recursivo
+Mezcla el frame de salida anterior (transformado) con el actual → cámara-apuntando-a-su-pantalla.
+- **ZOOM** — el buffer se agranda cada frame: túnel que se abalanza hacia ti.
+- **ROTZ** — zoom + rotación continua: espiral de feedback infinita.
+- **DROST** — el buffer se encoge: la imagen dentro de sí misma (recursión al centro).
+- **ECHO** — feedback con rotación de tono → estelas arcoíris recursivas.
+
+### SLIT (A·`j`) — Slit-scan / time-displacement
+Ring-buffer de 24 frames; cada fila/columna/anillo muestra un instante distinto del pasado → el
+movimiento se derrite en el **tiempo**, no en el espacio. Las bandas llevan glitch cromático
+(cada canal RGB lee un instante distinto + RGB-split), escalado por intensidad.
+- **ROWS** cascada vertical de tiempo · **COLS** smear horizontal · **RADL** onda temporal radial · **CHAOS** bandas onduladas animadas.
+
+### TUNL (A·`o`) — Túnel polar
+Remap a coordenadas polares → la imagen se enrolla en un túnel infinito.
+- **TUNL** túnel clásico con scroll · **TWST** túnel + torsión (espiral de túnel) · **POLR** desenrollado polar puro.
+
+### KALD (A·`y`) — Kaleido (mandala radial)
+Simetría rotacional de N pliegues con cuñas espejadas y eje girando (≠ MIRROR bilateral).
+- **K4 / K6 / K8** — 4/6/8 pliegues · **MIRR** — espejo cuádruple (la esquina en los 4 cuadrantes).
+
+### BLOM (A·`z`) — Bloom (glow sangrante)
+Extrae brillos, los difumina y los suma → la luz sangra fuera de sus bordes.
+- **GLOW** sobreexposición general · **NEON** satura primero → glow colorido · **HALO** aura radial pesada.
+
+### VHS (B·`g`) — Decay analógico de cinta
+La cinta podrida (≠ CRT, que es el monitor).
+- **TRAK** tracking lines que suben · **CHRM** chroma bleed (R/B se corren + blur) · **DROP** dropout de señal · **FULL** todo + head-switch noise + sync roll.
+
+### STUT (B·`j`) — Stutter + Strobe (tiempo roto) ⚠️
+Ring-buffer + parpadeo. **STRB/INVS parpadean fuerte (fotosensibilidad).**
+- **HOLD** congela y repite un frame · **RWND** rebobinado en bucle · **ECHO** bucle corto · **STRB** flash a ritmo · **INVS** inversión intermitente.
+
+### SOLR (B·`o`) — Solarize / Thermal (falso color)
+- **SOLR** solarización Sabattier (invierte sobre umbral, LUT) · **THRM** mapa térmico (colormap de calor) · **INVT** negativo + rotación de tono animada.
+
+### EDGE (B·`y`) — Rotoscopio neón
+- **NEON** contornos Canny verde tóxico brillando sobre negro · **CMIC** relleno posterizado + líneas negras (cómic) · **GHST** bordes acumulados con decay (estela de líneas).
+
+### HALF (B·`z`) — Halftone (imprenta)
+Rejilla de puntos/líneas (≠ Bayer de DITH). Mapas de rejilla cacheados (estáticos) → rápido.
+- **DOT** puntos de radio ∝ brillo, coloreados · **CMYK** separación C/M/Y con rejillas anguladas sobre blanco · **LINE** line-screen diagonal.
+
+---
+
 ## Velocidad de efectos
 
 La tecla `.` acelera el `tick` interno que controla todas las animaciones. No tiene costo de CPU — es solo un multiplicador matemático.
@@ -292,28 +379,52 @@ n:DRIP + i:GRN              →  terminal fosforado chorreando
 Shift+F:ACDF + e:SLIM       →  rostro acid con halo anarquía + chrome de OS
 ```
 
+### Bancos nuevos (ESPACIO alterna A/B)
+```
+A g:ROTZ + A o:TWST         →  túnel espiral comiéndose la imagen
+A g:ECHO  (con movimiento)  →  estelas de color recursivas infinitas
+A j:RADL + A g:ROTZ         →  time-displacement radial dentro de feedback espiral
+A y:K6 + B y:NEON           →  mandala de líneas neón
+A z:BLOOM + B o:THRM        →  mapa térmico sangrando luz
+B g:FULL + A z:HALO         →  cinta VHS podrida con aura
+B z:CMYK + B o:SOLR         →  impresión periódico solarizada
+B j:STRB + A g:ZOOM         →  ⚠️ túnel estroboscópico (fotosensible)
+Shift+F:MULT + A y:K4       →  multiplicación de caras en mandala
+```
+
 ---
 
 ## Estructura del proyecto
 
 ```
 glitch-cam/
-├── main.py              ← entrada, loop principal, teclado, timing
-├── state.py             ← todas las variables globales compartidas
-├── hud.py               ← HUD overlay
+├── main.py              ← entrada, loop, teclado, timing, bancos, reload_effects (hot-reload R)
+├── state.py             ← todas las variables globales compartidas (incl. bank + modos nuevos)
+├── hud.py               ← HUD overlay + tira de banco
 ├── effects/
 │   ├── base.py          ← rgb_split, displacement, noise, scanlines,
 │   │                       glitch_blocks, crt_warp, color_cycle, ascii_mode,
 │   │                       color_trails, pixel_sort, wave, vortex, spiral
 │   ├── corrupt.py       ← color_corrupt_*, CORRUPT_MODES
 │   ├── ghost.py         ← fx_ghst, fx_soul, fx_frac, MOSH_FUNCS
-│   ├── reventus.py      ← rev_*, REV_FUNCS (efectos centrados en rostro)
+│   ├── reventus.py      ← rev_*, REV_FUNCS (rostro: +MULT/EYES/MOUT body-horror)
 │   ├── mirror.py        ← screen_mir2, screen_kl4/8/16, MIRROR_FUNCS
 │   ├── acid.py          ← xor_feedback, frame_blend_rgb, hyper_liquid_acid
 │   ├── palette.py       ← palt_* (paleta acid vía LUT), PALT_FUNCS
 │   ├── dither.py        ← dith_* (Bayer ordenado), DITH_FUNCS
 │   ├── melt.py          ← melt_* (derretimiento full-frame), MELT_FUNCS
-│   └── emul.py          ← draw_acid_os (overlay Acid-OS), EMUL_NAMES
+│   ├── emul.py          ← draw_acid_os (overlay Acid-OS), EMUL_NAMES
+│   ├── slitscan.py      ← slit_* (time-displacement), SLIT_FUNCS       [A·j]
+│   ├── feedback.py      ← fb_* (recursión), FB_FUNCS                   [A·g]
+│   ├── tunnel.py        ← tun_* (polar), TUNNEL_FUNCS                  [A·o]
+│   ├── kaleido.py       ← kal_* (mandala radial), KALEIDO_FUNCS        [A·y]
+│   ├── bloom.py         ← bloom_* (glow), BLOOM_FUNCS                  [A·z]
+│   ├── vhs.py           ← vhs_* (decay analógico), VHS_FUNCS           [B·g]
+│   ├── stutter.py       ← stut_* (tiempo roto + strobe), STUTTER_FUNCS [B·j]
+│   ├── solar.py         ← solar_* (falso color), SOLAR_FUNCS          [B·o]
+│   ├── edge.py          ← edge_* (rotoscopio), EDGE_FUNCS              [B·y]
+│   └── halftone.py      ← half_* (imprenta), HALFTONE_FUNCS            [B·z]
+├── ROADMAP_EFECTOS_NUEVOS.md  ← plan/estado del lote de efectos nuevos
 └── README.md
 ```
 

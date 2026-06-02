@@ -1,0 +1,86 @@
+{
+  "_comment": "Drops de la galería. Agregar = optimizar imagen (tools/optimize-galeria.py) + un objeto acá. Más nuevos arriba. 'title' acepta unicode estilizado (glitch). 'model' vacío = la ficha lo omite.",
+  "drops": [
+    {
+      "id": "freedom",
+      "title": "𝕱𝖗𝖊𝖊𝖉𝖔𝖒?",
+      "file": "img/chatgpt-image-31-may-2026-21-47-08.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "gripa-virtual",
+      "title": "𝕲̸𝖗̺̪𝖎̞̦̓̕𝖕̵̼̽𝖆̃ ̵̐̾𝖛̡̥̞̎𝖎̡̾𝖗̶̛̳𝖙̤𝖚̸̢̌𝖆̷̎𝖑̵",
+      "file": "img/chatgpt-image-31-may-2026-21-47-19.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "deleting-society",
+      "title": "𝕯𝖊𝖑𝖊𝖙𝖎𝖓𝖌 𝕾𝖔𝖈𝖎𝖊𝖙𝖞",
+      "file": "img/chatgpt-image-31-may-2026-21-47-36.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "simulacro",
+      "title": "𝕾𝖎𝖒𝖚𝖑𝖆𝖈𝖗𝖔",
+      "file": "img/chatgpt-image-31-may-2026-21-48-04.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "desktop-software",
+      "title": "𝕯̹̚𝖊̴̬𝖘̸̗̯𝖐̿𝖙̀̂̌𝖔̳𝖕̛ ̠̫̒𝕾̛̈𝖔̦̏𝖋̔𝖙̱̔𝖜̍𝖆̨̉𝖗̺̎𝖊̳̓̊",
+      "file": "img/chatgpt-image-31-may-2026-21-48-12.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "vibe",
+      "title": "𝖛̴̼𝖎̎̍̊𝖇̬̀̋𝖊̨̅",
+      "file": "img/akelarre-generativo-2026-05-30-22-42-30.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "hacker",
+      "title": "𝗛̧̈̓𝗮̵̷̒𝗰̧̬̊𝗸̘̦̓𝗲̢̌𝗿̶̮ ̈",
+      "file": "img/akelarre-generativo-2026-05-16-01-27-36.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "dev-of-chaos",
+      "title": "𝕯𝖊𝖛 𝖔𝖋 𝕮𝖍𝖆𝖔𝖘",
+      "file": "img/akelarre-generativo-2026-05-16-01-01-50.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026-05",
+      "caption": "",
+      "unpublished": true
+    },
+    {
+      "id": "enter-the-void",
+      "title": "𝕰𝖓𝖙𝖊𝖗 𝖙𝖍𝖊 𝖁𝖔𝖎𝖉",
+      "file": "img/descarga.webp",
+      "model": "GPT-Image 2.0",
+      "date": "2026",
+      "caption": "",
+      "unpublished": true
+    }
+  ]
+}

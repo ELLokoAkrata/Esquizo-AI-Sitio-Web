@@ -72,6 +72,9 @@ Según `esquizo_core.json`, las directivas core son:
 │                                    #   Catálogo `FS` = fuente única (mapea todos los artefactos). Retorno al escritorio:
 │                                    #   auto-detección de framing (window.top!==self → postMessage cierra la ventana).
 ├── inicio-classic.html             # Portal clásico anterior (scroll + secciones). Accesible vía "Modo clásico" en el OS.
+├── galeria/                        # GALERIA.exe (sintografía). App del OS: index.html + manifest.json (drops) + img/*.webp.
+│                                    #   Agregar pieza: tools/optimize-galeria.py origen → img/*.webp, + entrada en manifest.json.
+│                                    #   _originals/ = full-res (gitignored). Icono "GALERIA" en el escritorio + atajo en Inicio.
 ├── esquizo_core.json               # Personalidad Psycho-bot
 ├── CLAUDE.md                       # Este documento
 ├── vercel.json                     # Configuración Vercel
@@ -84,7 +87,7 @@ Según `esquizo_core.json`, las directivas core son:
 ├── tools/                          # HERRAMIENTAS PRINCIPALES
 │   ├── DENTAKORV.html              # Generador prompts v3.0 + IA ASSIST
 │   ├── glitch-text-generator-ultimate.html  # Corruptor texto Zalgo
-│   └── galeria-el-loko.html        # Galería 3D raycasting
+│   └── optimize-galeria.py         # Optimiza imágenes → galeria/img/*.webp
 │
 ├── glitch-cam/                     # SUBPROYECTO PYTHON (glitch en vivo OpenCV)
 │   ├── CLAUDE_glitch.md            # ★ guía operativa propia — LEER al trabajar acá
@@ -95,7 +98,7 @@ Según `esquizo_core.json`, las directivas core son:
 ├── Claude-Knowledge/               # DOCUMENTACIÓN MODULAR
 │   ├── DENTAKORV_PROMPTING_SYSTEM.md  # Manual técnico DENTAKORV
 │   ├── VERCEL_WORKFLOW.md             # Deploy y Edge Functions
-│   ├── GALERIA_EL_LOKO_TECH.md        # Galería 3D docs
+│   ├── ESCRITORIO_OS_TECH.md          # Portal escritorio Win98 (OS)
 │   ├── PROTOCOL_CROSS.md              # Protocolo Claude-GPT
 │   ├── ESQUIZO_VISUAL_PROMPTING_ESSENCE.md
 │   ├── PROMPTS_LOG.md                 # Log prompts únicos ChatGPT
@@ -140,10 +143,12 @@ Generador de prompts modular para arte psycho-anarco-punk visceral.
 ### Glitch Text Generator
 Corruptor de texto estilo Zalgo con estilos Unicode (Gothic, Blackletter, Script, etc.) y 5 niveles de intensidad glitch.
 
-### Galería El Loko
-Galería 3D raycasting estilo Wolfenstein. Motor vanilla JS, 8 obras integradas.
-
-**Docs completos:** `Claude-Knowledge/GALERIA_EL_LOKO_TECH.md`
+### GALERIA.exe (sintografía)
+Galería de arte del OS: `galeria/index.html` (grid + lightbox) manejada por `galeria/manifest.json`
+(drops curados, ficha título · modelo · fecha). Imágenes web-optimizadas en `galeria/img/*.webp`
+(generadas con `tools/optimize-galeria.py`; originales full-res en `galeria/_originals/`, gitignored).
+Abre como ventana-app desde el icono **GALERIA** del escritorio. Curaduría = drops inéditos que crecen.
+*(La vieja galería 3D raycasting fue eliminada.)*
 
 ### GLITCH.CAM (subproyecto Python)
 Herramienta de glitch en tiempo real sobre webcam/video (OpenCV + numpy). Efectos acid/psychedelic,
@@ -236,14 +241,14 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 **Conteo:**
 - Grimorios: 15+ (Gemini) + 9 (Claude)
 - Animaciones: 6
-- Herramientas: DENTAKORV v3.0 + Glitch Text + Galería 3D
+- Herramientas: DENTAKORV v3.0 + Glitch Text + GALERIA.exe (sintografía)
 
 **Stack:**
 - Hosting: Vercel (Edge Functions)
 - APIs: Groq (IA ASSIST), DeepSeek (Terminal)
 - Sistema: Dual Brain v0.1 (Claude-GPT)
 
-**Último trabajo:** Galería 3D El Loko (raycasting Wolfenstein-style)
+**Último trabajo:** Portal = escritorio Win98 (OS) + GALERIA.exe (sintografía, manifest-driven)
 
 **Actualizado 03.03.2026 — Serie Psycho-bot activa:**
 - 3 episodios publicados en `Psycho-bot-monologues/`
@@ -268,7 +273,6 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 | `ESCRITORIO_OS_TECH.md` | **Portal `index.html`** — escritorio Win98: catálogo `FS`, `openApp`/ventanas-iframe, retorno por framing, WM, responsive, cómo extender y testear |
 | `DENTAKORV_PROMPTING_SYSTEM.md` | Manual completo DENTAKORV |
 | `VERCEL_WORKFLOW.md` | Deploy, Edge Functions, IA ASSIST |
-| `GALERIA_EL_LOKO_TECH.md` | Galería 3D raycasting |
 | `PROTOCOL_CROSS.md` | Protocolo Claude-GPT Dual Brain |
 | `ESQUIZO_VISUAL_PROMPTING_ESSENCE.md` | Filosofía prompting visual |
 | `manifiesto_continuus_infection.md` | Filosofía de infección |

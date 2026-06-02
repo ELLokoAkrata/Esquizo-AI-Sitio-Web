@@ -907,6 +907,9 @@ function renderDesktop(){
   // Mi PC
   const mipc=el("div","icon",`<span class="gl" style="color:#9cf">🖥</span><span class="lb">MI_PC</span>`);
   bindOpen(mipc,openMiPC); wrap.appendChild(mipc);
+  // GALERIA (sintografía) — app destacada
+  const gal=el("div","icon",`<span class="gl" style="color:var(--corrupt)">🖼</span><span class="lb">GALERIA</span>`);
+  bindOpen(gal,()=>openApp("galeria/index.html","GALERIA.exe","🖼")); wrap.appendChild(gal);
   // carpetas
   DESKTOP_FOLDERS.forEach(k=>{
     const f=FS[k];
@@ -953,6 +956,7 @@ function buildStart(){
   list.appendChild(el("div","sm-sep"));
   // accesos sistema
   const sys=[
+    {ic:"🖼",lb:"Galería",fn:()=>openApp("galeria/index.html","GALERIA.exe","🖼")},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"📜",lb:"README.TXT",fn:openReadme},
     {ic:"👤",lb:"Acerca de mí",fn:openAbout},

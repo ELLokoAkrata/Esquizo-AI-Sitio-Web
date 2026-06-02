@@ -1,2 +1,5 @@
 .gemini/
 api/akelarre.js
+
+# Originales full-res de la galería (no publicar; usar tools/optimize-galeria.py -> galeria/img/*.webp)
+galeria/_originals/

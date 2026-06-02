@@ -16,6 +16,7 @@ Controles:
   h     toggle HUD
   Tab   clean mode (oculta HUD para OBS)
   r     reset todo
+  R     hot-reload (recarga effects/* + hud sin reiniciar; mantiene modos)
   f     toggle fullscreen
   q     salir
 """
@@ -24,6 +25,7 @@ import cv2
 import numpy as np
 import time
 import sys
+import importlib
 
 import state
 from effects.base    import (rgb_split, displacement, noise, color_cycle,
@@ -51,6 +53,61 @@ import effects.slitscan as slitscan
 from hud             import draw_hud, LIQUID_LEVELS
 
 
+def reload_effects():
+    """HOT-RELOAD (tecla R): recarga effects/* + hud.py en caliente sin reiniciar.
+
+    NO recarga state.py → los modos/intensidad/banco se mantienen. Los buffers de
+    módulo (slit, melt, ghost, etc.) se resetean (como 'r'). Si un archivo tiene un
+    error de sintaxis se atrapa y se mantiene el código anterior corriendo.
+    Orden = dependencias: base → palette → dither → ... → reventus → slitscan → hud.
+    """
+    global RGB_FUNCS, VORTEX_FUNCS, WAVE_FUNCS, SPIRAL_FUNCS, SPIRAL_NAMES
+    global XOR_FUNCS, frame_blend_rgb, hyper_liquid_acid
+    global CORRUPT_MODES, COLOR_ACID_FUNCS, COLOR_ACID_NAMES, MOSH_FUNCS
+    global REV_FUNCS, REV_USE_TICK, MIRROR_FUNCS
+    global PALT_FUNCS, DITH_FUNCS, MELT_FUNCS, SLIT_FUNCS, draw_acid_os
+    global displacement, noise, color_cycle, scanlines, glitch_blocks
+    global crt_warp, ascii_mode, color_trails, pixel_sort
+    global draw_hud, LIQUID_LEVELS
+
+    order = ['effects.base', 'effects.palette', 'effects.dither',
+             'effects.color_acid', 'effects.acid', 'effects.corrupt',
+             'effects.ghost', 'effects.mirror', 'effects.melt',
+             'effects.emul', 'effects.reventus', 'effects.slitscan', 'hud']
+    try:
+        for name in order:
+            if name in sys.modules:
+                importlib.reload(sys.modules[name])
+    except Exception as ex:
+        print(f'[RELOAD] ERROR: {ex!r} — se mantiene el código anterior')
+        return
+
+    m = sys.modules
+    b, ac, co = m['effects.base'], m['effects.acid'], m['effects.corrupt']
+    ca, gh, rv = m['effects.color_acid'], m['effects.ghost'], m['effects.reventus']
+    mi, pa, di = m['effects.mirror'], m['effects.palette'], m['effects.dither']
+    me, em, sl = m['effects.melt'], m['effects.emul'], m['effects.slitscan']
+    hu = m['hud']
+    # re-vincular lo que el pipeline usa por nombre (los alias de módulo se
+    # actualizan solos porque reload reusa el mismo objeto módulo)
+    RGB_FUNCS, VORTEX_FUNCS, WAVE_FUNCS = b.RGB_FUNCS, b.VORTEX_FUNCS, b.WAVE_FUNCS
+    SPIRAL_FUNCS, SPIRAL_NAMES = b.SPIRAL_FUNCS, b.SPIRAL_NAMES
+    displacement, noise, color_cycle = b.displacement, b.noise, b.color_cycle
+    scanlines, glitch_blocks, crt_warp = b.scanlines, b.glitch_blocks, b.crt_warp
+    ascii_mode, color_trails, pixel_sort = b.ascii_mode, b.color_trails, b.pixel_sort
+    XOR_FUNCS = ac.XOR_FUNCS
+    frame_blend_rgb, hyper_liquid_acid = ac.frame_blend_rgb, ac.hyper_liquid_acid
+    CORRUPT_MODES = co.CORRUPT_MODES
+    COLOR_ACID_FUNCS, COLOR_ACID_NAMES = ca.COLOR_ACID_FUNCS, ca.COLOR_ACID_NAMES
+    MOSH_FUNCS = gh.MOSH_FUNCS
+    REV_FUNCS, REV_USE_TICK = rv.REV_FUNCS, rv.REV_USE_TICK
+    MIRROR_FUNCS = mi.MIRROR_FUNCS
+    PALT_FUNCS, DITH_FUNCS, MELT_FUNCS = pa.PALT_FUNCS, di.DITH_FUNCS, me.MELT_FUNCS
+    draw_acid_os, SLIT_FUNCS = em.draw_acid_os, sl.SLIT_FUNCS
+    draw_hud, LIQUID_LEVELS = hu.draw_hud, hu.LIQUID_LEVELS
+    print('[RELOAD] efectos + hud recargados OK')
+
+
 def main():
     print('GLITCH.CAM | EsquizoAI')
 
@@ -74,7 +131,7 @@ def main():
     actual_h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     src_label = 'VIDEO' if is_video else 'CAM'
     print(f'{src_label}: {actual_w}x{actual_h}')
-    print('Controles: 1-9 efectos | c corrupt | 4 mosh | b blnd | Shift+F reventus | m mirror | +/- intensidad | h HUD | Tab clean | r reset | f fullscreen | q salir')
+    print('Controles: 1-9 efectos | ESPACIO banco A/B | j SLIT | c corrupt | 4 mosh | b blnd | Shift+F reventus | m mirror | +/- intensidad | h HUD | Tab clean | r reset | R hot-reload | f fullscreen | q salir')
 
     WIN = 'GLITCH.CAM | EsquizoAI — [q] salir'
     cv2.namedWindow(WIN, cv2.WINDOW_NORMAL)
@@ -311,6 +368,7 @@ def main():
             if state.bank == 0:
                 state.slit_mode = (state.slit_mode + 1) % 5   # A·j = SLIT-SCAN
             # else: B·j = STUTTER+STROBE (pendiente)
+        elif key == ord('R'): reload_effects()  # Shift+R — hot-reload effects/* + hud
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
         elif key == ord('-'): state.intensity = max(0.0, state.intensity - 0.05)

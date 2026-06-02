@@ -55,6 +55,7 @@ import effects.feedback as feedback
 from effects.tunnel  import TUNNEL_FUNCS
 from effects.kaleido import KALEIDO_FUNCS
 from effects.bloom   import BLOOM_FUNCS
+from effects.vhs     import VHS_FUNCS
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -71,7 +72,7 @@ def reload_effects():
     global CORRUPT_MODES, COLOR_ACID_FUNCS, COLOR_ACID_NAMES, MOSH_FUNCS
     global REV_FUNCS, REV_USE_TICK, MIRROR_FUNCS
     global PALT_FUNCS, DITH_FUNCS, MELT_FUNCS, SLIT_FUNCS, FB_FUNCS, draw_acid_os
-    global TUNNEL_FUNCS, KALEIDO_FUNCS, BLOOM_FUNCS
+    global TUNNEL_FUNCS, KALEIDO_FUNCS, BLOOM_FUNCS, VHS_FUNCS
     global displacement, noise, color_cycle, scanlines, glitch_blocks
     global crt_warp, ascii_mode, color_trails, pixel_sort
     global draw_hud, LIQUID_LEVELS
@@ -81,7 +82,7 @@ def reload_effects():
              'effects.ghost', 'effects.mirror', 'effects.melt',
              'effects.emul', 'effects.reventus', 'effects.slitscan',
              'effects.feedback', 'effects.tunnel', 'effects.kaleido',
-             'effects.bloom', 'hud']
+             'effects.bloom', 'effects.vhs', 'hud']
     try:
         for name in order:
             if name in sys.modules:
@@ -97,6 +98,7 @@ def reload_effects():
     me, em, sl = m['effects.melt'], m['effects.emul'], m['effects.slitscan']
     fb, tu = m['effects.feedback'], m['effects.tunnel']
     ka, bl = m['effects.kaleido'], m['effects.bloom']
+    vh = m['effects.vhs']
     hu = m['hud']
     # re-vincular lo que el pipeline usa por nombre (los alias de módulo se
     # actualizan solos porque reload reusa el mismo objeto módulo)
@@ -115,7 +117,7 @@ def reload_effects():
     PALT_FUNCS, DITH_FUNCS, MELT_FUNCS = pa.PALT_FUNCS, di.DITH_FUNCS, me.MELT_FUNCS
     draw_acid_os, SLIT_FUNCS, FB_FUNCS = em.draw_acid_os, sl.SLIT_FUNCS, fb.FB_FUNCS
     TUNNEL_FUNCS, KALEIDO_FUNCS = tu.TUNNEL_FUNCS, ka.KALEIDO_FUNCS
-    BLOOM_FUNCS = bl.BLOOM_FUNCS
+    BLOOM_FUNCS, VHS_FUNCS = bl.BLOOM_FUNCS, vh.VHS_FUNCS
     draw_hud, LIQUID_LEVELS = hu.draw_hud, hu.LIQUID_LEVELS
     print('[RELOAD] efectos + hud recargados OK')
 
@@ -332,6 +334,10 @@ def main():
             if state.mirror_mode > 0:
                 out = MIRROR_FUNCS[state.mirror_mode](out)
 
+            # ─── VHS — decay analógico de cinta (post-proceso final) ──────────
+            if state.vhs_mode > 0:
+                out = VHS_FUNCS[state.vhs_mode](out, t, tick)
+
             # ─── EMUL — overlay acid-OS (contenido creativo, se hornea) ───────
             if state.emul_mode > 0:
                 out = draw_acid_os(out, t, tick, state.emul_mode)
@@ -390,7 +396,8 @@ def main():
             if state.bank == 0:
                 state.fb_mode = (state.fb_mode + 1) % 5       # A·g = FEEDBACK
                 feedback.reset()
-            # else: B·g = VHS (pendiente)
+            else:
+                state.vhs_mode = (state.vhs_mode + 1) % 5     # B·g = VHS
         elif key == ord('j'):
             if state.bank == 0:
                 state.slit_mode = (state.slit_mode + 1) % 5   # A·j = SLIT-SCAN
@@ -448,6 +455,7 @@ def main():
             state.tunnel_mode  = 0
             state.kaleido_mode = 0
             state.bloom_mode   = 0
+            state.vhs_mode     = 0
             state.bank         = 0
             slitscan.reset()
             feedback.reset()

@@ -29,7 +29,7 @@ controlan las 5 teclas (cada efecto guarda su propio modo → se pueden apilar e
 | 3 | **TUNNEL** (remap polar) | A·`o` | `effects/tunnel.py` | TUNL · TWST · POLR | ✅ |
 | 4 | **KALEIDO** (simetría radial) | A·`y` | `effects/kaleido.py` | K4 · K6 · K8 · MIRR | ✅ |
 | 5 | **BLOOM** (glow sangrante) | A·`z` | `effects/bloom.py` | GLOW · NEON · HALO | ✅ |
-| 6 | **VHS** (decay analógico) | B·`g` | `effects/vhs.py` | TRAK · CHRM · DROP · FULL | ⬜ |
+| 6 | **VHS** (decay analógico) | B·`g` | `effects/vhs.py` | TRAK · CHRM · DROP · FULL | ✅ |
 | 7 | **STUTTER+STROBE** (tiempo roto) | B·`j` | `effects/stutter.py` | HOLD · RWND · ECHO · STRB · INVS | ⬜ |
 | 8 | **SOLARIZE / THERMAL** (falso color) | B·`o` | `effects/solar.py` | SOLR · THRM · INVT | ⬜ |
 | 9 | **EDGE** (rotoscopio neón) | B·`y` | `effects/edge.py` | NEON · CMIC · GHST | ⬜ |

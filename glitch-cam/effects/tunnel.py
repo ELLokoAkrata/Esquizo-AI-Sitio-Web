@@ -10,7 +10,7 @@ Combina brutal con FEEDBACK. Todo `cv2.remap` con grids polares cacheados.
 import cv2
 import numpy as np
 
-_polar_cache = {}   # (h,w) -> (theta, r_norm, x_g, y_g, cx, cy)
+_polar_cache = {}   # (h,w) -> dict con arrays estáticos precomputados
 
 
 def _polar(frame):
@@ -23,9 +23,19 @@ def _polar(frame):
         r      = np.sqrt(dx * dx + dy * dy) + 1e-3
         maxr   = np.sqrt(cx * cx + cy * cy)
         theta  = np.arctan2(dy, dx)
-        c = (theta, r / maxr, x_g, y_g, cx, cy)
+        rn     = r / maxr
+        depth  = 1.0 / (rn + 0.07)
+        c = dict(
+            theta=theta, rn=rn, cx=cx, cy=cy,
+            u_base=(theta / (2 * np.pi)) % 1.0,           # ángulo→col (estático)
+            mapx_base=(((theta / (2 * np.pi)) % 1.0) * w % w).astype(np.float32),
+            depth=depth,
+            depth_h=(depth * 0.15 * h).astype(np.float32),  # profundidad en px
+            polr_x=(((theta / (2 * np.pi) + 0.5) % 1.0) * w).astype(np.float32),
+            polr_y=(np.clip(rn, 0, 1) * (h - 1)).astype(np.float32),
+        )
         _polar_cache[(h, w)] = c
-    return (h, w) + c
+    return h, w, c
 
 
 def _dose(frame, warp, t):
@@ -36,37 +46,30 @@ def _dose(frame, warp, t):
 # ─── MODOS ─────────────────────────────────────────────────────────────────────
 def tun_tunnel(frame, t, tick):
     """TUNL — túnel clásico, scroll radial hacia el centro."""
-    h, w, theta, rn, x_g, y_g, cx, cy = _polar(frame)
-    u      = (theta / (2 * np.pi)) % 1.0
-    depth  = 1.0 / (rn + 0.07)
-    scroll = tick * (0.004 + t * 0.02)
-    v      = depth * 0.15 + scroll
-    map_x  = ((u * w) % w).astype(np.float32)
-    map_y  = ((v * h) % h).astype(np.float32)
-    warp   = cv2.remap(frame, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
+    h, w, c = _polar(frame)
+    scroll = tick * (0.004 + t * 0.02) * h
+    map_y  = ((c['depth_h'] + scroll) % h).astype(np.float32)   # map_x es estático
+    warp   = cv2.remap(frame, c['mapx_base'], map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
     return _dose(frame, warp, t)
 
 
 def tun_twist(frame, t, tick):
     """TWST — túnel + torsión angular: espiral de túnel."""
-    h, w, theta, rn, x_g, y_g, cx, cy = _polar(frame)
-    depth  = 1.0 / (rn + 0.07)
-    twist  = depth * (0.4 + t * 1.2) + tick * 0.02 * (0.5 + t)
-    u      = ((theta + twist) / (2 * np.pi)) % 1.0
-    v      = depth * 0.15 + tick * (0.004 + t * 0.018)
-    map_x  = ((u * w) % w).astype(np.float32)
-    map_y  = ((v * h) % h).astype(np.float32)
+    h, w, c = _polar(frame)
+    twist  = c['depth'] * (0.4 + t * 1.2) + tick * 0.02 * (0.5 + t)
+    u      = (c['theta'] + twist) * (1.0 / (2 * np.pi))
+    map_x  = ((u % 1.0) * w).astype(np.float32)               # u%1 ∈[0,1) → *w ∈[0,w)
+    map_y  = ((c['depth_h'] + tick * (0.004 + t * 0.018) * h) % h).astype(np.float32)
     warp   = cv2.remap(frame, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
     return _dose(frame, warp, t)
 
 
 def tun_polar(frame, t, tick):
     """POLR — transform polar pura: la imagen se desenrolla (ángulo→x, radio→y)."""
-    h, w, theta, rn, x_g, y_g, cx, cy = _polar(frame)
+    h, w, c = _polar(frame)
     spin  = tick * 0.01 * (0.5 + t)
-    map_x = (((theta + spin) / (2 * np.pi) + 0.5) % 1.0 * w).astype(np.float32)
-    map_y = (np.clip(rn, 0, 1) * (h - 1)).astype(np.float32)
-    warp  = cv2.remap(frame, map_x, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
+    map_x = (((c['theta'] + spin) / (2 * np.pi) + 0.5) % 1.0 * w).astype(np.float32)
+    warp  = cv2.remap(frame, map_x, c['polr_y'], cv2.INTER_LINEAR, borderMode=cv2.BORDER_WRAP)
     return _dose(frame, warp, t)
 
 

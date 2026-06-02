@@ -5,27 +5,59 @@ DOT: puntos de radio ∝ luminancia, coloreados por el frame (semitono a color).
 CMYK: separación C/M/Y con rejillas a ángulos distintos sobre blanco (periódico).
 LINE: line-screen, grosor de línea ∝ luminancia.
 
-Todo vectorizado (sin loops por píxel). `t` afina el tamaño de celda y la mezcla.
+Optimizado: los mapas de la rejilla (distancia al centro de celda, fase de línea)
+son ESTÁTICOS → se cachean por (h,w,cell). Por frame solo: 1-3 block-averages +
+comparación + `np.where`. Sin sqrt/trig por frame. `t` afina celda y mezcla.
 """
 import cv2
 import numpy as np
 
-_grid_cache = {}   # (h,w) -> (xx, yy) índices float32
+_dist_cache = {}   # (h,w,cell) -> distancia normalizada al centro de celda
+_rot_cache  = {}   # (h,w,cell,deg) -> distancia en rejilla rotada
+_line_cache = {}   # (h,w,cell,deg) -> fase de línea 0..1
 
 
-def _xy(frame):
-    h, w = frame.shape[:2]
-    g = _grid_cache.get((h, w))
-    if g is None:
+def _dist_map(h, w, cell):
+    key = (h, w, cell)
+    d = _dist_cache.get(key)
+    if d is None:
         yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-        g = (xx, yy)
-        _grid_cache[(h, w)] = g
-    return (h, w) + g
+        cxx = (xx % cell) - cell / 2.0 + 0.5
+        cyy = (yy % cell) - cell / 2.0 + 0.5
+        d = np.sqrt(cxx * cxx + cyy * cyy).astype(np.float32)
+        _dist_cache[key] = d
+    return d
 
 
-def _block(img, cell, w, h, interp_down=cv2.INTER_AREA):
-    """Promedio por celda: downscale + upscale nearest."""
-    small = cv2.resize(img, (max(1, w // cell), max(1, h // cell)), interpolation=interp_down)
+def _rot_dist(h, w, cell, deg):
+    key = (h, w, cell, deg)
+    d = _rot_cache.get(key)
+    if d is None:
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        a = np.radians(deg)
+        u = xx * np.cos(a) + yy * np.sin(a)
+        v = -xx * np.sin(a) + yy * np.cos(a)
+        cu = (u % cell) - cell / 2.0
+        cv_ = (v % cell) - cell / 2.0
+        d = np.sqrt(cu * cu + cv_ * cv_).astype(np.float32)
+        _rot_cache[key] = d
+    return d
+
+
+def _line_phase(h, w, cell, deg):
+    key = (h, w, cell, deg)
+    p = _line_cache.get(key)
+    if p is None:
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        a = np.radians(deg)
+        u = xx * np.cos(a) + yy * np.sin(a)
+        p = ((u % cell) / float(cell)).astype(np.float32)
+        _line_cache[key] = p
+    return p
+
+
+def _block(img, cell, w, h):
+    small = cv2.resize(img, (max(1, w // cell), max(1, h // cell)), interpolation=cv2.INTER_AREA)
     return cv2.resize(small, (w, h), interpolation=cv2.INTER_NEAREST)
 
 
@@ -37,56 +69,41 @@ def _dose(frame, eff, t):
 # ─── MODOS ─────────────────────────────────────────────────────────────────────
 def half_dot(frame, t, tick):
     """DOT — puntos de radio ∝ brillo, coloreados por el frame."""
-    h, w, xx, yy = _xy(frame)
+    h, w = frame.shape[:2]
     cell = int(4 + (1.0 - t) * 6)
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    lum  = _block(gray, cell, w, h).astype(np.float32) / 255.0
+    lum  = _block(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cell, w, h).astype(np.float32) / 255.0
     col  = _block(frame, cell, w, h)
-    cxx  = (xx % cell) - cell / 2.0 + 0.5
-    cyy  = (yy % cell) - cell / 2.0 + 0.5
-    dist = np.sqrt(cxx * cxx + cyy * cyy)
-    mask = dist <= (lum * (cell * 0.75))
-    eff  = np.zeros_like(frame)
-    eff[mask] = col[mask]
+    mask = _dist_map(h, w, cell) <= (lum * (cell * 0.75))
+    eff  = np.where(mask[:, :, None], col, 0).astype(np.uint8)
     return _dose(frame, eff, t)
-
-
-def _screen(xx, yy, cov, cell, angle):
-    ca, sa = np.cos(angle), np.sin(angle)
-    u = xx * ca + yy * sa
-    v = -xx * sa + yy * ca
-    cu = (u % cell) - cell / 2.0
-    cv_ = (v % cell) - cell / 2.0
-    return np.sqrt(cu * cu + cv_ * cv_) <= (cov * (cell * 0.72))
 
 
 def half_cmyk(frame, t, tick):
     """CMYK — separación C/M/Y con rejillas a 15°/75°/0° sobre blanco."""
-    h, w, xx, yy = _xy(frame)
+    h, w = frame.shape[:2]
     cell = int(5 + (1.0 - t) * 6)
     blk  = _block(frame, cell, w, h).astype(np.float32) / 255.0
-    c = 1.0 - blk[:, :, 2]      # cian absorbe rojo
-    m = 1.0 - blk[:, :, 1]      # magenta absorbe verde
-    y = 1.0 - blk[:, :, 0]      # amarillo absorbe azul
-    out = np.full_like(frame, 255)
-    out[_screen(xx, yy, c, cell, np.radians(15)), 2] = 0
-    out[_screen(xx, yy, m, cell, np.radians(75)), 1] = 0
-    out[_screen(xx, yy, y, cell, np.radians(0)),  0] = 0
+    c = (1.0 - blk[:, :, 2]) * (cell * 0.72)
+    m = (1.0 - blk[:, :, 1]) * (cell * 0.72)
+    y = (1.0 - blk[:, :, 0]) * (cell * 0.72)
+    mc = _rot_dist(h, w, cell, 15) <= c
+    mm = _rot_dist(h, w, cell, 75) <= m
+    my = _rot_dist(h, w, cell, 0)  <= y
+    out = np.empty((h, w, 3), np.uint8)
+    out[:, :, 0] = np.where(my, 0, 255)            # amarillo absorbe azul
+    out[:, :, 1] = np.where(mm, 0, 255)            # magenta absorbe verde
+    out[:, :, 2] = np.where(mc, 0, 255)            # cian absorbe rojo
     return _dose(frame, out, t)
 
 
 def half_line(frame, t, tick):
     """LINE — line-screen diagonal: grosor de línea ∝ luminancia."""
-    h, w, xx, yy = _xy(frame)
+    h, w = frame.shape[:2]
     cell = int(4 + (1.0 - t) * 6)
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    lum  = _block(gray, cell, w, h).astype(np.float32) / 255.0
-    u = xx * np.cos(np.radians(45)) + yy * np.sin(np.radians(45))
-    phase = (u % cell) / float(cell)
-    mask  = phase < lum
-    col   = _block(frame, cell, w, h)
-    eff   = np.zeros_like(frame)
-    eff[mask] = col[mask]
+    lum  = _block(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), cell, w, h).astype(np.float32) / 255.0
+    col  = _block(frame, cell, w, h)
+    mask = _line_phase(h, w, cell, 45) < lum
+    eff  = np.where(mask[:, :, None], col, 0).astype(np.uint8)
     return _dose(frame, eff, t)
 
 

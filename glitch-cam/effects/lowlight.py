@@ -27,7 +27,7 @@ NVG_GRAIN = 18      # ruido/scintillation (0 = limpio)
 NVG_VIG   = 0.55    # fuerza del viñeteo (0 = sin viñeta)
 
 _lut_cache  = {}
-_nvg_lut    = None
+_ramp_cache = {}
 _vig_cache  = {}
 
 
@@ -65,16 +65,16 @@ def ll_max(frame, t):
     return cv2.LUT(_clahe(frame), _gamma_lut(GAMMA_MAX, GAIN))
 
 
-def _green_ramp():
-    """LUT luminancia → verde tóxico #00ff41 (BGR 65,255,0)."""
-    global _nvg_lut
-    if _nvg_lut is None:
+def _ramp_lut(bgr):
+    """LUT luminancia → negro→color (rampa fósforo). Cacheada por color BGR."""
+    lut = _ramp_cache.get(bgr)
+    if lut is None:
         ramp = np.arange(256, dtype=np.float32) / 255.0
         lut = np.zeros((256, 3), np.uint8)
-        lut[:, 0] = (ramp * 65).astype(np.uint8)    # B
-        lut[:, 1] = (ramp * 255).astype(np.uint8)   # G
-        _nvg_lut = lut
-    return _nvg_lut
+        for i in range(3):
+            lut[:, i] = (ramp * bgr[i]).astype(np.uint8)
+        _ramp_cache[bgr] = lut
+    return lut
 
 
 def _vignette(h, w):
@@ -89,18 +89,39 @@ def _vignette(h, w):
     return v
 
 
-def ll_nvg(frame, t):
-    """NVG — visión nocturna: amplifica + verde fósforo + grano + viñeteo."""
+def _amplify(frame):
+    """Luminancia amplificada (intensificador) + grano de scintillation."""
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.LUT(gray, _gamma_lut(NVG_GAMMA, GAIN))     # intensificar brillo
-    out  = _green_ramp()[gray]                            # (h,w,3) verde fósforo
+    gray = cv2.LUT(gray, _gamma_lut(NVG_GAMMA, GAIN))
     if NVG_GRAIN > 0:
         noise = np.random.normal(0, NVG_GRAIN, gray.shape).astype(np.int16)
-        out[:, :, 1] = np.clip(out[:, :, 1].astype(np.int16) + noise, 0, 255).astype(np.uint8)
+        gray = np.clip(gray.astype(np.int16) + noise, 0, 255).astype(np.uint8)
+    return gray
+
+
+def _vig(out, h, w):
     if NVG_VIG > 0:
-        out = (out.astype(np.float32) * _vignette(*gray.shape)).astype(np.uint8)
+        out = (out.astype(np.float32) * _vignette(h, w)).astype(np.uint8)
     return out
 
 
-LOWLIGHT_FUNCS = {1: ll_gain, 2: ll_clahe, 3: ll_max, 4: ll_nvg}
-LOWLIGHT_NAMES = {0: 'OFF', 1: 'GAIN', 2: 'CLAHE', 3: 'MAX', 4: 'NVG'}
+def ll_nvg(frame, t):
+    """NVG — visión nocturna verde fósforo (#00ff41)."""
+    g = _amplify(frame)
+    return _vig(_ramp_lut((65, 255, 0))[g], *g.shape)
+
+
+def ll_amber(frame, t):
+    """AMBR — visión nocturna ámbar (#ffb000): mira ámbar / monitor retro."""
+    g = _amplify(frame)
+    return _vig(_ramp_lut((0, 176, 255))[g], *g.shape)
+
+
+def ll_thermal(frame, t):
+    """THRM — térmica: amplifica + colormap de calor (FLIR). Va al inicio del pipeline."""
+    g = _amplify(frame)
+    return _vig(cv2.applyColorMap(g, cv2.COLORMAP_INFERNO), *g.shape)
+
+
+LOWLIGHT_FUNCS = {1: ll_gain, 2: ll_clahe, 3: ll_max, 4: ll_nvg, 5: ll_amber, 6: ll_thermal}
+LOWLIGHT_NAMES = {0: 'OFF', 1: 'GAIN', 2: 'CLAHE', 3: 'MAX', 4: 'NVG', 5: 'AMBR', 6: 'THRM'}

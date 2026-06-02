@@ -65,6 +65,13 @@ teclas, así que puedes apilar efectos de ambos bancos a la vez.
 
 > ⚠️ **STUTTER** (banco B, `j`) incluye **STRB**/**INVS** → parpadeo fuerte. Fotosensibilidad.
 
+### 🎨 Acidez / saturación (ajustable en caliente)
+Los efectos de color **`k`** (KACD/barras), **`x`** (XOR) y **`c`** (CRPT) pasan por un boost
+vívido (saturación alta + piso de color + lift de brillo) → colores tipo trip de base, no
+apagados. Las perillas están arriba de `effects/color_acid.py`, `effects/acid.py` y
+`effects/corrupt.py` (`ACID_SAT`, `ACID_SAT_FLOOR`, `ACID_VAL`, `ACID_HUE_SPIN`). **`8`** (COLR)
+tiene las suyas (`COLR_*`) en `effects/base.py`. Editás el número, pulsás `R`, lo ves al instante.
+
 ### 🔄 Hot-reload (iterar sin reiniciar)
 La tecla **`R`** (Shift+R) recarga en caliente todos los `effects/*` y `hud.py` mientras el
 programa corre — la cámara/ventana y los modos activos sobreviven. Editas un efecto, guardas,
@@ -80,7 +87,7 @@ requiere reiniciar.) Si un archivo tiene error de sintaxis, lo atrapa y mantiene
 | `5` | NOIS | Ruido analógico |
 | `6` | BLOK | Glitch blocks — bloques desplazados |
 | `7` | CRT | Warp sinusoidal estilo CRT |
-| `8` | COLR | Color cycle — rotación de hue animada |
+| `8` | COLR | Trip de color (on/off) — el BANCO elige sabor: **A=FRC** (arcoíris forzado, pinta hasta escenas pálidas) / **B=SOFT** (rota el color existente). Alterná con `ESPACIO` para comparar |
 | `9` | ASCI | Modo ASCII |
 
 ### Efectos acid / XOR

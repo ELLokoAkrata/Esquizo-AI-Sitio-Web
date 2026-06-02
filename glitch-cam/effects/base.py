@@ -94,12 +94,75 @@ def noise(frame, t):
     return np.clip(frame.astype(np.int16) + n, 0, 255).astype(np.uint8)
 
 
-def color_cycle(frame, t, tick):
+# ─── COLR (tecla 8) — trip de color FORZADO (ajustable en caliente con R) ───────
+# No rota el color existente: lo GENERA desde brillo + posición + tiempo, así pinta
+# hasta una pared blanca en arcoíris en movimiento. Sube los números para más caos.
+COLR_SPEED = 2.4     # velocidad de avance del arcoíris
+COLR_LUMA  = 1.6     # cuánto el BRILLO mapea a tono (alto = más bandas de color)
+COLR_GRAD  = 90.0    # gradiente espacial de tono que fluye con el tiempo
+COLR_FORCE = 0.9     # cuánto se fuerza el color generado vs el original (0..1)
+COLR_SAT   = 235     # saturación forzada (neón)
+COLR_VAL   = 1.15    # lift de brillo
+COLR_SWAP  = True    # remapeo de canales por fases lentas (la paleta "salta")
+_colr_hue = 0.0      # acumulador de fase (suave aunque la velocidad oscile)
+_colr_grid = {}      # (h,w) -> (xs, ys) cacheados
+
+def _colr_xy(h, w):
+    g = _colr_grid.get((h, w))
+    if g is None:
+        xs = np.linspace(0, 1, w, dtype=np.float32)[None, :]
+        ys = np.linspace(0, 1, h, dtype=np.float32)[:, None]
+        g = (xs, ys)
+        _colr_grid[(h, w)] = g
+    return g
+
+def color_cycle_forced(frame, t, tick):
+    """FRC — pinta toda la escena en arcoíris GENERADO: el brillo y la posición
+    definen el tono, que fluye y muta con el tiempo. Saturación forzada alta →
+    trip pleno aunque la escena sea pálida. Se intensifica con `+`."""
+    global _colr_hue
+    h, w = frame.shape[:2]
+    hsv  = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV).astype(np.float32)
+    gray = hsv[:, :, 2]                                  # brillo como luminancia
+    xs, ys = _colr_xy(h, w)
+    speed = COLR_SPEED * (0.6 + np.sin(tick * 0.004) * 1.1) * max(0.2, t)
+    _colr_hue = (_colr_hue + speed) % 180.0
+    grad = (xs * np.sin(tick * 0.007) + ys * np.cos(tick * 0.005)) * COLR_GRAD
+    gen_hue = (gray * COLR_LUMA + _colr_hue + grad) % 180     # tono generado
+    force = COLR_FORCE * (0.55 + 0.45 * t)               # arranca fuerte, sube con t
+    hsv[:, :, 0] = (hsv[:, :, 0] * (1 - force) + gen_hue * force) % 180
+    hsv[:, :, 1] = np.clip(hsv[:, :, 1] + (COLR_SAT - hsv[:, :, 1]) * force, 0, 255)
+    hsv[:, :, 2] = np.clip(hsv[:, :, 2] * COLR_VAL, 0, 255)
+    out = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+    if COLR_SWAP:                                        # fase lenta (~cada 4s): rota canales
+        phase = int(tick * 0.008) % 4
+        if   phase == 1: out = out[:, :, [1, 2, 0]]
+        elif phase == 2: out = out[:, :, [2, 0, 1]]
+    return out
+
+
+def color_cycle_soft(frame, t, tick):
+    """SOFT — versión NO forzada: rota el color que YA existe (sutil en escenas
+    pálidas, vívida en escenas coloridas). Para comparar contra FRC con videos."""
+    global _colr_hue
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV).astype(np.float32)
-    shift = (tick * t * 1.8) % 180
-    hsv[:, :, 0] = (hsv[:, :, 0] + shift) % 180
-    hsv[:, :, 1] = np.clip(hsv[:, :, 1] * (1 + t * 0.5), 0, 255)
-    return cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+    w = frame.shape[1]
+    speed = COLR_SPEED * (0.6 + np.sin(tick * 0.004) * 1.1) * max(0.15, t)
+    _colr_hue = (_colr_hue + speed) % 180.0
+    grad = np.linspace(0, 1, w, dtype=np.float32)[None, :] * (COLR_GRAD * np.sin(tick * 0.007))
+    hsv[:, :, 0] = (hsv[:, :, 0] + _colr_hue + grad) % 180
+    hsv[:, :, 1] = np.clip(hsv[:, :, 1] * (1.7 + t * (0.6 + 0.4 * np.sin(tick * 0.02))) + 40, 0, 255)
+    hsv[:, :, 2] = np.clip(hsv[:, :, 2] * COLR_VAL, 0, 255)
+    out = cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+    if COLR_SWAP:
+        phase = int(tick * 0.008) % 4
+        if   phase == 1: out = out[:, :, [1, 2, 0]]
+        elif phase == 2: out = out[:, :, [2, 0, 1]]
+    return out
+
+
+COLR_FUNCS = {1: color_cycle_forced, 2: color_cycle_soft}
+COLR_NAMES = {0: 'OFF', 1: 'FRC', 2: 'SOFT'}
 
 
 def scanlines(frame, t):

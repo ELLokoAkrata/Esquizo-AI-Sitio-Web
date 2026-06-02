@@ -28,7 +28,7 @@ import sys
 import importlib
 
 import state
-from effects.base    import (rgb_split, displacement, noise, color_cycle,
+from effects.base    import (rgb_split, displacement, noise, COLR_FUNCS,
                               scanlines, glitch_blocks, crt_warp, ascii_mode,
                               vortex, spiral, color_trails, pixel_sort, wave,
                               RGB_FUNCS, VORTEX_FUNCS, WAVE_FUNCS,
@@ -80,7 +80,7 @@ def reload_effects():
     global PALT_FUNCS, DITH_FUNCS, MELT_FUNCS, SLIT_FUNCS, FB_FUNCS, draw_acid_os
     global TUNNEL_FUNCS, KALEIDO_FUNCS, BLOOM_FUNCS, VHS_FUNCS, STUTTER_FUNCS
     global SOLAR_FUNCS, EDGE_FUNCS, HALFTONE_FUNCS
-    global displacement, noise, color_cycle, scanlines, glitch_blocks
+    global displacement, noise, COLR_FUNCS, scanlines, glitch_blocks
     global crt_warp, ascii_mode, color_trails, pixel_sort
     global draw_hud, LIQUID_LEVELS
 
@@ -114,7 +114,7 @@ def reload_effects():
     # actualizan solos porque reload reusa el mismo objeto módulo)
     RGB_FUNCS, VORTEX_FUNCS, WAVE_FUNCS = b.RGB_FUNCS, b.VORTEX_FUNCS, b.WAVE_FUNCS
     SPIRAL_FUNCS, SPIRAL_NAMES = b.SPIRAL_FUNCS, b.SPIRAL_NAMES
-    displacement, noise, color_cycle = b.displacement, b.noise, b.color_cycle
+    displacement, noise, COLR_FUNCS = b.displacement, b.noise, b.COLR_FUNCS
     scanlines, glitch_blocks, crt_warp = b.scanlines, b.glitch_blocks, b.crt_warp
     ascii_mode, color_trails, pixel_sort = b.ascii_mode, b.color_trails, b.pixel_sort
     XOR_FUNCS = ac.XOR_FUNCS
@@ -271,8 +271,9 @@ def main():
                 out = displacement(out, t)
             if active['noise']:
                 out = noise(out, t)
-            if active['color_cycle']:
-                out = color_cycle(out, t, tick)
+            if state.color_cycle_mode > 0:
+                # banco elige el sabor: A=FRC (forzado), B=SOFT (no forzado)
+                out = COLR_FUNCS[1 if state.bank == 0 else 2](out, t, tick)
             if state.corrupt_mode > 0:
                 out = CORRUPT_MODES[state.corrupt_mode](out, t)
             if state.color_acid_mode > 0:
@@ -389,7 +390,7 @@ def main():
         elif key == ord('5'): state.fx['noise']         = not state.fx['noise']
         elif key == ord('6'): state.fx['glitch_blocks'] = not state.fx['glitch_blocks']
         elif key == ord('7'): state.fx['crt_warp']      = not state.fx['crt_warp']
-        elif key == ord('8'): state.fx['color_cycle']   = not state.fx['color_cycle']
+        elif key == ord('8'): state.color_cycle_mode = (state.color_cycle_mode + 1) % 2  # COLR on/off (banco elige FRC/SOFT)
         elif key == ord('9'): state.fx['ascii']          = not state.fx['ascii']
         elif key == ord('v'): state.vortex_mode = (state.vortex_mode + 1) % 6
         elif key == ord('0'): state.spiral_mode = (state.spiral_mode + 1) % 6
@@ -452,6 +453,7 @@ def main():
         elif key == ord('r'):
             state.fx = {k: False for k in state.fx}
             state.rgb_mode        = 0
+            state.color_cycle_mode = 0
             state.vortex_mode     = 0
             state.datamosh_mode   = 0
             state.color_acid_mode = 0

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 import state
-from effects.base       import RGB_NAMES, VORTEX_NAMES, WAVE_NAMES, SPIRAL_NAMES
+from effects.base       import RGB_NAMES, VORTEX_NAMES, WAVE_NAMES, SPIRAL_NAMES, COLR_NAMES
 from effects.color_acid import COLOR_ACID_NAMES
 from effects.acid       import XOR_NAMES
 from effects.corrupt  import CORRUPT_NAMES
@@ -111,6 +111,7 @@ def draw_hud(frame, fps, t):
         elif k == 'x': is_active = state.xor_mode > 0
         elif k == 'w': is_active = state.wave_mode > 0
         elif k == '0': is_active = state.spiral_mode > 0
+        elif k == '8': is_active = state.color_cycle_mode > 0
         elif k == 'b': is_active = state.blnd_mode > 0
         elif k == 'p': is_active = state.palt_mode > 0
         elif k == 'i': is_active = state.dith_mode > 0
@@ -129,6 +130,7 @@ def draw_hud(frame, fps, t):
         elif k == 'x': label = XOR_NAMES.get(state.xor_mode, 'OFF')
         elif k == 'w': label = WAVE_NAMES.get(state.wave_mode, 'OFF')
         elif k == '0': label = SPIRAL_NAMES.get(state.spiral_mode, 'OFF')
+        elif k == '8': label = (COLR_NAMES[1] if state.bank == 0 else COLR_NAMES[2]) if state.color_cycle_mode > 0 else 'OFF'
         elif k == 'b': label = {0:'OFF',1:'BLND',2:'DIFF',3:'SCRN',4:'MPLY',5:'ADDUP',6:'OFST'}.get(state.blnd_mode, 'OFF')
         elif k == 'p': label = PALT_NAMES.get(state.palt_mode, 'OFF')
         elif k == 'i': label = DITH_NAMES.get(state.dith_mode, 'OFF')

@@ -161,7 +161,30 @@ def color_scale_acid(frame, t, tick):
     return (out * 255).astype(np.uint8)
 
 
-COLOR_ACID_FUNCS = {
+# ─── BOOST ACID — ajustable EN CALIENTE (edita y pulsá R) ───────────────────────
+ACID_SAT       = 2.4    # multiplicador de saturación (alto = trip)
+ACID_SAT_FLOOR = 45.0   # saturación MÍNIMA añadida → tiñe los grises, nada queda apagado
+ACID_VAL       = 1.35   # ganancia de brillo (clave: sin esto los colores se ven oscuros)
+ACID_HUE_SPIN  = 0.0    # rotación de tono por frame (0 = off; 1.5 = arcoíris animado)
+_boost_tick = 0
+
+def _acid_boost(frame):
+    """Saturación + brillo altos de base (+ hue spin opcional) → colores vívidos de trip."""
+    global _boost_tick
+    _boost_tick += 1
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV).astype(np.float32)
+    hsv[:, :, 1] = np.clip(hsv[:, :, 1] * ACID_SAT + ACID_SAT_FLOOR, 0, 255)
+    hsv[:, :, 2] = np.clip(hsv[:, :, 2] * ACID_VAL, 0, 255)
+    if ACID_HUE_SPIN:
+        hsv[:, :, 0] = (hsv[:, :, 0] + _boost_tick * ACID_HUE_SPIN) % 180
+    return cv2.cvtColor(hsv.astype(np.uint8), cv2.COLOR_HSV2BGR)
+
+def _boosted(fn):
+    def g(*a, **k):
+        return _acid_boost(fn(*a, **k))
+    return g
+
+_RAW_FUNCS = {
     1: color_bars_acid,
     2: color_increase_acid,
     3: color_time_acid,
@@ -171,6 +194,7 @@ COLOR_ACID_FUNCS = {
     7: color_corruption_acid,
     8: color_scale_acid,
 }
+COLOR_ACID_FUNCS = {k: _boosted(v) for k, v in _RAW_FUNCS.items()}
 COLOR_ACID_NAMES = {
     0: 'OFF',  1: 'BARS', 2: 'INCR', 3: 'TIME',
     4: 'XORT', 5: 'TVAL', 6: 'FADE', 7: 'CRRP', 8: 'SCAL',

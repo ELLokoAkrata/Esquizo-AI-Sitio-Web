@@ -25,7 +25,7 @@ controlan las 5 teclas (cada efecto guarda su propio modo → se pueden apilar e
 | # | Efecto | Banco·Tecla | Módulo | Modos | Estado |
 |---|--------|-------------|--------|-------|--------|
 | 1 | **SLIT-SCAN** (time-displacement) | A·`j` | `effects/slitscan.py` | ROWS · COLS · RADL · CHAOS | ✅ |
-| 2 | **FEEDBACK** (túnel recursivo) | A·`g` | `effects/feedback.py` | ZOOM · ROTZ · DROST · ECHO | ⬜ |
+| 2 | **FEEDBACK** (túnel recursivo) | A·`g` | `effects/feedback.py` | ZOOM · ROTZ · DROST · ECHO | ✅ |
 | 3 | **TUNNEL** (remap polar) | A·`o` | `effects/tunnel.py` | TUNL · TWST · POLR | ⬜ |
 | 4 | **KALEIDO** (simetría radial) | A·`y` | `effects/kaleido.py` | K4 · K6 · K8 · MIRR | ⬜ |
 | 5 | **BLOOM** (glow sangrante) | A·`z` | `effects/bloom.py` | GLOW · NEON · HALO | ⬜ |

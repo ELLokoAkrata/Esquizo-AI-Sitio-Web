@@ -54,6 +54,7 @@ bank          = 0  # 0=A  1=B   (futuro botón físico ESP32)
 # Banco A:  g=feedback  j=slit  o=tunnel  y=kaleido  z=bloom
 # Banco B:  g=vhs       j=stutter o=solar  y=edge     z=halftone
 slit_mode     = 0  # SLIT-SCAN time-displacement: 0=off 1=ROWS 2=COLS 3=RADL 4=CHAOS
+fb_mode       = 0  # FEEDBACK recursión: 0=off 1=ZOOM 2=ROTZ 3=DROST 4=ECHO
 
 # ─── ESTADO GENERAL ───────────────────────────────────────────────────────────
 intensity  = args.intensity / 100.0

@@ -14,6 +14,7 @@ from effects.dither   import DITH_NAMES
 from effects.melt     import MELT_NAMES
 from effects.emul     import EMUL_NAMES
 from effects.slitscan import SLIT_NAMES
+from effects.feedback import FB_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -21,14 +22,28 @@ LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
           ('9', 'ASCI'), ('c', 'CRPT'), ('k', 'KACD'), ('v', 'VRTX'),
           ('0', 'SPRL'), ('t', 'TRAL'), ('s', 'SORT'), ('w', 'WAVE'),
           ('x', 'XORF'), ('a', 'FRGB'), ('l', 'LQID'),
-          ('p', 'PALT'), ('i', 'DITH'), ('n', 'MELT'), ('e', 'EMUL'),
-          ('j', 'SLIT')]
+          ('p', 'PALT'), ('i', 'DITH'), ('n', 'MELT'), ('e', 'EMUL')]
 FX_KEYS = ['rgb_split', 'displacement', 'scanlines', None,
            'noise', 'glitch_blocks', 'crt_warp', 'color_cycle', 'ascii', None,
            None, None, 'spiral', 'color_trails', 'pixel_sort', 'wave',
            None, 'frame_blend', None,
-           None, None, None, None,
-           None]
+           None, None, None, None]
+
+# Mapeo de las 5 teclas de banco (g/j/o/y/z) por banco. Se muestran en la "tira de
+# banco" del HUD, no en la barra inferior (a 640px no caben como celdas).
+# Pendientes (sin implementar): mode=0, names=None → muestran su abreviatura dim.
+def _bank_cells():
+    if state.bank == 0:
+        return [('g', state.fb_mode,   FB_NAMES,   'FBCK'),
+                ('j', state.slit_mode, SLIT_NAMES, 'SLIT'),
+                ('o', 0, None, 'TUNL'),
+                ('y', 0, None, 'KALD'),
+                ('z', 0, None, 'BLOM')]
+    return [('g', 0, None, 'VHS'),
+            ('j', 0, None, 'STUT'),
+            ('o', 0, None, 'SOLR'),
+            ('y', 0, None, 'EDGE'),
+            ('z', 0, None, 'HALF')]
 
 LIQUID_NAMES = {0: 'OFF', 1: 'LOW', 2: 'MED', 3: 'HI', 4: 'MAX'}
 # intensidad real por nivel (independiente del t global)
@@ -93,7 +108,6 @@ def draw_hud(frame, fps, t):
         elif k == 'i': is_active = state.dith_mode > 0
         elif k == 'n': is_active = state.melt_mode > 0
         elif k == 'e': is_active = state.emul_mode > 0
-        elif k == 'j': is_active = state.slit_mode > 0
         else:          is_active = state.fx.get(FX_KEYS[i], False) if i < len(FX_KEYS) and FX_KEYS[i] else False
         color    = (0, 255, 170) if is_active else (60, 30, 60)
         bg_color = (20, 50, 10) if is_active else (8, 0, 4)
@@ -112,12 +126,25 @@ def draw_hud(frame, fps, t):
         elif k == 'i': label = DITH_NAMES.get(state.dith_mode, 'OFF')
         elif k == 'n': label = MELT_NAMES.get(state.melt_mode, 'OFF')
         elif k == 'e': label = EMUL_NAMES.get(state.emul_mode, 'OFF')
-        elif k == 'j': label = SLIT_NAMES.get(state.slit_mode, 'OFF')
         else:          label = name
         cv2.putText(frame, f'[{k}]', (x, h - 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.28, color, 1)
         cv2.putText(frame, label, (x, h - 4),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.32, color, 1)
+
+    # ─── Tira de BANCO — las 5 teclas g/j/o/y/z del banco activo ──────────────
+    by = h - bar_h - 23
+    cv2.putText(frame, f'{bank_label}>', (8, by),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.40, bank_color, 1, cv2.LINE_AA)
+    cx = 32
+    for key, mode, names, abbr in _bank_cells():
+        if mode > 0 and names is not None:
+            txt = f'{key}:{names[mode]}';  col = (0, 255, 170)
+        else:
+            txt = f'{key}:{abbr}';         col = (95, 60, 95)
+        cv2.putText(frame, txt, (cx, by), cv2.FONT_HERSHEY_SIMPLEX, 0.34, col, 1, cv2.LINE_AA)
+        (tw, _), _ = cv2.getTextSize(txt, cv2.FONT_HERSHEY_SIMPLEX, 0.34, 1)
+        cx += tw + 13
 
     # Barra de intensidad — encima de la barra inferior, para no tapar las celdas
     bar_w = 100

@@ -16,6 +16,7 @@ from effects.emul     import EMUL_NAMES
 from effects.slitscan import SLIT_NAMES
 from effects.feedback import FB_NAMES
 from effects.tunnel   import TUNNEL_NAMES
+from effects.kaleido  import KALEIDO_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -37,8 +38,8 @@ def _bank_cells():
     if state.bank == 0:
         return [('g', state.fb_mode,     FB_NAMES,     'FBCK'),
                 ('j', state.slit_mode,   SLIT_NAMES,   'SLIT'),
-                ('o', state.tunnel_mode, TUNNEL_NAMES, 'TUNL'),
-                ('y', 0, None, 'KALD'),
+                ('o', state.tunnel_mode,  TUNNEL_NAMES,  'TUNL'),
+                ('y', state.kaleido_mode, KALEIDO_NAMES, 'KALD'),
                 ('z', 0, None, 'BLOM')]
     return [('g', 0, None, 'VHS'),
             ('j', 0, None, 'STUT'),

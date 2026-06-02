@@ -198,11 +198,64 @@ def rev_melt(frame, bbox, t, tick):
     return _blend(frame, eff, _face_mask(frame.shape, bbox, 1.3))
 
 
+def rev_mult(frame, bbox, t, tick):
+    """MULT — clona la cara en una rejilla dentro del bbox. Body horror: caras de más."""
+    h, w = frame.shape[:2]
+    bx, by, bw, bh = bbox
+    if bw < 8 or bh < 8:
+        return frame
+    face = frame[by:by + bh, bx:bx + bw]
+    n = 2 + int(t * 2)                              # rejilla 2..4
+    cw, ch = max(1, bw // n), max(1, bh // n)
+    small = cv2.resize(face, (cw, ch))
+    eff = frame.copy()
+    for i in range(n):
+        for j in range(n):
+            x0, y0 = bx + i * cw, by + j * ch
+            eff[y0:y0 + ch, x0:x0 + cw] = small
+    return _blend(frame, eff, _face_mask(frame.shape, bbox, 1.0))
+
+
+def rev_eyes(frame, bbox, t, tick):
+    """EYES — banda de ojos duplicada y desplazada: ojos de más, mirada múltiple."""
+    h, w = frame.shape[:2]
+    bx, by, bw, bh = bbox
+    ey  = by + int(bh * 0.18)
+    ey2 = min(h, ey + max(1, int(bh * 0.32)))
+    xe  = min(w, bx + bw)
+    if xe <= bx or ey2 <= ey:
+        return frame
+    band = frame[ey:ey2, bx:xe].astype(np.float32)
+    ox = int(bw * 0.18 * (1 + t))
+    merged = np.clip(band * 0.5 + np.roll(band, ox, axis=1) * 0.5
+                     + np.roll(band, -ox, axis=1) * 0.5, 0, 255).astype(np.uint8)
+    eff = frame.copy()
+    eff[ey:ey2, bx:xe] = merged
+    return _blend(frame, eff, _face_mask(frame.shape, bbox, 1.0))
+
+
+def rev_mouth(frame, bbox, t, tick):
+    """MOUTH — la boca se estira hacia abajo (derretimiento localizado, ondulado)."""
+    h, w = frame.shape[:2]
+    bx, by, bw, bh = bbox
+    my = by + int(bh * 0.6)
+    y_g, x_g = np.mgrid[0:h, 0:w].astype(np.float32)
+    amp   = (0.4 + t) * bh * 0.8
+    wob   = (np.sin(x_g * 0.06 + tick * 0.08) * 0.5 + 0.5)
+    depth = np.clip((y_g - my) / max(1.0, h - my), 0, 1)
+    map_y = np.clip(y_g - amp * depth * wob, 0, h - 1).astype(np.float32)
+    eff = cv2.remap(frame, x_g, map_y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    mouth_bbox = (bx, my, bw, max(1, int(bh * 0.4)))
+    return _blend(frame, eff, _face_mask(frame.shape, mouth_bbox, 1.1))
+
+
 REV_FUNCS    = {1: rev_swrl, 2: rev_acid, 3: rev_zoom,
                 4: rev_echo, 5: rev_drunk, 6: rev_balo,
-                7: rev_acidface, 8: rev_melt}
+                7: rev_acidface, 8: rev_melt,
+                9: rev_mult, 10: rev_eyes, 11: rev_mouth}
 REV_NAMES    = {0: 'OFF', 1: 'SWRL', 2: 'ACID', 3: 'ZOOM',
                 4: 'ECHO', 5: 'DRNK', 6: 'BALO',
-                7: 'ACDF', 8: 'MELT'}
+                7: 'ACDF', 8: 'MELT',
+                9: 'MULT', 10: 'EYES', 11: 'MOUT'}
 REV_USE_TICK = {k for k, fn in REV_FUNCS.items()
                 if 'tick' in inspect.signature(fn).parameters}

@@ -503,7 +503,7 @@ def main():
         elif key == ord('b'): state.blnd_mode = (state.blnd_mode + 1) % 7
         elif key == ord('m'): state.mirror_mode = (state.mirror_mode + 1) % 5
         elif key == ord('F'):  # Shift+F — cicla REVENTUS
-            state.rev_mode    = (state.rev_mode + 1) % 9
+            state.rev_mode    = (state.rev_mode + 1) % 12
             last_face         = None
             reventus._rev_echo_buf = None
 

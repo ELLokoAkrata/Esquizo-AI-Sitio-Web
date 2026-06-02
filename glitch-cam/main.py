@@ -465,7 +465,7 @@ def main():
                 state.bloom_mode = (state.bloom_mode + 1) % 4      # A·z = BLOOM
             else:
                 state.halftone_mode = (state.halftone_mode + 1) % 4  # B·z = HALFTONE
-        elif key == ord('L'): state.lowlight_mode = (state.lowlight_mode + 1) % 4  # Shift+L — realce poca luz
+        elif key == ord('L'): state.lowlight_mode = (state.lowlight_mode + 1) % (len(LOWLIGHT_FUNCS) + 1)  # Shift+L — poca luz / NVG
         elif key == ord('T'):                       # Shift+T — REVENTUS sigue la luz
             state.light_mode = (state.light_mode + 1) % 2
             last_light = None

@@ -154,7 +154,7 @@ requiere reiniciar.) Si un archivo tiene error de sintaxis, lo atrapa y mantiene
 | Tecla | Función |
 |-------|---------|
 | `ESPACIO` | Alterna BANCO A ⇄ B (enruta `g j o y z`) |
-| `L` | LOWLIGHT — realce de poca luz/oscuridad (OFF→GAIN→CLAHE→MAX). Se aplica ANTES de los efectos |
+| `L` | LOWLIGHT — realce de poca luz (OFF→GAIN→CLAHE→MAX→**NVG** visión nocturna verde). Se aplica ANTES de los efectos |
 | `T` | LIGHTTRACK — REVENTUS sigue la LUZ más brillante (linterna) en vez de la cara. Prendé un efecto con `Shift+F` y togglealo. HUD: `REV:...·LGT` |
 | `R` | Hot-reload de `effects/*` + `hud.py` sin reiniciar (mantiene modos) |
 | `b` | Toggle BLND — trail base que se combina con todo |

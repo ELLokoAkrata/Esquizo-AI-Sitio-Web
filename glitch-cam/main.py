@@ -58,6 +58,7 @@ from effects.bloom   import BLOOM_FUNCS
 from effects.vhs     import VHS_FUNCS
 from effects.stutter import STUTTER_FUNCS
 import effects.stutter as stutter
+from effects.solar   import SOLAR_FUNCS
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -75,6 +76,7 @@ def reload_effects():
     global REV_FUNCS, REV_USE_TICK, MIRROR_FUNCS
     global PALT_FUNCS, DITH_FUNCS, MELT_FUNCS, SLIT_FUNCS, FB_FUNCS, draw_acid_os
     global TUNNEL_FUNCS, KALEIDO_FUNCS, BLOOM_FUNCS, VHS_FUNCS, STUTTER_FUNCS
+    global SOLAR_FUNCS
     global displacement, noise, color_cycle, scanlines, glitch_blocks
     global crt_warp, ascii_mode, color_trails, pixel_sort
     global draw_hud, LIQUID_LEVELS
@@ -84,7 +86,8 @@ def reload_effects():
              'effects.ghost', 'effects.mirror', 'effects.melt',
              'effects.emul', 'effects.reventus', 'effects.slitscan',
              'effects.feedback', 'effects.tunnel', 'effects.kaleido',
-             'effects.bloom', 'effects.vhs', 'effects.stutter', 'hud']
+             'effects.bloom', 'effects.vhs', 'effects.stutter',
+             'effects.solar', 'hud']
     try:
         for name in order:
             if name in sys.modules:
@@ -101,6 +104,7 @@ def reload_effects():
     fb, tu = m['effects.feedback'], m['effects.tunnel']
     ka, bl = m['effects.kaleido'], m['effects.bloom']
     vh, st = m['effects.vhs'], m['effects.stutter']
+    so = m['effects.solar']
     hu = m['hud']
     # re-vincular lo que el pipeline usa por nombre (los alias de módulo se
     # actualizan solos porque reload reusa el mismo objeto módulo)
@@ -120,7 +124,7 @@ def reload_effects():
     draw_acid_os, SLIT_FUNCS, FB_FUNCS = em.draw_acid_os, sl.SLIT_FUNCS, fb.FB_FUNCS
     TUNNEL_FUNCS, KALEIDO_FUNCS = tu.TUNNEL_FUNCS, ka.KALEIDO_FUNCS
     BLOOM_FUNCS, VHS_FUNCS = bl.BLOOM_FUNCS, vh.VHS_FUNCS
-    STUTTER_FUNCS = st.STUTTER_FUNCS
+    STUTTER_FUNCS, SOLAR_FUNCS = st.STUTTER_FUNCS, so.SOLAR_FUNCS
     draw_hud, LIQUID_LEVELS = hu.draw_hud, hu.LIQUID_LEVELS
     print('[RELOAD] efectos + hud recargados OK')
 
@@ -308,6 +312,8 @@ def main():
                 out = MELT_FUNCS[state.melt_mode](out, t, tick)
 
             # ─── PASADA DE "LOOK" (falso color / line-art / glow) ─────────────
+            if state.solar_mode > 0:
+                out = SOLAR_FUNCS[state.solar_mode](out, t, tick)
             if state.bloom_mode > 0:
                 out = BLOOM_FUNCS[state.bloom_mode](out, t, tick)
 
@@ -415,7 +421,8 @@ def main():
         elif key == ord('o'):
             if state.bank == 0:
                 state.tunnel_mode = (state.tunnel_mode + 1) % 4   # A·o = TUNNEL
-            # else: B·o = SOLAR (pendiente)
+            else:
+                state.solar_mode = (state.solar_mode + 1) % 4     # B·o = SOLAR/THERMAL
         elif key == ord('y'):
             if state.bank == 0:
                 state.kaleido_mode = (state.kaleido_mode + 1) % 5  # A·y = KALEIDO
@@ -466,6 +473,7 @@ def main():
             state.bloom_mode   = 0
             state.vhs_mode     = 0
             state.stutter_mode = 0
+            state.solar_mode   = 0
             state.bank         = 0
             slitscan.reset()
             feedback.reset()

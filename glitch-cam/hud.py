@@ -20,6 +20,7 @@ from effects.kaleido  import KALEIDO_NAMES
 from effects.bloom    import BLOOM_NAMES
 from effects.vhs      import VHS_NAMES
 from effects.stutter  import STUTTER_NAMES
+from effects.solar    import SOLAR_NAMES
 
 
 LABELS = [('1', 'RGB'), ('2', 'DISP'), ('3', 'SCAN'), ('4', 'MOSH'),
@@ -46,7 +47,7 @@ def _bank_cells():
                 ('z', state.bloom_mode,   BLOOM_NAMES,   'BLOM')]
     return [('g', state.vhs_mode,     VHS_NAMES,     'VHS'),
             ('j', state.stutter_mode, STUTTER_NAMES, 'STUT'),
-            ('o', 0, None, 'SOLR'),
+            ('o', state.solar_mode, SOLAR_NAMES, 'SOLR'),
             ('y', 0, None, 'EDGE'),
             ('z', 0, None, 'HALF')]
 

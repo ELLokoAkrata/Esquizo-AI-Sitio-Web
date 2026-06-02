@@ -63,6 +63,7 @@ from effects.edge    import EDGE_FUNCS
 import effects.edge as edge
 from effects.halftone import HALFTONE_FUNCS
 from effects.lowlight import LOWLIGHT_FUNCS
+import effects.lighttrack as lighttrack
 from hud             import draw_hud, LIQUID_LEVELS
 
 
@@ -92,7 +93,7 @@ def reload_effects():
              'effects.feedback', 'effects.tunnel', 'effects.kaleido',
              'effects.bloom', 'effects.vhs', 'effects.stutter',
              'effects.solar', 'effects.edge', 'effects.halftone',
-             'effects.lowlight', 'hud']
+             'effects.lowlight', 'effects.lighttrack', 'hud']
     try:
         for name in order:
             if name in sys.modules:
@@ -177,6 +178,8 @@ def main():
     face_scale_y  = actual_h / face_small_h
     last_face     = None
     face_det_tick = 0
+    last_light    = None
+    light_det_tick = 0
 
     fps = 0
     fps_count   = 0
@@ -335,27 +338,37 @@ def main():
             if state.bloom_mode > 0:
                 out = BLOOM_FUNCS[state.bloom_mode](out, t, tick)
 
-            # ─── REVENTUS ─────────────────────────────────────────────────────
+            # ─── REVENTUS — sobre la CARA, o sobre la LUZ si LIGHTTRACK está on ─
             if state.rev_mode > 0:
-                face_det_tick += 1
-                if face_det_tick >= 10:
-                    face_det_tick = 0
-                    small = cv2.resize(frame, (face_small_w, face_small_h))
-                    gray  = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
-                    faces = face_cascade.detectMultiScale(
-                        gray, scaleFactor=1.1, minNeighbors=5, minSize=(25, 25))
-                    if len(faces) > 0:
-                        areas = [fw * fh for _, _, fw, fh in faces]
-                        bx, by, bw, bh = faces[int(np.argmax(areas))]
-                        bx = max(0, int(bx * face_scale_x))
-                        by = max(0, int(by * face_scale_y))
-                        bw = min(int(bw * face_scale_x), actual_w - bx)
-                        bh = min(int(bh * face_scale_y), actual_h - by)
-                        last_face = (bx, by, bw, bh)
-                if last_face is not None:
+                if state.light_mode > 0:
+                    # seguir la fuente de luz más brillante (linterna)
+                    light_det_tick += 1
+                    if light_det_tick >= 4:
+                        light_det_tick = 0
+                        last_light = lighttrack.find_light(frame)
+                    bbox = last_light
+                else:
+                    # detectar la cara (comportamiento por defecto)
+                    face_det_tick += 1
+                    if face_det_tick >= 10:
+                        face_det_tick = 0
+                        small = cv2.resize(frame, (face_small_w, face_small_h))
+                        gray  = cv2.cvtColor(small, cv2.COLOR_BGR2GRAY)
+                        faces = face_cascade.detectMultiScale(
+                            gray, scaleFactor=1.1, minNeighbors=5, minSize=(25, 25))
+                        if len(faces) > 0:
+                            areas = [fw * fh for _, _, fw, fh in faces]
+                            bx, by, bw, bh = faces[int(np.argmax(areas))]
+                            bx = max(0, int(bx * face_scale_x))
+                            by = max(0, int(by * face_scale_y))
+                            bw = min(int(bw * face_scale_x), actual_w - bx)
+                            bh = min(int(bh * face_scale_y), actual_h - by)
+                            last_face = (bx, by, bw, bh)
+                    bbox = last_face
+                if bbox is not None:
                     fn = REV_FUNCS[state.rev_mode]
-                    out = fn(out, last_face, t, tick) if state.rev_mode in REV_USE_TICK \
-                          else fn(out, last_face, t)
+                    out = fn(out, bbox, t, tick) if state.rev_mode in REV_USE_TICK \
+                          else fn(out, bbox, t)
 
             # ─── MIRROR FULL-SCREEN ───────────────────────────────────────────
             if state.mirror_mode > 0:
@@ -453,6 +466,9 @@ def main():
             else:
                 state.halftone_mode = (state.halftone_mode + 1) % 4  # B·z = HALFTONE
         elif key == ord('L'): state.lowlight_mode = (state.lowlight_mode + 1) % 4  # Shift+L — realce poca luz
+        elif key == ord('T'):                       # Shift+T — REVENTUS sigue la luz
+            state.light_mode = (state.light_mode + 1) % 2
+            last_light = None
         elif key == ord('R'): reload_effects()  # Shift+R — hot-reload effects/* + hud
         elif key == 9:        state.clean_mode = not state.clean_mode  # Tab
         elif key == ord('+'): state.intensity = min(1.0, state.intensity + 0.05)
@@ -464,6 +480,7 @@ def main():
             state.rgb_mode        = 0
             state.color_cycle_mode = 0
             state.lowlight_mode   = 0
+            state.light_mode      = 0
             state.vortex_mode     = 0
             state.datamosh_mode   = 0
             state.color_acid_mode = 0

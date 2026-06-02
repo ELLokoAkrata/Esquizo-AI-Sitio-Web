@@ -32,6 +32,7 @@ fx = {
 rgb_mode           = 0  # 0=off  1=H  2=V  3=DIAG  4=TRI  5=CHAOS
 color_cycle_mode   = 0  # COLR (tecla 8): 0=off 1=on. El BANCO elige sabor: A=FRC (forzado) B=SOFT (no forzado)
 lowlight_mode      = 0  # LOWLIGHT (Shift+L): 0=off 1=GAIN 2=CLAHE 3=MAX — realce de poca luz (pre-pipeline)
+light_mode         = 0  # LIGHTTRACK (Shift+T): 0=off 1=on — REVENTUS sigue la luz más brillante en vez de la cara
 vortex_mode        = 0  # 0=off  1=SWRL  2=ANTI  3=PULS  4=EXP  5=DUAL
 color_acid_mode    = 0  # 0=off  1=BARS 2=INCR 3=TIME 4=XORT 5=TVAL 6=FADE 7=CRRP 8=SCAL
 xor_mode           = 0  # 0=off  1=FDBK 2=INCR 3=POS 4=SHT1 5=SHT2 6=STRB 7=PROP

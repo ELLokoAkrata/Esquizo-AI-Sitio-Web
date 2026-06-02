@@ -70,10 +70,13 @@ def draw_hud(frame, fps, t):
     cv2.putText(frame, 'ESQUIZOAI // GLITCH.CAM', (8, 17),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.38, (0, 255, 170), 1, cv2.LINE_AA)
     rev_color  = (0, 200, 255) if state.rev_mode    > 0 else (40, 30, 40)
+    if state.rev_mode > 0 and state.light_mode > 0:
+        rev_color = (0, 230, 255)                       # ámbar brillante = siguiendo la luz
+    rev_txt = f'REV:{REV_NAMES[state.rev_mode]}' + ('·LGT' if state.light_mode > 0 else '')
     mirr_color = (255, 140, 0) if state.mirror_mode > 0 else (40, 30, 40)
     BLND_NAMES = {0: 'OFF', 1: 'BLND', 2: 'DIFF', 3: 'SCRN', 4: 'MPLY', 5: 'ADDUP', 6: 'OFST'}
     blnd_color = (0, 255, 170) if state.blnd_mode > 0 else (40, 30, 40)
-    cv2.putText(frame, f'REV:{REV_NAMES[state.rev_mode]}',
+    cv2.putText(frame, rev_txt,
                 (w // 2 - 118, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.32, rev_color,  1, cv2.LINE_AA)
     cv2.putText(frame, f'M:{MIRROR_NAMES[state.mirror_mode]}',
                 (w // 2 -  42, 17), cv2.FONT_HERSHEY_SIMPLEX, 0.32, mirr_color, 1, cv2.LINE_AA)

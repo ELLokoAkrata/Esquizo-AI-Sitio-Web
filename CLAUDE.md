@@ -75,6 +75,9 @@ Según `esquizo_core.json`, las directivas core son:
 ├── galeria/                        # GALERIA.exe (sintografía). App del OS: index.html + manifest.json (drops) + img/*.webp.
 │                                    #   Agregar pieza: tools/optimize-galeria.py origen → img/*.webp, + entrada en manifest.json.
 │                                    #   _originals/ = full-res (gitignored). Icono "GALERIA" en el escritorio + atajo en Inicio.
+├── reproductor/                    # REPRODUCTOR.exe (ruidero punk). App del OS: index.html + playlist.json + audio/*.mp3.
+│                                    #   WinAmp acid: visualizador Web Audio, playlist, shuffle/loop, modo glitch. 0 deps, estático.
+│                                    #   Agregar tema: tools/download-music.py (yt-dlp local) → audio/*.mp3, + entrada en playlist.json.
 ├── esquizo_core.json               # Personalidad Psycho-bot
 ├── CLAUDE.md                       # Este documento
 ├── vercel.json                     # Configuración Vercel
@@ -87,7 +90,8 @@ Según `esquizo_core.json`, las directivas core son:
 ├── tools/                          # HERRAMIENTAS PRINCIPALES
 │   ├── DENTAKORV.html              # Generador prompts v3.0 + IA ASSIST
 │   ├── glitch-text-generator-ultimate.html  # Corruptor texto Zalgo
-│   └── optimize-galeria.py         # Optimiza imágenes → galeria/img/*.webp
+│   ├── optimize-galeria.py         # Optimiza imágenes → galeria/img/*.webp
+│   └── download-music.py           # yt-dlp local → reproductor/audio/*.mp3 (cola curada + stubs JSON)
 │
 ├── glitch-cam/                     # SUBPROYECTO PYTHON (glitch en vivo OpenCV)
 │   ├── CLAUDE_glitch.md            # ★ guía operativa propia — LEER al trabajar acá
@@ -149,6 +153,18 @@ Galería de arte del OS: `galeria/index.html` (grid + lightbox) manejada por `ga
 (generadas con `tools/optimize-galeria.py`; originales full-res en `galeria/_originals/`, gitignored).
 Abre como ventana-app desde el icono **GALERIA** del escritorio. Curaduría = drops inéditos que crecen.
 *(La vieja galería 3D raycasting fue eliminada.)*
+
+### REPRODUCTOR.exe (ruidero punk)
+Reproductor de audio del OS, estilo WinAmp acid: `reproductor/index.html` (visualizador Web Audio API,
+playlist, seek, shuffle/loop, modo glitch visual). Manejado por `reproductor/playlist.json` (campo `tracks`).
+Mp3 en `reproductor/audio/*.mp3`. **100% estático, sin backend** — los temas se bajan **localmente** con
+`tools/download-music.py` (wrapper de `yt-dlp`, mismo modelo que la galería: curas, descargas, commiteas).
+Abre como ventana-app desde el icono **REPRODUCTOR**, atajo en Inicio y comando `reproductor`/`musica` en VOMIT.SH.
+
+> Agregar tema: `python tools/download-music.py "Artista :: Título :: búsqueda o URL"` → genera el mp3 e
+> imprime el stub; pegar en `playlist.json`. La descarga necesita `yt-dlp` + `ffmpeg` (solo en tu PC, no en el sitio).
+> ⚠️ Es contenido de terceros: criterio del dueño del sitio (uso no comercial / ethos pirata). Sin backend
+> mientras sea curaduría; escalar vía jsDelivr si crece (mismo análisis que la galería).
 
 ### GLITCH.CAM (subproyecto Python)
 Herramienta de glitch en tiempo real sobre webcam/video (OpenCV + numpy). Efectos acid/psychedelic,

@@ -1015,6 +1015,8 @@ function openTerminal(){
   function fsAll(){const a=[];for(const k in FS)FS[k].items.forEach(it=>a.push(it));return a;}
   const SPECIALS={
     galeria:()=>openApp("galeria/index.html","GALERIA.exe","🖼"),
+    reproductor:()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪"),
+    musica:()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪"),
     readme:openReadme, acerca:openAbout, about:openAbout, mipc:openMiPC,
     clasico:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞")
   };
@@ -1037,7 +1039,7 @@ function openTerminal(){
           if(k){for(const it of FS[k].items) line("  "+(it.icon||"📄")+" "+it.label,"acid");}
           else await type("carpeta '"+arg+"' no existe. prueba: tree","amber");}
         else{line("carpetas:","dim");for(const k in FS) line("  📂 "+k,"acid");
-          line("  🖼 galeria   📜 readme   👤 acerca   🖥 mipc   ⊞ clasico","acid");}
+          line("  🖼 galeria   ♪ reproductor   📜 readme   👤 acerca   🖥 mipc   ⊞ clasico","acid");}
         break;
       case "tree":
         for(const k in FS){line(k,"corrupt");FS[k].items.forEach(it=>line("   └ "+it.label,"dim"));}
@@ -1157,6 +1159,9 @@ function renderDesktop(){
   // GALERIA (sintografía) — app destacada
   const gal=el("div","icon",`<span class="gl" style="color:var(--corrupt)">🖼</span><span class="lb">GALERIA</span>`);
   bindOpen(gal,()=>openApp("galeria/index.html","GALERIA.exe","🖼")); wrap.appendChild(gal);
+  // REPRODUCTOR (ruidero punk)
+  const rep=el("div","icon",`<span class="gl" style="color:var(--acid)">♪</span><span class="lb">REPRODUCTOR</span>`);
+  bindOpen(rep,()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪")); wrap.appendChild(rep);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -1207,6 +1212,7 @@ function buildStart(){
   // accesos sistema
   const sys=[
     {ic:"🖼",lb:"Galería",fn:()=>openApp("galeria/index.html","GALERIA.exe","🖼")},
+    {ic:"♪",lb:"Reproductor",fn:()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪")},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"📜",lb:"README.TXT",fn:openReadme},

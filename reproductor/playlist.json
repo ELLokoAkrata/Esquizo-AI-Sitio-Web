@@ -1,0 +1,59 @@
+{
+  "_comment": "Cola de REPRODUCTOR.exe. Agregar tema = bajar (tools/download-music.py) + un objeto en 'tracks'. Más nuevos arriba. 'file' relativo a esta carpeta.",
+  "tracks": [
+    {
+      "id": "eskorbuto-mucha-policia-poca-diversion",
+      "title": "Mucha policía, poca diversión",
+      "artist": "Eskorbuto",
+      "file": "audio/eskorbuto-mucha-policia-poca-diversion.mp3"
+    },
+    {
+      "id": "eskorbuto-es-un-mundo-cruel",
+      "title": "Es un mundo cruel",
+      "artist": "Eskorbuto",
+      "file": "audio/eskorbuto-es-un-mundo-cruel.mp3"
+    },
+    {
+      "id": "adictos-al-orgasmo",
+      "title": "Adictos al Orgasmo",
+      "artist": "Adictos al Orgasmo",
+      "file": "audio/adictos-al-orgasmo-adictos-al-orgasmo.mp3"
+    },
+    {
+      "id": "crass-do-they-owe-us-a-living",
+      "title": "Do They Owe Us A Living?",
+      "artist": "Crass",
+      "file": "audio/crass-do-they-owe-us-a-living.mp3"
+    },
+    {
+      "id": "dead-kennedys-holiday-in-cambodia",
+      "title": "Holiday in Cambodia",
+      "artist": "Dead Kennedys",
+      "file": "audio/dead-kennedys-holiday-in-cambodia.mp3"
+    },
+    {
+      "id": "discharge-hear-nothing-see-nothing-say-nothing",
+      "title": "Hear Nothing See Nothing Say Nothing",
+      "artist": "Discharge",
+      "file": "audio/discharge-hear-nothing-see-nothing-say-nothing.mp3"
+    },
+    {
+      "id": "rudimentary-peni-rotten-to-the-core",
+      "title": "Rotten to the Core",
+      "artist": "Rudimentary Peni",
+      "file": "audio/rudimentary-peni-rotten-to-the-core.mp3"
+    },
+    {
+      "id": "amebix-winter",
+      "title": "Winter",
+      "artist": "Amebix",
+      "file": "audio/amebix-winter.mp3"
+    },
+    {
+      "id": "nihilistics-kill-yourself",
+      "title": "Kill Yourself",
+      "artist": "Nihilistics",
+      "file": "audio/nihilistics-kill-yourself.mp3"
+    }
+  ]
+}

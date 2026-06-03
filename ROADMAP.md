@@ -46,15 +46,26 @@
 
 ---
 
-## 🗣 FASE 3 — VOZ (Psycho-bot EN VIVO)
+## 🗣 FASE 3 — VOZ (Psycho-bot EN VIVO) · **MSN_PSYCHO.exe**
 **Estado: ⬜ pendiente** · ⚠️ riesgo ALTO · **costo de API — confirmar antes de construir**
 
-- [ ] Decidir presupuesto/guardas de API (sitio público = costo/abuso potencial)
-- [ ] `api/daemon.js` — proxy modo `chat` con persona = `esquizo_core.json` (clon de `api/groq.js`)
-- [ ] App `PSYCHO_BOT.exe` (iframe) **o** modo `talk`/`daemon` dentro de VOMIT.SH
-- [ ] Guardas: throttle cliente, contexto corto, cap por sesión, `maxTokens` bajo
-- [ ] (NO usa EsquizoAI-land — privado; solo proxies públicos)
+**Concepto (idea jun 2026):** un **messenger estilo MSN, versión EsquizoAI** para chatear en vivo con **Psycho-bot**,
+con **selector de modelo entre los dos proveedores** que ya tenemos (Groq + DeepSeek). Estética: ventana MSN acid
+(lista de contactos = el daemon/personalidades, estado "en línea/escribiendo...", burbujas, zumbido/nudge glitch,
+emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y responde.
+
+- [ ] **UI MSN acid** `MSN_PSYCHO.exe` (app iframe del OS, como galería/reproductor): contacto "PSYCHO_BOT // daemon@lab-red",
+      estado, burbujas, "escribiendo…", zumbido glitch, sonidos MSN reinterpretados (reusar `AcidAudio`)
+- [ ] **Selector de modelo/proveedor** en la ventana — dropdown con: Groq (Llama 3.3 70B · Llama 3.1 8B · Llama 4 Scout ·
+      Qwen3 32B · GPT-OSS 20B/120B) y DeepSeek (Chat). Cambiar de modelo a mitad de charla = "cambia de cabeza" el daemon
+- [ ] **Backend** — reusar el patrón de `api/terminal.js` (¡YA enruta model→provider→key con `MODEL_LIMITS` + streaming!);
+      crear modo/endpoint **mono-entidad** (persona = `esquizo_core.json`, no "diálogo entre IAs") en vez de clonar groq.js
+- [ ] **Guardas de costo/abuso** (sitio público): throttle cliente, contexto corto (N últimos), cap por sesión, `maxTokens` bajo
+- [ ] (NO usa EsquizoAI-land — privado; solo los proxies públicos `api/`)
 - [ ] Verificado + docs + memoria
+
+> Reuso fuerte: `api/terminal.js` ya tiene el registro de modelos y el ruteo dual-proveedor; el selector de tu idea
+> es casi gratis. Lo nuevo = persona de un solo Psycho-bot + la UI MSN. Confirmar presupuesto antes de construir.
 
 ---
 

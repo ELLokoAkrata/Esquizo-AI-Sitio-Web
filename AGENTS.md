@@ -56,6 +56,7 @@ el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_O
 
 ## 4. Flujo de trabajo
 
+0. **Mira el `ROADMAP.md`** (raíz) — tablero vivo del arco "EL DAEMON DESPIERTA": qué fases hay y qué está hecho/pendiente. Al terminar algo, marca su checkbox ahí.
 1. **Lee la memoria primero.** Hay memoria persistente en
    `~/.claude/projects/C--Users-Ricardo-Ruiz-Desktop-EsquizoAI-sitio-web/memory/` — empieza por `MEMORY.md`
    (reglas aprendidas, decisiones, errores previos). Al terminar algo con una lección nueva, guárdala ahí.

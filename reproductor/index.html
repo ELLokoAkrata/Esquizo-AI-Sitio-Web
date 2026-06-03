@@ -225,44 +225,90 @@ document.addEventListener("keydown",e=>{
 });
 
 // ── visualizador (Web Audio API) ──
-let actx, analyser, srcNode, dataArr, rafId;
+let actx, analyser, srcNode, dataArr, rafId, peaks=[];
 const cvs=document.getElementById("viz"), ctx=cvs.getContext("2d");
-function resizeCanvas(){ cvs.width=cvs.clientWidth*devicePixelRatio; cvs.height=cvs.clientHeight*devicePixelRatio; }
+const DPR=()=>devicePixelRatio||1;
+function resizeCanvas(){ cvs.width=cvs.clientWidth*DPR(); cvs.height=cvs.clientHeight*DPR(); }
 window.addEventListener("resize",resizeCanvas); resizeCanvas();
 
 function ensureAudioCtx(){
   if(actx) { if(actx.state==="suspended") actx.resume(); return; }
   try{
     actx=new (window.AudioContext||window.webkitAudioContext)();
-    analyser=actx.createAnalyser(); analyser.fftSize=128;
+    analyser=actx.createAnalyser(); analyser.fftSize=128;   // 64 bandas
+    analyser.smoothingTimeConstant=0.78;
     srcNode=actx.createMediaElementSource(au);
     srcNode.connect(analyser); analyser.connect(actx.destination);
     dataArr=new Uint8Array(analyser.frequencyBinCount);
     drawViz();
   }catch(err){ /* sin viz si falla */ }
 }
+// ── ecualizador estilo WinAmp clásico: barras segmentadas + peak-hold que cae ──
 function drawViz(){
   rafId=requestAnimationFrame(drawViz);
   if(!analyser) return;
   analyser.getByteFrequencyData(dataArr);
-  const w=cvs.width,h=cvs.height,n=dataArr.length;
+  const dpr=DPR(), w=cvs.width, h=cvs.height, n=dataArr.length;
   ctx.clearRect(0,0,w,h);
-  const bw=w/n;
+  const bw=w/n;                       // ancho de columna
+  const gap=Math.max(1,bw*0.18);      // separación entre barras
+  const seg=5*dpr, sgap=2*dpr;        // alto de segmento + hueco (look LED)
+  const fall=1.4*dpr;                 // velocidad de caída del pico
   for(let i=0;i<n;i++){
-    const v=dataArr[i]/255, bh=v*h;
-    const hue = glitch ? (Math.random()*360) : (120 - v*120);
-    ctx.fillStyle="hsl("+hue+","+(70+v*30)+"%,"+(40+v*25)+"%)";
-    ctx.fillRect(i*bw, h-bh, bw-1*devicePixelRatio, bh);
+    const v=dataArr[i]/255, bh=v*h, x=i*bw;
+    // peak-hold
+    if(bh>=(peaks[i]||0)) peaks[i]=bh; else peaks[i]=Math.max(0,(peaks[i]||0)-fall);
+    // barra segmentada (verde abajo → ámbar → rojo arriba)
+    for(let y=0;y<bh;y+=(seg+sgap)){
+      const frac=y/h;
+      const hue = glitch ? (Math.random()*360) : (120 - frac*135);
+      ctx.fillStyle="hsl("+hue+",100%,"+(48+frac*14)+"%)";
+      ctx.fillRect(x+gap/2, h-y-seg, bw-gap, seg);
+    }
+    // cabeza de pico que flota y cae
+    if(peaks[i]>seg){
+      ctx.fillStyle = glitch ? "hsl("+(Math.random()*360)+",100%,72%)" : "#dfffe9";
+      ctx.fillRect(x+gap/2, h-peaks[i]-sgap, bw-gap, sgap+1*dpr);
+    }
   }
   if(glitch && Math.random()<0.25){
-    const y=Math.random()*h, sh=Math.random()*30*devicePixelRatio;
+    const y=Math.random()*h, sh=Math.random()*30*dpr;
     try{ const slice=ctx.getImageData(0,y,w,sh); ctx.putImageData(slice,(Math.random()-.5)*40,y); }catch(_){}
   }
 }
 
+// ── control remoto desde el OS / VOMIT.SH (postMessage, mismo origen) ──
+let pendingCmd=null;
+function matchTrack(q){
+  if(!q) return -1;
+  q=q.toLowerCase().trim();
+  return TRACKS.findIndex(t=>((t.title||"")+" "+(t.artist||"")).toLowerCase().includes(q));
+}
+function applyCmd(d){
+  switch(d.action){
+    case "play":
+      if(d.query){ const i=matchTrack(d.query); playIndex(i<0?0:i); }
+      else if(cur<0){ playIndex(0); }
+      else if(au.paused){ ensureAudioCtx(); au.play().catch(()=>{}); }
+      return {ok:true, title:(TRACKS[cur]||{}).title};
+    case "pause": au.pause(); return {ok:true};
+    case "toggle": togglePlay(); return {ok:true};
+    case "next": nextTrack(); return {ok:true, title:(TRACKS[cur]||{}).title};
+    case "prev": prevTrack(); return {ok:true, title:(TRACKS[cur]||{}).title};
+    case "stop": au.pause(); au.currentTime=0; return {ok:true};
+  }
+  return {ok:false};
+}
+window.addEventListener("message",e=>{
+  if(e.origin!==location.origin) return;
+  const d=e.data; if(!d||d.type!=="esquizo:player") return;
+  if(!TRACKS.length){ pendingCmd=d; return; }   // aún cargando → encolar
+  applyCmd(d);
+});
+
 fetch("playlist.json",{cache:"no-store"})
   .then(r=>r.json())
-  .then(j=>{ TRACKS=(j&&j.tracks)||[]; renderList(); })
+  .then(j=>{ TRACKS=(j&&j.tracks)||[]; renderList(); if(pendingCmd){ applyCmd(pendingCmd); pendingCmd=null; } })
   .catch(()=>{ TRACKS=[]; renderList(); });
 </script>
 </body>

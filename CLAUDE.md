@@ -160,6 +160,9 @@ playlist, seek, shuffle/loop, modo glitch visual). Manejado por `reproductor/pla
 Mp3 en `reproductor/audio/*.mp3`. **100% estático, sin backend** — los temas se bajan **localmente** con
 `tools/download-music.py` (wrapper de `yt-dlp`, mismo modelo que la galería: curas, descargas, commiteas).
 Abre como ventana-app desde el icono **REPRODUCTOR**, atajo en Inicio y comando `reproductor`/`musica` en VOMIT.SH.
+Visualizador = **ecualizador estilo WinAmp clásico** (barras LED segmentadas verde→ámbar→rojo + peak-hold que cae).
+VOMIT.SH lo controla cross-frame (postMessage, mismo origen): `play <tema>` (fuzzy match), `pause`, `next`, `prev`, `stop`
+→ helper `playerSend()` en `index.html` (abre el player si hace falta y el player encola el comando hasta que carga la playlist).
 
 > Agregar tema: `python tools/download-music.py "Artista :: Título :: búsqueda o URL"` → genera el mp3 e
 > imprime el stub; pegar en `playlist.json`. La descarga necesita `yt-dlp` + `ffmpeg` (solo en tu PC, no en el sitio).

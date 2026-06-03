@@ -654,6 +654,21 @@ function openApp(file,title,icon){
   return id;
 }
 
+/* ===== control del REPRODUCTOR.exe desde la terminal (cross-frame) ===== */
+const REP_FILE="reproductor/index.html";
+const REP_ID="app_"+REP_FILE.replace(/[^a-z0-9]/gi,"_");
+function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
+function playerSend(action,query){
+  let f=repFrame(), justOpened=false;
+  if(!f){ openApp(REP_FILE,"REPRODUCTOR.exe","♪"); f=repFrame(); justOpened=true; }
+  if(!f) return false;
+  const post=()=>{ try{ f.contentWindow.postMessage({type:"esquizo:player",action,query},location.origin); }catch(e){} };
+  if(justOpened){ let done=false; const fire=()=>{ if(done)return; done=true; post(); };
+    f.addEventListener("load",fire,{once:true}); setTimeout(fire,1400); }
+  else post();   // el player encola el comando si la playlist aún no cargó
+  return true;
+}
+
 /* =========================================================
    Window Manager
    ========================================================= */
@@ -995,7 +1010,8 @@ function openTerminal(){
   const hist=[]; let hi=0; let busy=false; let skipType=false;
   const COMMANDS=["help","ls","tree","open","run","clear","cls","whoami","sudo","shutdown",
     "exit","date","uptime","ascii","skull","anarchy","art","neofetch","vomit","manifesto",
-    "oracle","wake","hack","matrix","acid","echo"];
+    "oracle","wake","hack","matrix","acid","echo",
+    "play","pause","next","prev","stop","reproducir"];
 
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   function line(text,cls){const d=document.createElement("div");if(cls)d.className="c-"+cls;
@@ -1031,6 +1047,7 @@ function openTerminal(){
         await type("  open <nombre>         — abrir un artefacto como ventana","acid");
         await type("  ascii <texto> · skull · anarchy · neofetch","acid");
         await type("  vomit · oracle · manifesto · wake   — escupir","acid");
+        await type("  play <tema> · pause · next · prev · stop  — manejar REPRODUCTOR.exe","acid");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
         break;
@@ -1082,6 +1099,14 @@ function openTerminal(){
           for(let i=0;i<46;i++) row+=ch[Math.floor(Math.random()*ch.length)];
           line(row,"acid"); out.scrollTop=out.scrollHeight; await sleep(55); }
         line("// transmisión interrumpida — vuelve a la carne","dim"); break; }
+      case "play": case "reproducir":
+        if(arg){ playerSend("play",arg); await type("▶ reproduciendo «"+arg+"» en REPRODUCTOR.exe...","acid"); }
+        else { playerSend("play"); await type("▶ play","acid"); }
+        break;
+      case "pause": case "pausa": playerSend("pause"); await type("⏸ pausa","dim"); break;
+      case "next": case "siguiente": playerSend("next"); await type("⏭ siguiente tema","acid"); break;
+      case "prev": case "anterior": playerSend("prev"); await type("⏮ tema anterior","acid"); break;
+      case "stop": playerSend("stop"); await type("⏹ stop — silencio","dim"); break;
       default:
         await type("'"+cmd+"' no existe en este vómito. prueba 'help'.","red");
     }

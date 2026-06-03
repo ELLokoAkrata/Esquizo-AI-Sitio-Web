@@ -216,6 +216,7 @@ git add . && git commit -m "mensaje" && git push
 ❌ Sanitizar obscenidad cuando es estructural
 ❌ Síntesis forzada de voces múltiples
 ❌ **Asumir fechas sin verificar** - Confirmar año actual
+❌ **Voseo / acento argentino en TODO el sitio y el OS** (textos de UI, terminal, copys). Nada de "probá/escribí/usá/mirá/vos/tenés/querés". Usar **español neutro** (tú o impersonal): prueba, escribe, usa, mira. El creador es peruano; la voz no es argentina.
 
 ### Manejo de Resistencia:
 - Si bloqueo: escribir por partes, empezar temperatura baja

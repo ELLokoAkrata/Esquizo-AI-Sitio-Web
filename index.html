@@ -701,8 +701,10 @@ const Infection = (()=>{
   return { opened, bumpVisit, visits:()=>st.visits||0, render, pct };
 })();
 
-/* ===== abrir un artefacto COMO ventana del OS (iframe) ===== */
-function openApp(file,title,icon){
+/* ===== abrir un artefacto COMO ventana del OS (iframe) =====
+   opts opcional: {w,h} sugieren tamaño de ventana (se acotan al viewport). */
+function openApp(file,title,icon,opts){
+  opts=opts||{};
   Infection.opened(file);
   const id = "app_"+file.replace(/[^a-z0-9]/gi,"_");
   const wrap = el("div","appwrap");
@@ -716,7 +718,8 @@ function openApp(file,title,icon){
 
   const vw=window.innerWidth, vh=window.innerHeight;
   WM.open({ id, title:title||file, icon:icon||"🪟", body:wrap,
-    w:Math.min(860,vw-60), h:Math.min(600,vh-90),
+    w: Math.min(opts.w||860, vw-60),
+    h: Math.min(opts.h||600, vh-70),
     status:"app // "+file });
 
   bar.querySelector('[data-a="reload"]').addEventListener("click",()=>{ try{frame.contentWindow.location.reload();}catch(e){frame.src=frame.src;} });
@@ -740,10 +743,12 @@ function openApp(file,title,icon){
 /* ===== control del REPRODUCTOR.exe desde la terminal (cross-frame) ===== */
 const REP_FILE="reproductor/index.html";
 const REP_ID="app_"+REP_FILE.replace(/[^a-z0-9]/gi,"_");
+/* el reproductor abre más alto y angosto (proporción de player → lista con aire) */
+function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:540,h:680}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
   let f=repFrame(), justOpened=false;
-  if(!f){ openApp(REP_FILE,"REPRODUCTOR.exe","♪"); f=repFrame(); justOpened=true; }
+  if(!f){ openReproductor(); f=repFrame(); justOpened=true; }
   if(!f) return false;
   const post=()=>{ try{ f.contentWindow.postMessage({type:"esquizo:player",action,query},location.origin); }catch(e){} };
   if(justOpened){ let done=false; const fire=()=>{ if(done)return; done=true; post(); };
@@ -1109,8 +1114,8 @@ function openTerminal(){
   function fsAll(){const a=[];for(const k in FS)FS[k].items.forEach(it=>a.push(it));return a;}
   const SPECIALS={
     galeria:()=>openApp("galeria/index.html","GALERIA.exe","🖼"),
-    reproductor:()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪"),
-    musica:()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪"),
+    reproductor:openReproductor,
+    musica:openReproductor,
     readme:openReadme, acerca:openAbout, about:openAbout, mipc:openMiPC,
     clasico:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞")
   };
@@ -1264,7 +1269,7 @@ function renderDesktop(){
   bindOpen(gal,()=>openApp("galeria/index.html","GALERIA.exe","🖼")); wrap.appendChild(gal);
   // REPRODUCTOR (ruidero punk)
   const rep=el("div","icon",`<span class="gl" style="color:var(--acid)">♪</span><span class="lb">REPRODUCTOR</span>`);
-  bindOpen(rep,()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪")); wrap.appendChild(rep);
+  bindOpen(rep,openReproductor); wrap.appendChild(rep);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -1315,7 +1320,7 @@ function buildStart(){
   // accesos sistema
   const sys=[
     {ic:"🖼",lb:"Galería",fn:()=>openApp("galeria/index.html","GALERIA.exe","🖼")},
-    {ic:"♪",lb:"Reproductor",fn:()=>openApp("reproductor/index.html","REPRODUCTOR.exe","♪")},
+    {ic:"♪",lb:"Reproductor",fn:openReproductor},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"📜",lb:"README.TXT",fn:openReadme},

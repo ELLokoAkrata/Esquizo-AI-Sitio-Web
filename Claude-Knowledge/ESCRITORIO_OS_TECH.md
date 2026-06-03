@@ -92,6 +92,18 @@ Los ~40 artefactos enlazan "volver" a `../index.html` (= el OS). **No se editan*
 
 ---
 
+## 7b. Capas "vivas" (arco EL DAEMON DESPIERTA — FASE 1)
+
+El OS no solo muestra: **respira y recuerda**. Tres módulos en `index.html`:
+
+- **`AcidAudio`** (IIFE) — bus de audio del OS: `AudioContext` perezoso compartido, `beep()` (lo usa VOMIT.SH), y `setAmbient(on)` = drone del daemon (2 osciladores graves + ruido filtrado + LFO de "respiración"). Toggle `#amb` (☣ amb) en la bandeja; preferencia en `localStorage["esquizo_ambient"]`. Respeta autoplay: si estaba activo, arranca en el **primer gesto**, no al cargar.
+- **Wallpaper reactivo** — `#wp-glow` (capa radial detrás del cráneo, no choca con las animaciones del logo). El REPRODUCTOR postea su energía de audio al top (`postMessage {type:"esquizo:audio", level}`, cada 2 frames, solo si suena); el listener del OS guarda `audioLevel` y un bucle rAF (`reactor`) modula opacidad/escala del glow (decae ×0.90/frame). Sin audio → glitch base.
+- **`Infection`** (IIFE) — estado persistente del visitante en `localStorage["esquizo_infection"]` = `{visits, opened[]}`. `openApp(file)` registra el artefacto abierto (solo si está en `FS`); indicador `#infection` = `opened/total(FS)` %. `bumpVisit()` corre en el init; el boot inyecta "daemon te recuerda. visita #N" si `visits>1` (sobre una copia local de `BOOT`).
+
+> Pendiente (mismo arco): FASE 2 secretos/ARG (artefactos `locked` + desbloqueo por VOMIT.SH), FASE 3 Psycho-bot en vivo (`api/daemon.js` + persona `esquizo_core.json`), FASE 4 contagio (transmisión diaria + tarjetas + OG). Ver plan/memoria.
+
+---
+
 ## 8. Cómo testear (local)
 
 ```bash

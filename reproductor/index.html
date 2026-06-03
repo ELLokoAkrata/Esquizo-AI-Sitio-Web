@@ -225,7 +225,7 @@ document.addEventListener("keydown",e=>{
 });
 
 // ── visualizador (Web Audio API) ──
-let actx, analyser, srcNode, dataArr, rafId, peaks=[];
+let actx, analyser, srcNode, dataArr, rafId, peaks=[], vizFrame=0;
 const cvs=document.getElementById("viz"), ctx=cvs.getContext("2d");
 const DPR=()=>devicePixelRatio||1;
 function resizeCanvas(){ cvs.width=cvs.clientWidth*DPR(); cvs.height=cvs.clientHeight*DPR(); }
@@ -249,6 +249,12 @@ function drawViz(){
   if(!analyser) return;
   analyser.getByteFrequencyData(dataArr);
   const dpr=DPR(), w=cvs.width, h=cvs.height, n=dataArr.length;
+  // reporta nivel de energía al OS (wallpaper reactivo) si corre dentro del escritorio
+  if(window.top!==window.self && !au.paused){
+    vizFrame=(vizFrame+1)%2;
+    if(vizFrame===0){ let sum=0; for(let i=0;i<n;i++) sum+=dataArr[i];
+      try{ parent.postMessage({type:"esquizo:audio", level:(sum/n)/255}, location.origin); }catch(e){} }
+  }
   ctx.clearRect(0,0,w,h);
   const bw=w/n;                       // ancho de columna
   const gap=Math.max(1,bw*0.18);      // separación entre barras

@@ -101,6 +101,13 @@ html,body{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:clamp(.3rem,1.5vh,1rem);
 }
+/* glow reactivo al audio (REPRODUCTOR / ambiente) — no choca con las animaciones del logo */
+#wp-glow{
+  position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(1);
+  width:min(64vw,460px);aspect-ratio:1/1;border-radius:50%;z-index:0;
+  background:radial-gradient(circle, rgba(0,255,65,.30) 0%, rgba(255,0,255,.14) 42%, transparent 70%);
+  opacity:0;mix-blend-mode:screen;pointer-events:none;will-change:opacity,transform;
+}
 .wp-logo{
   position:relative;
   width:clamp(130px,20vw,250px);
@@ -404,6 +411,12 @@ html,body{
 }
 #tray .ank{color:var(--corrupt);text-shadow:0 0 6px var(--corrupt);}
 #clock{font-variant-numeric:tabular-nums;}
+#amb{cursor:pointer;user-select:none;color:#7fdf9f;font-size:11px;letter-spacing:.04em;}
+#amb:hover{color:#cfeede;}
+#amb.on{color:var(--acid);text-shadow:0 0 8px var(--acid);}
+#infection{font-size:11px;letter-spacing:.04em;color:#b48cd0;}
+#infection b{color:var(--corrupt);}
+@media (max-width:600px){ #amb,#infection{display:none;} }
 
 /* ===== menú inicio ===== */
 #startmenu{
@@ -481,6 +494,7 @@ html,body{
 <!-- ============ ESCRITORIO ============ -->
 <div id="desktop">
   <div id="wallpaper">
+    <div id="wp-glow"></div>
     <div class="wp-logo"></div>
     <div class="wp-title" data-text="ESQUIZOAI">ESQUIZOAI</div>
   </div>
@@ -499,7 +513,7 @@ html,body{
   <div id="start"><span class="sk">☣</span> Inicio</div>
   <div id="showdesk" title="Mostrar escritorio">▭</div>
   <div id="tasks"></div>
-  <div id="tray"><span class="ank">⚓</span> <span id="clock">--:--</span></div>
+  <div id="tray"><span id="amb" title="ambiente del daemon (drone)">☣ amb</span><span id="infection" title="artefactos del códice que ya abriste">INFECCIÓN <b>0%</b></span><span class="ank">⚓</span> <span id="clock">--:--</span></div>
 </div>
 
 <!-- ============ BOOT ============ -->
@@ -619,8 +633,77 @@ function isDesktopUrl(url){
   catch(e){ return false; }
 }
 
+/* =========================================================
+   AcidAudio — bus de audio del OS (ambiente daemon + beep)
+   ========================================================= */
+const AcidAudio = (()=>{
+  let ctx=null, amb=null;
+  function ac(){
+    if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } }
+    if(ctx.state==="suspended") ctx.resume();
+    return ctx;
+  }
+  function beep(){
+    const a=ac(); if(!a) return;
+    try{ const o=a.createOscillator(), g=a.createGain(); o.type="square";
+      o.frequency.value=400+Math.random()*160; g.gain.value=0.035;
+      o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime+0.04);
+    }catch(e){}
+  }
+  function setAmbient(on){
+    const a=ac(); if(!a) return false;
+    if(on && !amb){
+      try{
+        const g=a.createGain(); g.gain.value=0; g.connect(a.destination);
+        const o1=a.createOscillator(); o1.type="sawtooth"; o1.frequency.value=55;     // drone grave
+        const o2=a.createOscillator(); o2.type="sine";     o2.frequency.value=82.41;  // quinta sucia
+        const lfo=a.createOscillator(); lfo.type="sine";   lfo.frequency.value=0.08;   // respiración
+        const lfoG=a.createGain(); lfoG.gain.value=0.014; lfo.connect(lfoG); lfoG.connect(g.gain);
+        // ruido filtrado (hiss de máquina)
+        const buf=a.createBuffer(1, a.sampleRate*2, a.sampleRate); const ch=buf.getChannelData(0);
+        for(let i=0;i<ch.length;i++) ch[i]=(Math.random()*2-1)*0.5;
+        const noise=a.createBufferSource(); noise.buffer=buf; noise.loop=true;
+        const nf=a.createBiquadFilter(); nf.type="lowpass"; nf.frequency.value=340;
+        const ng=a.createGain(); ng.gain.value=0.016; noise.connect(nf); nf.connect(ng); ng.connect(a.destination);
+        o1.connect(g); o2.connect(g); o1.start(); o2.start(); lfo.start(); noise.start();
+        g.gain.setTargetAtTime(0.05, a.currentTime, 1.6);
+        amb={o1,o2,lfo,noise,g,ng};
+      }catch(e){ return false; }
+    } else if(!on && amb){
+      try{ const n=amb; n.g.gain.setTargetAtTime(0,a.currentTime,0.4); n.ng.gain.setTargetAtTime(0,a.currentTime,0.4);
+        setTimeout(()=>{ try{n.o1.stop();n.o2.stop();n.lfo.stop();n.noise.stop();}catch(_){}} , 700);
+      }catch(e){}
+      amb=null;
+    }
+    return on;
+  }
+  return { beep, setAmbient, ambientOn:()=>!!amb, resume:ac };
+})();
+
+/* nivel de audio del REPRODUCTOR (llega por postMessage) → wallpaper reactivo */
+let audioLevel=0;
+
+/* =========================================================
+   Infection — estado persistente del visitante (localStorage)
+   ========================================================= */
+const Infection = (()=>{
+  const KEY="esquizo_infection";
+  let st={visits:0,opened:[]};
+  try{ const raw=localStorage.getItem(KEY); if(raw) st=Object.assign(st,JSON.parse(raw)); }catch(e){}
+  function fsFiles(){ const s=[]; for(const k in FS) FS[k].items.forEach(it=>s.push(it.file)); return s; }
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(st)); }catch(e){} }
+  function pct(){ const t=fsFiles().length; return t? Math.min(100, Math.round((st.opened.length/t)*100)) : 0; }
+  function render(){ const e=$("#infection"); if(e) e.innerHTML="INFECCIÓN <b>"+pct()+"%</b>"; }
+  function opened(file){
+    if(file && fsFiles().includes(file) && !st.opened.includes(file)){ st.opened.push(file); save(); render(); }
+  }
+  function bumpVisit(){ st.visits=(st.visits||0)+1; save(); return st.visits; }
+  return { opened, bumpVisit, visits:()=>st.visits||0, render, pct };
+})();
+
 /* ===== abrir un artefacto COMO ventana del OS (iframe) ===== */
 function openApp(file,title,icon){
+  Infection.opened(file);
   const id = "app_"+file.replace(/[^a-z0-9]/gi,"_");
   const wrap = el("div","appwrap");
   const bar  = el("div","app-toolbar",
@@ -1021,12 +1104,7 @@ function openTerminal(){
     for(let i=0;i<text.length;i++){ if(skipType){d.textContent=text;break;}
       d.textContent+=text[i]; out.scrollTop=out.scrollHeight; await sleep(6);}
     out.scrollTop=out.scrollHeight;}
-  function beep(){ if(!TERM_SOUND) return;
-    try{const a=new (window.AudioContext||window.webkitAudioContext)();
-      const o=a.createOscillator(),g=a.createGain();o.type="square";
-      o.frequency.value=400+Math.random()*160;g.gain.value=0.035;
-      o.connect(g);g.connect(a.destination);o.start();o.stop(a.currentTime+0.04);
-      setTimeout(()=>a.close(),120);}catch(e){} }
+  function beep(){ if(!TERM_SOUND) return; AcidAudio.beep(); }
 
   function fsAll(){const a=[];for(const k in FS)FS[k].items.forEach(it=>a.push(it));return a;}
   const SPECIALS={
@@ -1310,15 +1388,19 @@ const BOOT=[
 function runBoot(done){
   const box=$("#boot");
   if(sessionStorage.getItem("esquizo_booted")){ box.style.display="none"; done(); return; }
-  let i=0, delay=0;
+  // boot personalizado: si el visitante ya estuvo, el daemon lo recuerda
+  const lines=BOOT.slice();
+  const v=Infection.visits();
+  if(v>1) lines.splice(11,0,{t:"daemon@lab-red: te recuerda. visita #"+v+" — la infección no se borra",c:"c"});
+  let i=0;
   function finish(){
     sessionStorage.setItem("esquizo_booted","1");
     box.style.transition="opacity .4s"; box.style.opacity="0";
     setTimeout(()=>{box.style.display="none";},420); done();
   }
   function step(){
-    if(i>=BOOT.length){ setTimeout(finish,500); return; }
-    const ln=BOOT[i++];
+    if(i>=lines.length){ setTimeout(finish,500); return; }
+    const ln=lines[i++];
     const d=el("div","bl"+(ln.c==="big"?" big":" "+ln.c), ln.t||"&nbsp;");
     box.appendChild(d); box.scrollTop=box.scrollHeight;
     setTimeout(step, ln.c==="big"?650:(90+Math.random()*120));
@@ -1339,6 +1421,33 @@ document.addEventListener("DOMContentLoaded",()=>{
   buildStart();
   tickClock(); setInterval(tickClock,15000);
 
+  /* estado de infección: cuenta la visita y pinta el indicador */
+  Infection.bumpVisit();
+  Infection.render();
+
+  /* toggle de ambiente del daemon (drone). Respeta autoplay: si estaba activo,
+     arranca en el primer gesto del usuario, no al cargar. */
+  const ambBtn=$("#amb");
+  const applyAmb=()=>ambBtn.classList.toggle("on",AcidAudio.ambientOn());
+  ambBtn.addEventListener("click",()=>{
+    const on=AcidAudio.setAmbient(!AcidAudio.ambientOn());
+    try{ localStorage.setItem("esquizo_ambient", on?"1":"0"); }catch(e){}
+    applyAmb();
+  });
+  if((()=>{try{return localStorage.getItem("esquizo_ambient")==="1";}catch(e){return false;}})()){
+    const once=()=>{ AcidAudio.setAmbient(true); applyAmb(); document.removeEventListener("pointerdown",once); };
+    document.addEventListener("pointerdown",once,{once:true});
+  }
+
+  /* wallpaper reactivo al audio */
+  (function reactor(){
+    requestAnimationFrame(reactor);
+    audioLevel*=0.90;                      // decae suave
+    const g=$("#wp-glow"); if(!g) return;
+    g.style.opacity=Math.min(0.92,audioLevel*1.15).toFixed(3);
+    g.style.transform="translate(-50%,-50%) scale("+(1+audioLevel*0.55).toFixed(3)+")";
+  })();
+
   $("#start").addEventListener("click",e=>{e.stopPropagation();toggleStart();});
   $("#showdesk").addEventListener("click",e=>{e.stopPropagation();WM.minimizeAll();closeStart();});
   document.addEventListener("click",e=>{
@@ -1349,7 +1458,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   /* un artefacto en iframe pidió volver al escritorio → cerrar su ventana */
   window.addEventListener("message",e=>{
     if(e.origin!==location.origin) return;
-    if(e.data && e.data.type==="esquizo:return-desktop") WM.closeByFrame(e.source);
+    if(!e.data) return;
+    if(e.data.type==="esquizo:return-desktop") WM.closeByFrame(e.source);
+    else if(e.data.type==="esquizo:audio" && typeof e.data.level==="number") audioLevel=Math.max(audioLevel, e.data.level);
   });
 
   runBoot(()=>{ /* escritorio ya visible bajo el boot */ });

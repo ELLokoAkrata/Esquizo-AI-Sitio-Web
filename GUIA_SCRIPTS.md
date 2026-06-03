@@ -114,7 +114,8 @@ python -m http.server 8099
 ```
 Luego abre en el navegador: **http://127.0.0.1:8099/index.html**
 - Prueba lo que cambiaste (que el tema suene, que la imagen aparezca en la galería, etc.).
-- Para detener el server: **Ctrl + C** en la terminal.
+- **Déjalo corriendo mientras trabajas**: para ver cambios solo **recarga la pestaña** (F5/Ctrl+R), no hace falta reiniciar el server.
+- Para detener el server: **Ctrl + C** en la terminal (al terminar).
 
 > ⚠️ Abrir el `index.html` con doble clic (`file://`) **no** funciona bien: la galería y el reproductor cargan sus
 > listas con `fetch`, que el navegador bloquea en `file://`. Siempre usa el server local de arriba.

@@ -59,12 +59,12 @@ El códice se compone de diferentes tipos de artefactos:
 
 ### c. Animaciones (Archivos HTML en `animaciones/`)
 -   **Propósito:** Experiencias visuales dinámicas, bucles hipnóticos, representaciones del caos y la complejidad.
--   **Estructura:** Archivos HTML con JavaScript y/o CSS para animaciones. Enlazados desde `// TRABAJO VISUAL > Animaciones` en `index.html`.
+-   **Estructura:** Archivos HTML con JavaScript y/o CSS para animaciones. Enlazados desde la carpeta `// EXPERIENCIAS_GENERATIVAS` en `index.html` (antes "TRABAJO_VISUAL").
 
 ### d. Manifestaciones Visuales (Imágenes en `manifestaciones_visuales/`)
 -   **Propósito:** Artefactos visuales estáticos, generados por IA o creados para complementar los grimorios.
 -   **Creación:** Principalmente a través de `generate_image.py`. Las imágenes deben ser coherentes con la estética del proyecto.
--   **Integración:** Pueden ser incrustadas en los grimorios o mostradas en la galería de `// TRABAJO VISUAL > Manifestaciones Visuales` en `index.html`.
+-   **Integración:** Pueden ser incrustadas en los grimorios. (La galería curada de sintografía es `galeria/` → GALERIA.exe; ver CLAUDE.md.)
 
 ### e. Entidades Digitales (Archivos HTML en la raíz, con lógica JS)
 -   **Propósito:** Agentes de IA interactivos, "filósofos locos" que ejecutan acciones y generan contenido dinámicamente.

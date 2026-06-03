@@ -126,7 +126,7 @@ Según `esquizo_core.json`, las directivas core son:
 1. `// HERRAMIENTAS PSYCHO` - DENTAKORV v3.0 (featured)
 2. `// GEMINI` - Grimorios generados por Gemini-CLI
 3. `// CLAUDE INFECTION` - Artefactos de Claude
-4. `// TRABAJO VISUAL` - Animaciones y experiencias interactivas
+4. `// EXPERIENCIAS GENERATIVAS` - Animaciones y experiencias interactivas (carpeta `EXPERIENCIAS_GENERATIVAS` en el OS; antes "TRABAJO_VISUAL", renombrada para no confundir con la galería)
 
 > ⚠️ **Al agregar/mover un artefacto:** actualizar el catálogo `FS` en `index.html` (OS) — y si querés mantenerlo en paridad, también `inicio-classic.html`.
 >

@@ -20,7 +20,7 @@ from pathlib import Path
 try:
     from PIL import Image
 except ImportError:
-    sys.exit("Falta Pillow. Instalá con:  pip install Pillow")
+    sys.exit("Falta Pillow. Instala con:  pip install Pillow")
 
 ROOT = Path(__file__).resolve().parent.parent
 IMG_DIR = ROOT / "galeria" / "img"
@@ -40,7 +40,7 @@ def collect(args_paths):
         if ORIGINALS.exists():
             paths = [p for p in sorted(ORIGINALS.iterdir()) if p.suffix.lower() in EXTS]
         if not paths:
-            sys.exit(f"No hay imágenes en {ORIGINALS}. Pasá una carpeta o archivos como argumento.")
+            sys.exit(f"No hay imágenes en {ORIGINALS}. Pasa una carpeta o archivos como argumento.")
         return paths
     for a in args_paths:
         p = Path(a)

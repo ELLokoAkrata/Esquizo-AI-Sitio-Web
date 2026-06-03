@@ -79,7 +79,9 @@ Según `esquizo_core.json`, las directivas core son:
 │                                    #   WinAmp acid: visualizador Web Audio, playlist, shuffle/loop, modo glitch. 0 deps, estático.
 │                                    #   Agregar tema: tools/download-music.py (yt-dlp local) → audio/*.mp3, + entrada en playlist.json.
 ├── esquizo_core.json               # Personalidad Psycho-bot
-├── CLAUDE.md                       # Este documento
+├── CLAUDE.md                       # Este documento (guía operativa completa)
+├── AGENTS.md                       # ★ Orientación para CUALQUIER agente (entrada rápida → apunta acá)
+├── GUIA_SCRIPTS.md                 # Guía del usuario: cómo usar los scripts (bajar música, optimizar imágenes, deploy)
 ├── vercel.json                     # Configuración Vercel
 ├── css/style.css                   # Estilos globales terminal
 │

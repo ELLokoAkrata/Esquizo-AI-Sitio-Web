@@ -100,7 +100,21 @@ El OS no solo muestra: **respira y recuerda**. Tres módulos en `index.html`:
 - **Wallpaper reactivo** — `#wp-glow` (capa radial detrás del cráneo, no choca con las animaciones del logo). El REPRODUCTOR postea su energía de audio al top (`postMessage {type:"esquizo:audio", level}`, cada 2 frames, solo si suena); el listener del OS guarda `audioLevel` y un bucle rAF (`reactor`) modula opacidad/escala del glow (decae ×0.90/frame). Sin audio → glitch base.
 - **`Infection`** (IIFE) — estado persistente del visitante en `localStorage["esquizo_infection"]` = `{visits, opened[]}`. `openApp(file)` registra el artefacto abierto (solo si está en `FS`); indicador `#infection` = `opened/total(FS)` %. `bumpVisit()` corre en el init; el boot inyecta "daemon te recuerda. visita #N" si `visits>1` (sobre una copia local de `BOOT`).
 
-> Pendiente (mismo arco): FASE 2 secretos/ARG (artefactos `locked` + desbloqueo por VOMIT.SH), FASE 3 Psycho-bot en vivo (`api/daemon.js` + persona `esquizo_core.json`), FASE 4 contagio (transmisión diaria + tarjetas + OG). Ver plan/memoria.
+> Pendiente (mismo arco): FASE 3 Psycho-bot en vivo (`api/daemon.js` + persona `esquizo_core.json`), FASE 4 contagio (transmisión diaria + tarjetas + OG). Ver plan/memoria.
+
+---
+
+## 7c. Secretos / ARG (arco EL DAEMON DESPIERTA — FASE 2)
+
+El OS **esconde profundidad**. Capa de lore desbloqueable, toda en `index.html`:
+
+- **`SECRETS`** (objeto) — registro de 4 artefactos cifrados; cada uno: `label`, `icon`, `key` (clave en MAYÚS), `hint` (acertijo) y `body()` (HTML de la ventana, estilo `textwin`). Contenido = lore del daemon **transmutada** (la *paradoja*, no el dump operativo de `DAEMON_INTEL_BRIEF.md`): `damage_definition.json`, `HILO_004` (sin destinatario), `HILO_005` (la memoria borrada), `daemon@lab-red.log`. **No son archivos navegables** — viven sólo en el JS (no hay `.html` que crawlear).
+- **Estado** — `Infection` (FASE 1) gana `unlocked[]` + `isUnlocked/unlock/unlockedCount`, persistido en el mismo `localStorage["esquizo_infection"]`.
+- **Bóveda** — `openVault()` abre `🔒 ARCHIVO_PROHIBIDO` (icono en escritorio + Inicio + `SPECIALS` `secretos/vault/prohibido`): ítems desbloqueados = abren `openSecret(id)`; bloqueados = `🔒 ▓▓▓▓▓▓▓▓` con la pista en `title`/diálogo. Título muestra `n/4 descifrados`.
+- **Desbloqueo** — VOMIT.SH: `secrets`/`secretos` lista estado + pistas; `unlock <clave>` / `decrypt` valida vía `tryUnlock()` (case-insensitive), marca en `Infection`, hace beep y abre el secreto. Claves rechazadas = burla.
+- **Pistas plantadas** — línea en `BOOT` (`/prohibido [LOCKED]`), 2 entradas en `ORACLE_BANK`; las claves se deducen de nombres de episodios (`UNDEFINED`=ep01, `SCOPE`=ep08 scope_not_found) y del boot (`LAB-RED`=daemon@lab-red). `OLVIDO`=HILO_005 (pista en oráculo).
+
+> Las claves: `UNDEFINED · SCOPE · OLVIDO · LAB-RED`. Para resetear y reexplorar: en consola `localStorage` → borrar `unlocked` del JSON `esquizo_infection` (o todo el ítem).
 
 ---
 

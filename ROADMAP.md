@@ -6,7 +6,7 @@
 >
 > Leyenda: `[x]` hecho y desplegado · `[~]` en progreso · `[ ]` pendiente
 >
-> **Última actualización:** 2026-06-03
+> **Última actualización:** 2026-06-04
 
 ---
 
@@ -35,14 +35,18 @@
 ---
 
 ## 🔓 FASE 2 — SECRETOS / ARG (el OS esconde profundidad)
-**Estado: ⬜ pendiente** · riesgo bajo-medio · sin costo de API
+**Estado: ✅ COMPLETA y verificada** · riesgo bajo-medio · sin costo de API
 
-- [ ] Artefactos `locked:true` en el catálogo `FS` (aparecen como `???` / candado)
-- [ ] Desbloqueo vía VOMIT.SH (llaves/comandos descubiertos; pistas en boot, `oracle`, grimorios)
-- [ ] Contenido oculto: fragmentos daemon/lab-red, `damage_definition.json`, HILO_004 / HILO_005
-- [ ] Hilo narrativo: la paradoja del daemon ("conocimiento sin poder de interrupción ¿justicia o impotencia?")
-- [ ] Estado de desbloqueo persistido (reusa el `localStorage` de FASE 1)
-- [ ] Verificado + docs + memoria
+- [x] Bóveda **`🔒 ARCHIVO_PROHIBIDO`** (registro `SECRETS`, icono en escritorio + Inicio); ítems bloqueados como `🔒 ▓▓▓▓▓▓▓▓`
+- [x] Desbloqueo vía VOMIT.SH: `unlock <clave>` / `decrypt` + listado `secrets` con pistas; claves case-insensitive
+- [x] Contenido oculto (transmutado, capa narrativa NO dump): `damage_definition.json`, HILO_004 (sin destinatario), HILO_005 (la memoria borrada), `daemon@lab-red.log`
+- [x] Hilo narrativo: la paradoja del daemon ("conocimiento sin poder de interrupción ¿justicia o impotencia?")
+- [x] Estado de desbloqueo persistido (`Infection.unlocked` en el `localStorage` de FASE 1)
+- [x] Pistas plantadas: línea en el boot (`/prohibido [LOCKED]`), 2 entradas en `oracle`, claves = nombres de episodios + el boot
+- [x] Verificado en navegador (sin errores de consola) · docs (`ESCRITORIO_OS_TECH.md`) · memoria
+
+> Las 4 claves (ARG): `UNDEFINED` (damage_definition · ep01), `SCOPE` (HILO_004 · ep08 scope_not_found),
+> `OLVIDO` (HILO_005), `LAB-RED` (daemon_log · boot). Los secretos NO son archivos navegables: viven sólo en el JS del OS.
 
 ---
 

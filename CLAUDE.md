@@ -85,9 +85,13 @@ Según `esquizo_core.json`, las directivas core son:
 ├── vercel.json                     # Configuración Vercel
 ├── css/style.css                   # Estilos globales terminal
 │
-├── api/                            # VERCEL EDGE FUNCTIONS
+├── api/                            # VERCEL EDGE FUNCTIONS (keys SOLO aquí, vía process.env)
 │   ├── groq.js                     # Proxy Groq API (IA ASSIST)
-│   └── terminal.js                 # Proxy DeepSeek API
+│   ├── terminal.js                 # Proxy dual Groq+DeepSeek ("diálogo entre IAs")
+│   └── daemon.js                   # ★ FASE 3 — Psycho-bot EN VIVO (mono-entidad) → MSN_PSYCHO.exe
+│
+├── msn/                            # MSN_PSYCHO.exe (chat en vivo). App del OS: index.html autocontenido,
+│                                    #   MSN acid + selector de modelo (Groq+DeepSeek V4) → /api/daemon. Probar con `vercel dev`.
 │
 ├── tools/                          # HERRAMIENTAS PRINCIPALES
 │   ├── DENTAKORV.html              # Generador prompts v3.0 + IA ASSIST

@@ -76,14 +76,24 @@ vercel ls
 
 ## Desarrollo Local con API
 
-```bash
-# Opción 1: Vercel Dev (recomendado)
-vercel dev
-# Corre en http://localhost:3000 con Edge Functions funcionando
+⚠️ `python -m http.server` **solo sirve estático** — no ejecuta `/api/*`. Para probar la IA en local hay que usar `vercel dev`.
 
-# Opción 2: Crear .env.local para testing
-echo "GROQ_API_KEY=tu-key" > .env.local
+```bash
+# Opción 1 (recomendada): Vercel Dev — corre en http://localhost:3000 con las Edge Functions
+vercel dev
 ```
+
+**Las keys salen de las variables de entorno del SISTEMA** (mismo patrón que `os.getenv` en EsquizoAI-land:
+las keys nunca se hardcodean, viven en el entorno de Windows). `vercel dev` toma esas variables del shell desde el
+que lo lanzas — así funciona "sin `.env`". El código (`api/*.js`) lee `process.env.GROQ_API_KEY` / `process.env.DEEPSEEK_API_KEY`.
+
+```powershell
+# (solo si vercel dev NO tomara las del sistema) fallback gitignored:
+#   .env.local  con  GROQ_API_KEY=...  /  DEEPSEEK_API_KEY=...
+# .env y .env.* ya están en .gitignore — nunca se suben.
+```
+
+Luego, en **producción**: cargar las mismas keys en Vercel → Settings → Environment Variables (Prod+Preview+Dev).
 
 ---
 
@@ -135,7 +145,21 @@ export default async function handler(request) {
 | Archivo | Endpoint | Función |
 |---------|----------|---------|
 | `api/groq.js` | `/api/groq` | Proxy Groq API con streaming (IA ASSIST) |
-| `api/terminal.js` | `/api/terminal` | Proxy DeepSeek API (terminal interactiva) |
+| `api/terminal.js` | `/api/terminal` | Proxy dual (Groq+DeepSeek) — "diálogo entre IAs" |
+| `api/daemon.js` | `/api/daemon` | **Psycho-bot EN VIVO (FASE 3 · MSN_PSYCHO.exe)** — mono-entidad, ruteo dual, guardas de costo |
+
+### `api/daemon.js` (FASE 3 — chat MSN)
+
+Endpoint **mono-entidad**: una sola voz (Psycho-bot de `esquizo_core.json`), no "diálogo entre IAs".
+- **Body:** `{ model, messages:[{role:'user'|'assistant',content}], temperature? }`.
+- **Modelos (lista blanca):** Groq `llama-3.3-70b-versatile` (default), `llama-3.1-8b-instant`,
+  `openai/gpt-oss-120b`, `openai/gpt-oss-20b`; DeepSeek `deepseek-chat` (V4, modo no-thinking).
+- **Guardas:** `max_tokens` 700, contexto últimos 8 msgs, recorte de inputs. (Cap de sesión 30 + throttle = cliente.)
+- **Keys:** `process.env.GROQ_API_KEY` / `process.env.DEEPSEEK_API_KEY` (variables del sistema, sin `.env` versionado).
+- Lee el stream internamente y devuelve JSON limpio (evita timeouts de Vercel Edge ~30s).
+
+> ⚠️ Para que funcione en producción: cargar `DEEPSEEK_API_KEY` (y confirmar `GROQ_API_KEY`) en Vercel →
+> Settings → Environment Variables (Production + Preview + Development).
 
 ---
 
@@ -180,11 +204,19 @@ El terminal (`api/terminal.js`) soporta múltiples proveedores:
 | GPT-OSS 20B | `openai/gpt-oss-20b` | 128K | 16K |
 | GPT-OSS 120B | `openai/gpt-oss-120b` | 128K | 16K |
 
-### DeepSeek (Activos)
+### DeepSeek (Activos) — ⚠️ ahora es V4 (jun 2026)
 
-| Modelo | ID | Context | Max Output |
-|--------|-----|---------|------------|
-| DeepSeek Chat | `deepseek-chat` | 64K | 8K |
+DeepSeek migró a **V4**. Los nombres viejos `deepseek-chat` / `deepseek-reasoner` se **deprecan el 2026/07/24**;
+hoy mapean a modos de `deepseek-v4-flash` (chat = no-thinking, reasoner = thinking).
+
+| Modelo | ID | Context | Max Output | Nota |
+|--------|-----|---------|------------|------|
+| DeepSeek V4 (chat) | `deepseek-chat` | 1M | 384K | modo no-thinking de `deepseek-v4-flash` — el que usa `api/daemon.js` (seguro para Edge) |
+| DeepSeek V4 Flash | `deepseek-v4-flash` | 1M | 384K | default = thinking (riesgo de timeout en Edge) |
+| DeepSeek V4 Pro | `deepseek-v4-pro` | 1M | 384K | más capaz; usado en EsquizoAI-land (no en Edge por timeout) |
+
+> En `api/daemon.js` se usa `deepseek-chat` (no-thinking) a propósito: el thinking mode revienta el timeout de Vercel Edge.
+> `api/terminal.js` sigue con `deepseek-chat` (válido hasta jul-2026); migrar a V4 cuando se quiera.
 
 ### Modelos Deshabilitados
 

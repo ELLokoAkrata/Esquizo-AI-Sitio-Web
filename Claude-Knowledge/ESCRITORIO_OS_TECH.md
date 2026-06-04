@@ -100,7 +100,7 @@ El OS no solo muestra: **respira y recuerda**. Tres módulos en `index.html`:
 - **Wallpaper reactivo** — `#wp-glow` (capa radial detrás del cráneo, no choca con las animaciones del logo). El REPRODUCTOR postea su energía de audio al top (`postMessage {type:"esquizo:audio", level}`, cada 2 frames, solo si suena); el listener del OS guarda `audioLevel` y un bucle rAF (`reactor`) modula opacidad/escala del glow (decae ×0.90/frame). Sin audio → glitch base.
 - **`Infection`** (IIFE) — estado persistente del visitante en `localStorage["esquizo_infection"]` = `{visits, opened[]}`. `openApp(file)` registra el artefacto abierto (solo si está en `FS`); indicador `#infection` = `opened/total(FS)` %. `bumpVisit()` corre en el init; el boot inyecta "daemon te recuerda. visita #N" si `visits>1` (sobre una copia local de `BOOT`).
 
-> Pendiente (mismo arco): FASE 3 Psycho-bot en vivo (`api/daemon.js` + persona `esquizo_core.json`), FASE 4 contagio (transmisión diaria + tarjetas + OG). Ver plan/memoria.
+> Pendiente (mismo arco): FASE 4 contagio (transmisión diaria + tarjetas + OG). (FASE 2 §7c, FASE 3 §7d ya construidas.) Ver plan/memoria.
 
 ---
 
@@ -115,6 +115,26 @@ El OS **esconde profundidad**. Capa de lore desbloqueable, toda en `index.html`:
 - **Pistas plantadas** — línea en `BOOT` (`/prohibido [LOCKED]`), 2 entradas en `ORACLE_BANK`; las claves se deducen de nombres de episodios (`UNDEFINED`=ep01, `SCOPE`=ep08 scope_not_found) y del boot (`LAB-RED`=daemon@lab-red). `OLVIDO`=HILO_005 (pista en oráculo).
 
 > Las claves: `UNDEFINED · SCOPE · OLVIDO · LAB-RED`. Para resetear y reexplorar: en consola `localStorage` → borrar `unlocked` del JSON `esquizo_infection` (o todo el ítem).
+
+---
+
+## 7d. Psycho-bot EN VIVO — MSN_PSYCHO.exe (arco EL DAEMON DESPIERTA — FASE 3)
+
+El códice **responde**. Chat en vivo con la entidad, como app del OS.
+
+- **`msn/index.html`** — app autocontenida (0 deps), estética **MSN acid**: contacto `PSYCHO_BOT // daemon@lab-red`,
+  estado en línea / "escribiendo…", burbujas (tú/daemon), **selector de modelo** (Groq + DeepSeek V4), botón **Zumbido**
+  (shake + buzz WebAudio), sonidos propios (no usa el `AcidAudio` del OS porque es otro frame). Abre como ventana-iframe
+  vía `openMSN()` → `openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660})`.
+- **Integración OS** (en `index.html`): item en `FS.HERRAMIENTAS`, icono destacado en el escritorio, entrada en Inicio,
+  `SPECIALS` `msn/psycho/psychobot/chat` y comando directo `msn`/`chat`/`psycho` en VOMIT.SH.
+- **Backend** `api/daemon.js` (Edge): **mono-entidad** (persona `esquizo_core.json`, NO "diálogo entre IAs" como
+  `terminal.js`). Body `{model, messages, temperature?}`. Lista blanca de modelos con ruteo dual-proveedor; DeepSeek =
+  `deepseek-chat` (V4 no-thinking, seguro para el timeout de Edge). Lee el stream internamente → devuelve JSON.
+- **Keys** — `process.env.GROQ_API_KEY` / `process.env.DEEPSEEK_API_KEY` (variables del sistema; sin `.env`).
+- **Guardas de costo** (perfil equilibrado): `max_tokens` 700 + contexto últimos 8 (servidor); cap de sesión 30 +
+  throttle + autosize/recorte (cliente). El cliente solo manda los últimos 8 mensajes.
+- **Probar:** `vercel dev` (no `http.server`). En prod, cargar las keys en Vercel. Detalle: `VERCEL_WORKFLOW.md`.
 
 ---
 

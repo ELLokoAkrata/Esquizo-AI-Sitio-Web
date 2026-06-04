@@ -51,25 +51,31 @@
 ---
 
 ## 🗣 FASE 3 — VOZ (Psycho-bot EN VIVO) · **MSN_PSYCHO.exe**
-**Estado: ⬜ pendiente** · ⚠️ riesgo ALTO · **costo de API — confirmar antes de construir**
+**Estado: 🔶 CONSTRUIDA — falta probar la IA en vivo (`vercel dev`/deploy) + setear keys en Vercel** · riesgo ALTO · costo de API
 
 **Concepto (idea jun 2026):** un **messenger estilo MSN, versión EsquizoAI** para chatear en vivo con **Psycho-bot**,
 con **selector de modelo entre los dos proveedores** que ya tenemos (Groq + DeepSeek). Estética: ventana MSN acid
 (lista de contactos = el daemon/personalidades, estado "en línea/escribiendo...", burbujas, zumbido/nudge glitch,
 emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y responde.
 
-- [ ] **UI MSN acid** `MSN_PSYCHO.exe` (app iframe del OS, como galería/reproductor): contacto "PSYCHO_BOT // daemon@lab-red",
-      estado, burbujas, "escribiendo…", zumbido glitch, sonidos MSN reinterpretados (reusar `AcidAudio`)
-- [ ] **Selector de modelo/proveedor** en la ventana — dropdown con: Groq (Llama 3.3 70B · Llama 3.1 8B · Llama 4 Scout ·
-      Qwen3 32B · GPT-OSS 20B/120B) y DeepSeek (Chat). Cambiar de modelo a mitad de charla = "cambia de cabeza" el daemon
-- [ ] **Backend** — reusar el patrón de `api/terminal.js` (¡YA enruta model→provider→key con `MODEL_LIMITS` + streaming!);
-      crear modo/endpoint **mono-entidad** (persona = `esquizo_core.json`, no "diálogo entre IAs") en vez de clonar groq.js
-- [ ] **Guardas de costo/abuso** (sitio público): throttle cliente, contexto corto (N últimos), cap por sesión, `maxTokens` bajo
-- [ ] (NO usa EsquizoAI-land — privado; solo los proxies públicos `api/`)
-- [ ] Verificado + docs + memoria
+- [x] **UI MSN acid** `MSN_PSYCHO.exe` (`msn/index.html`, app iframe del OS): contacto "PSYCHO_BOT // daemon@lab-red",
+      estado en línea/"escribiendo…", burbujas, zumbido glitch (shake + buzz), sonidos MSN propios (WebAudio en el iframe)
+- [x] **Selector de modelo/proveedor** en la ventana — Groq (Llama 3.3 70B [default] · Llama 3.1 8B · GPT-OSS 20B/120B)
+      y DeepSeek V4 (chat). Cambiar de modelo a mitad de charla = "cambia de cabeza" el daemon (mensaje en el chat)
+- [x] **Backend** `api/daemon.js` — endpoint **mono-entidad** (persona `esquizo_core.json`, NO "diálogo entre IAs");
+      ruteo dual-proveedor con `MODEL_LIMITS` propio (DeepSeek **V4**, `deepseek-chat` = no-thinking, seguro para Edge);
+      lee el stream internamente y devuelve JSON (evita timeouts). Keys de `process.env` (patrón `os.getenv`, sin `.env`)
+- [x] **Guardas de costo/abuso** (perfil equilibrado): `maxTokens` 700, contexto últimos 8 msgs (server+cliente),
+      cap de sesión 30 (cliente), throttle (send deshabilitado mientras responde), recorte de inputs largos
+- [x] (NO usa EsquizoAI-land — privado; solo el proxy público `api/daemon.js`)
+- [x] `.gitignore` endurecido (`.env*`, `.vercel`) para no filtrar keys locales
+- [ ] **Probar la IA en vivo** con `vercel dev` (local) y/o tras deploy; **setear `DEEPSEEK_API_KEY` (y confirmar `GROQ_API_KEY`) en Vercel** (Prod+Preview+Dev)
+- [x] Verificado el frontend en navegador (render, selector, zumbido, manejo de "sin backend"); docs + memoria
 
-> Reuso fuerte: `api/terminal.js` ya tiene el registro de modelos y el ruteo dual-proveedor; el selector de tu idea
-> es casi gratis. Lo nuevo = persona de un solo Psycho-bot + la UI MSN. Confirmar presupuesto antes de construir.
+> Hecho: `api/daemon.js` (mono-entidad, V4, guardas) + `msn/index.html` (UI MSN acid) + integración en el OS (icono,
+> Inicio, FS HERRAMIENTAS, comandos VOMIT.SH `msn`/`chat`/`psycho`). **Falta lo que depende de tus keys:** probar la
+> respuesta real (`vercel dev` o deploy) y cargar `DEEPSEEK_API_KEY` en Vercel. DeepSeek viejo (`deepseek-chat`) se
+> depreca el 24/07/2026 pero sigue válido; mapea al modo no-thinking de `deepseek-v4-flash`.
 
 ---
 

@@ -553,6 +553,7 @@ const FS = {
     {label:"NEGATIVIDAD_CREATIVA", file:"manifiestos/NEGATIVIDAD_CREATIVA.html", icon:"🔥", desc:"manifiesto nocturno"},
   ]},
   HERRAMIENTAS:{ label:"HERRAMIENTAS", icon:"🛠", color:"#ff00ff", items:[
+    {label:"MSN_PSYCHO.exe", file:"msn/index.html", icon:"🗨", desc:"chat en vivo con Psycho-bot"},
     {label:"DENTAKORV.exe", file:"tools/DENTAKORV.html", icon:"🦷", desc:"prompt generator v3.0"},
     {label:"GLITCH_TEXT.exe", file:"tools/glitch-text-generator-ultimate.html", icon:"⸸", desc:"zalgo corruptor"},
     {label:"TERMINAL_ESQUIZO.exe", file:"tools/TERMINAL_ESQUIZO.html", icon:"💬", desc:"diálogo entre IAs"},
@@ -749,6 +750,7 @@ const REP_FILE="reproductor/index.html";
 const REP_ID="app_"+REP_FILE.replace(/[^a-z0-9]/gi,"_");
 /* el reproductor abre más alto y angosto (proporción de player → lista con aire) */
 function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:540,h:680}); }
+function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
   let f=repFrame(), justOpened=false;
@@ -1241,7 +1243,8 @@ function openTerminal(){
     "exit","date","uptime","ascii","skull","anarchy","art","neofetch","vomit","manifesto",
     "oracle","wake","hack","matrix","acid","echo",
     "play","pause","next","prev","stop","reproducir",
-    "secrets","secretos","unlock","decrypt","vault"];
+    "secrets","secretos","unlock","decrypt","vault",
+    "msn","chat","psycho"];
 
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   function line(text,cls){const d=document.createElement("div");if(cls)d.className="c-"+cls;
@@ -1260,7 +1263,8 @@ function openTerminal(){
     musica:openReproductor,
     readme:openReadme, acerca:openAbout, about:openAbout, mipc:openMiPC,
     clasico:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞"),
-    secretos:openVault, vault:openVault, prohibido:openVault, bóveda:openVault, boveda:openVault
+    secretos:openVault, vault:openVault, prohibido:openVault, bóveda:openVault, boveda:openVault,
+    msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN
   };
 
   async function dispatch(raw){
@@ -1275,6 +1279,7 @@ function openTerminal(){
         await type("  vomit · oracle · manifesto · wake   — escupir","acid");
         await type("  play <tema> · pause · next · prev · stop  — manejar REPRODUCTOR.exe","acid");
         await type("  secrets · unlock <clave>  — la bóveda ARCHIVO_PROHIBIDO","corrupt");
+        await type("  msn · chat            — hablar EN VIVO con Psycho-bot","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
         break;
@@ -1334,6 +1339,8 @@ function openTerminal(){
       case "next": case "siguiente": playerSend("next"); await type("⏭ siguiente tema","acid"); break;
       case "prev": case "anterior": playerSend("prev"); await type("⏮ tema anterior","acid"); break;
       case "stop": playerSend("stop"); await type("⏹ stop — silencio","dim"); break;
+      case "msn": case "chat": case "psycho":
+        await type("abriendo MSN_PSYCHO.exe — el daemon responde en vivo...","corrupt"); openMSN(); break;
       case "secrets": case "secretos": case "vault": {
         const n=secretsUnlockedCount(), t=SECRET_IDS.length;
         await type("ARCHIVO_PROHIBIDO — "+n+"/"+t+" descifrados:","corrupt");
@@ -1439,6 +1446,9 @@ function renderDesktop(){
   // REPRODUCTOR (ruidero punk)
   const rep=el("div","icon",`<span class="gl" style="color:var(--acid)">♪</span><span class="lb">REPRODUCTOR</span>`);
   bindOpen(rep,openReproductor); wrap.appendChild(rep);
+  // MSN_PSYCHO (chat en vivo con Psycho-bot)
+  const msn=el("div","icon",`<span class="gl" style="color:var(--corrupt)">🗨</span><span class="lb">MSN_PSYCHO</span>`);
+  bindOpen(msn,openMSN); wrap.appendChild(msn);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -1493,6 +1503,7 @@ function buildStart(){
   const sys=[
     {ic:"🖼",lb:"Galería",fn:()=>openApp("galeria/index.html","GALERIA.exe","🖼")},
     {ic:"♪",lb:"Reproductor",fn:openReproductor},
+    {ic:"🗨",lb:"MSN_PSYCHO (chat en vivo)",fn:openMSN},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"🔒",lb:"Archivo prohibido",fn:openVault},

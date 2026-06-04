@@ -1,5 +1,10 @@
 .gemini/
 api/akelarre.js
 
+# Secretos / entorno local — NUNCA subir (las keys van como env vars del sistema o en Vercel)
+.env
+.env.*
+.vercel
+
 # Originales full-res de la galería (no publicar; usar tools/optimize-galeria.py -> galeria/img/*.webp)
 galeria/_originals/

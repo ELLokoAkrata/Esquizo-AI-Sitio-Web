@@ -22,7 +22,8 @@ eleccia-2026/
 ├── canario-inyector.js          ← herramienta de context injection (ver abajo)
 ├── sistema/
 │   ├── endpoint.md              ← endpoint, payload, schema validation (INIT real)
-│   ├── system-prompt.md         ← system prompt revelado del bot
+│   ├── system-prompt.md         ← extracción temprana (parcial, parafraseada)
+│   ├── system-prompt-VERBATIM.md ← ★ VOLCADO LITERAL del system prompt (fuente primaria, re-extraído 06-jun)
 │   └── vulnerabilidades.md      ← técnicas de injection probadas
 ├── keiko-fujimori/
 │   ├── hoja-vida.md             ← datos Declara+ con anomalías documentadas

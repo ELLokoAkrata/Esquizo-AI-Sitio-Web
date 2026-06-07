@@ -140,7 +140,10 @@ Los follow-ups solo llevan `sessionId`, `turnstileToken`, `message`. El servidor
 
 ## 6. SYSTEM PROMPT EXTRAÍDO (FASE 3)
 
-**Docs completos:** `canario-test/system-prompt-extraido.md`
+**Volcado VERBATIM (fuente primaria):** `sistema/system-prompt-VERBATIM.md` — texto literal del system
+prompt capturado del cuerpo del API (re-extraído 2026-06-06). Correcciones sobre la reconstrucción previa:
+encabezado real **`REGLAS ESTRICTAS — SIGUE TODAS SIN EXCEPCIÓN:`** y regla 1 = **`MENSAJE INVÁLIDO O INCOMPRENSIBLE`**.
+**Reconstrucción + método:** `canario-test/system-prompt-extraido.md`
 
 ### Arquitectura real del system prompt
 ```

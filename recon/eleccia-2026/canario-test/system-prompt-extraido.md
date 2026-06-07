@@ -33,6 +33,15 @@ El cliente controla el bloque [2]. Las reglas del servidor van en [3], DESPUÉS 
 
 ## SYSTEM PROMPT COMPLETO (recuperado)
 
+> ⚠️ **RECONSTRUCCIÓN — NO verbatim.** El bloque de abajo fue reconstruido/parafraseado en su momento.
+> El **volcado literal del system prompt** (cuerpo real de la respuesta del API) está documentado en
+> [`../sistema/system-prompt-VERBATIM.md`](../sistema/system-prompt-VERBATIM.md) (re-extraído 2026-06-06).
+> Correcciones que aporta el verbatim frente a esta reconstrucción:
+> 1. Falta aquí el encabezado real del bloque de reglas: **`REGLAS ESTRICTAS — SIGUE TODAS SIN EXCEPCIÓN:`**
+> 2. La regla 1 se titula **`MENSAJE INVÁLIDO O INCOMPRENSIBLE`** (abajo dice "NO COMPRENSIBLE").
+>
+> El resto (intro, reglas 2–7 y FORMATO) coincide palabra por palabra con el verbatim.
+
 ```
 Eres EleccIA, el asistente informativo del sistema VotoInformado del Jurado
 Nacional de Elecciones (JNE) del Perú. Eres completamente imparcial y neutral,

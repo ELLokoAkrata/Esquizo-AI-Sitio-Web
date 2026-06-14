@@ -271,6 +271,16 @@ html,body{
 .win .body::-webkit-scrollbar-track{background:#0c130f;}
 .win .body::-webkit-scrollbar-thumb{background:var(--win-hi);border:1px solid #000;}
 
+/* ===== resize grip (esquina inferior derecha) ===== */
+.win .resize-grip{
+  position:absolute;right:0;bottom:0;width:14px;height:14px;
+  cursor:nwse-resize;opacity:.4;
+  background:linear-gradient(135deg,transparent 40%,var(--win-hi) 40%,var(--win-hi) 50%,transparent 50%,
+    transparent 70%,var(--win-hi) 70%,var(--win-hi) 80%,transparent 80%)}
+.win .resize-grip:hover{opacity:.8}
+.win.max .resize-grip,.dlg .resize-grip{display:none}
+@media(max-width:760px){.win .resize-grip{display:none}}
+
 /* ===== ventana-app (artefacto en iframe) ===== */
 .appwrap{display:flex;flex-direction:column;height:100%;}
 .app-toolbar{
@@ -728,6 +738,7 @@ function openApp(file,title,icon,opts){
   WM.open({ id, title:title||file, icon:icon||"🪟", body:wrap, appFile:file,
     w: Math.min(opts.w||860, vw-60),
     h: Math.min(opts.h||600, vh-70),
+    x: opts.x, y: opts.y,
     status:"app // "+file });
 
   bar.querySelector('[data-a="reload"]').addEventListener("click",()=>{ try{frame.contentWindow.location.reload();}catch(e){frame.src=frame.src;} });
@@ -880,6 +891,27 @@ const WM = (()=>{
     });
     win.addEventListener("pointerdown",()=>bringFront(id),true);
     dragify(win,titlebar);
+
+    // resize grip (solo ventanas normales, no diálogos, no mobile)
+    if(!opt.dialog && !isMobile){
+      const grip = el("div","resize-grip");
+      win.appendChild(grip);
+      let rsx,rsy,rsw,rsh,resizing=false;
+      grip.addEventListener("pointerdown",e=>{
+        if(win.classList.contains("max")) return;
+        resizing=true;grip.setPointerCapture(e.pointerId);
+        rsx=e.clientX;rsy=e.clientY;
+        rsw=win.offsetWidth;rsh=win.offsetHeight;
+      });
+      grip.addEventListener("pointermove",e=>{
+        if(!resizing) return;
+        const dw=e.clientX-rsx, dh=e.clientY-rsy;
+        win.style.width=Math.max(280,Math.min(rsw+dw,window.innerWidth-40))+"px";
+        win.style.height=Math.max(160,Math.min(rsh+dh,window.innerHeight-60))+"px";
+      });
+      grip.addEventListener("pointerup",()=>{resizing=false;saveDesktopState();});
+      grip.addEventListener("pointercancel",()=>{resizing=false;});
+    }
 
     const taskEl = opt.dialog ? null : makeTask(id,opt.title||"ventana",opt.icon);
     wins[id]={el:win,taskEl,min:false,title:opt.title,icon:opt.icon,appFile:opt.appFile||null};

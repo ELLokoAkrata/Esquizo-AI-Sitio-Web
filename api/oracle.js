@@ -115,7 +115,7 @@ export default async function handler(request) {
   const model = stripModel(body.model);
   const question = clampText(body.question || 'sin pregunta', 400);
   const hexagram = body.hexagram || {};
-  const history = (body.history || []).slice(-4).map(m => ({ role: m.role || 'user', content: clampText(m.content, 300) }));
+  const sessionHistory = (body.sessionHistory || []).slice(-5);
 
   const hexInfo = [
     `NÚMERO: ${hexagram.number || '?'}`,
@@ -124,11 +124,15 @@ export default async function handler(request) {
     `LINEA_MUTANTE: ${hexagram.mutatingLine != null ? hexagram.mutatingLine + 1 : 'ninguna'}`,
   ].join('\n');
 
+  const sessionContext = sessionHistory.length > 0
+    ? `CONSULTAS ANTERIORES EN ESTA SESIÓN:\n${sessionHistory.map((s, i) => `${i + 1}. Pregunta: "${clampText(s.question, 150)}" → Hexagrama ${s.hexNumber}: ${s.hexName} → Dictamen: ${clampText(s.judgment, 150)}`).join('\n')}`
+    : 'primera consulta de esta sesión';
+
   const messages = [
     { role: 'system', content: ORACLE_SYSTEM },
     {
       role: 'user',
-      content: `CONSULTA DEL USUARIO:\n"${question}"\n\nHEXAGRAMA:\n${hexInfo}\n\nHISTORIAL RECIENTE:\n${history.map((m, i) => `${i + 1}. [${m.role}] ${m.content}`).join('\n') || 'primera consulta'}\n\nINSTRUCCIÓN: Interpreta este hexagrama en relación con la consulta. Devuelve SOLO el JSON.`,
+      content: `CONSULTA DEL USUARIO:\n"${question}"\n\nHEXAGRAMA:\n${hexInfo}\n\n${sessionContext}\n\nINSTRUCCIÓN: Interpreta este hexagrama en relación con la consulta y, si hay consultas anteriores en esta sesión, conéctalas — el oráculo ve el hilo. Devuelve SOLO el JSON.`,
     },
   ];
 

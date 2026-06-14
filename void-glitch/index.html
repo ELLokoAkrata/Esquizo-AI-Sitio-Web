@@ -314,7 +314,7 @@ async function fetchLive(choice, choiceIndex){
 
       if (apiUrl === LEGACY_DAEMON_API) {
         const legacyMessages = [
-          { role:'system', content:'Eres el motor de VOID//GLITCH. Responde SOLO con JSON válido, sin markdown, sin explicación. Español neutro, NUNCA voseo argentino (no "vos", "tenés", "probá").' },
+          { role:'system', content:'Eres el motor de VOID//GLITCH. Responde SOLO con JSON válido, sin markdown, sin explicación. Voz peruana, usa "tú", "tienes", "prueba", "escribe".' },
           { role:'user', content: `${schemaPrompt}\n\nESTADO:\n${JSON.stringify(base, null, 2)}` },
         ];
         const data = await fetchStructured(apiUrl, { model: state.model, messages: legacyMessages, temperature: 1.05 });

@@ -219,7 +219,13 @@ ${stateText}
 HISTORIAL CORTO:
 ${history.map((m, i) => `${i + 1}. [${m.role}] ${m.content}`).join('\n') || 'vacío'}
 
-INSTRUCCIÓN:\nGenera la siguiente escena del juego. Mantén la caída viva. Devuelve JSON válido con 2 o 3 choices.`\n    }\n  ];\n\n  let raw = '';\n  try {\n    raw = await callModel(model, messages, mode === 'terminal' ? 1.1 : 1.0);
+INSTRUCCIÓN:\nGenera la siguiente escena del juego. Mantén la caída viva. Devuelve JSON válido con 2 o 3 choices.`,
+    },
+  ];
+
+  let raw = '';
+  try {
+    raw = await callModel(model, messages, mode === 'terminal' ? 1.1 : 1.0);
   } catch (e) {
     return jsonResponse({ error: e.message }, 500);
   }

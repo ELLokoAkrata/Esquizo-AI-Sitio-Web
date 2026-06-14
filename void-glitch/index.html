@@ -99,6 +99,8 @@ body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle 
 
 <script>
 const API = '/api/void-glitch';
+const LEGACY_DAEMON_API = '/api/daemon';
+const LEGACY_TERMINAL_API = '/api/terminal';
 const MODELS = [
   ['llama-3.3-70b-versatile','Llama 3.3 70B'],
   ['llama-3.1-8b-instant','Llama 3.1 8B'],
@@ -191,6 +193,47 @@ function renderControls(){
   syncBtn.textContent = modeSel.value === 'static' ? 'STATIC' : 'LIVE';
 }
 function currentStatic(){ return STATIC[state.staticKey] || STATIC.start; }
+function extractJson(text){
+  if(!text || typeof text !== 'string') return null;
+  const a=text.indexOf('{'), b=text.lastIndexOf('}');
+  if(a < 0 || b < 0 || b <= a) return null;
+  try { return JSON.parse(text.slice(a,b+1)); } catch { return null; }
+}
+function normalizeNode(node, fallback){
+  const base=fallback || {};
+  const choices=Array.isArray(node?.choices) ? node.choices : [];
+  return {
+    title: String(node?.title || base.title || 'VOID//GLITCH').slice(0,90),
+    text: String(node?.text || base.text || 'La señal falla.').slice(0,220),
+    sub: String(node?.sub || base.sub || 'Otra grieta más abajo.').slice(0,220),
+    log: String(node?.log || base.log || 'registro: señal inestable').slice(0,180),
+    mood: ['void','glitch','chaos','reset'].includes(node?.mood) ? node.mood : 'void',
+    visual: {
+      voidDelta: Number.isFinite(node?.visual?.voidDelta) ? node.visual.voidDelta : 0,
+      glitchDelta: Number.isFinite(node?.visual?.glitchDelta) ? node.visual.glitchDelta : 0,
+      chaosDelta: Number.isFinite(node?.visual?.chaosDelta) ? node.visual.chaosDelta : 0,
+    },
+    choices: choices.slice(0,3).map((c, i) => ({
+      label: String(c?.label || `continuar ${i+1}`).slice(0,48),
+      note: String(c?.note || 'la grieta continúa').slice(0,80),
+    })),
+  };
+}
+function synthesizeNodeFromText(text, fallback){
+  const lines = String(text || '').split(/\r?\n+/).map(s=>s.trim()).filter(Boolean);
+  const head = lines[0] || fallback?.text || 'El vacío respondió, pero vino roto.';
+  const sub = lines[1] || fallback?.sub || 'La grieta sigue viva.';
+  const choices = (fallback?.choices || [{label:'seguir', note:'la grieta continúa', next:'start'}]).slice(0,3);
+  return normalizeNode({
+    title: fallback?.title || 'VOID//GLITCH',
+    text: head,
+    sub,
+    log: lines[2] || 'fallback textual: motor activo pero caótico',
+    mood: 'void',
+    visual: { voidDelta: 0, glitchDelta: 0, chaosDelta: 0 },
+    choices,
+  }, fallback);
+}
 function renderNode(node, source='static'){
   const title = node.title || 'VOID//GLITCH';
   qText.textContent = node.text || title;
@@ -213,8 +256,14 @@ function fallbackAdvance(choiceIndex){
   renderNode(currentStatic(), 'static');
 }
 function pushHistory(kind, txt){ state.history.push({kind, txt}); if(state.history.length > 20) state.history.shift(); renderLog(); }
+async function fetchStructured(apiUrl, payload){
+  const res = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
 async function fetchLive(choice, choiceIndex){
-  const payload = {
+  const base = {
     mode: state.mode,
     model: state.model,
     partnerModel: state.partner,
@@ -223,14 +272,49 @@ async function fetchLive(choice, choiceIndex){
     choice: choice ? { label: choice.label, note: choice.note } : null,
     history: state.history.slice(-6).map(h => ({ role: h.kind === 'red' ? 'assistant' : 'user', content: h.txt })),
   };
-  const res = await fetch(API, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
-  return data;
+
+  const schemaPrompt = `Devuelve SOLO JSON válido con la forma exacta: {"title":string,"text":string,"sub":string,"log":string,"mood":"void"|"glitch"|"chaos"|"reset","visual":{"voidDelta":number,"glitchDelta":number,"chaosDelta":number},"choices":[{"label":string,"note":string}]}.`;
+
+  const apiPlan = [API, state.mode === 'terminal' ? LEGACY_TERMINAL_API : LEGACY_DAEMON_API, state.mode === 'terminal' ? LEGACY_DAEMON_API : LEGACY_TERMINAL_API];
+  const errors = [];
+
+  for (const apiUrl of apiPlan) {
+    try {
+      if (apiUrl === API) {
+        const data = await fetchStructured(apiUrl, base);
+        if (data?.node) return data;
+        throw new Error('sin nodo estructurado');
+      }
+
+      if (apiUrl === LEGACY_DAEMON_API) {
+        const legacyMessages = [
+          { role:'system', content:'Eres el motor de VOID//GLITCH. Responde SOLO con JSON válido, sin markdown, sin explicación.' },
+          { role:'user', content: `${schemaPrompt}\n\nESTADO:\n${JSON.stringify(base, null, 2)}` },
+        ];
+        const data = await fetchStructured(apiUrl, { model: state.model, messages: legacyMessages, temperature: 1.05 });
+        const parsed = data?.content ? extractJson(data.content) : null;
+        return { ok:true, mode:state.mode, model:state.model, partnerModel:state.partner, node: normalizeNode(parsed, currentStatic()), raw: data?.content || '' };
+      }
+
+      if (apiUrl === LEGACY_TERMINAL_API) {
+        const grimorio = {
+          titulo: 'VOID//GLITCH',
+          esencia: 'motor de caída interactiva',
+          conceptos_clave: ['void', 'glitch', 'caos', 'espiral', 'falso cierre'],
+          citas_importantes: ['El vacío te está escribiendo.', 'La salida es otra entrada.'],
+          preguntas_centrales: ['¿Quieres entrar?', '¿Qué rompe primero?'],
+        };
+        const initialPrompt = `${schemaPrompt}\n\nESTADO:\n${JSON.stringify(base, null, 2)}\n\nResponde SOLO con JSON válido.`;
+        const data = await fetchStructured(apiUrl, { model: state.partner, modelName: state.model, otherModelName: state.partner, grimorio, history: base.history, initialPrompt, useStreaming: true, temperature: 1.0 });
+        const parsed = data?.content ? extractJson(data.content) : null;
+        return { ok:true, mode:state.mode, model:state.model, partnerModel:state.partner, node: normalizeNode(parsed, currentStatic()), raw: data?.content || '' };
+      }
+    } catch (e) {
+      errors.push(`${apiUrl}: ${e.message}`);
+    }
+  }
+
+  throw new Error(errors.join(' | ') || 'sin motores disponibles');
 }
 async function onChoice(choice, choiceIndex, source){
   const fallbackNext = currentStatic().choices?.[choiceIndex]?.next || 'start';

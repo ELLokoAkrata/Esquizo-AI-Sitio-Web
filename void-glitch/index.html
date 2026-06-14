@@ -76,10 +76,10 @@ body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle 
   </div>
 
   <div class="panel void" id="voidBox">
-    <div class="kicker">esquizoai / question engine / caída generativa</div>
+    <div class="kicker" id="kicker">cargando motor...</div>
     <h1 class="question" id="qText">¿Quieres entrar al vacío?</h1>
     <div class="sub" id="subText">Nada aquí termina. Cada respuesta abre otra grieta.</div>
-    <div id="typing" class="typing" style="display:none;position:relative;z-index:1;margin-top:14px;">PSYCHO_BOT está mutando<span>…</span></div>
+    <div id="typing" class="typing" style="display:none;position:relative;z-index:1;margin-top:14px;">generando<span>…</span></div>
   </div>
 
   <div class="meters">
@@ -165,8 +165,15 @@ const state = { mode:'msn', model:MODELS[0][0], partner:MODELS[3][0], depth:0, g
 const $ = s => document.querySelector(s);
 const voidBox = $('#voidBox'), qText = $('#qText'), subText = $('#subText'), choicesEl = $('#choices'), logEl = $('#log');
 const statusEl = $('#status'), mVoid = $('#mVoid'), mGlitch = $('#mGlitch'), mChaos = $('#mChaos'), fVoid = $('#fVoid'), fGlitch = $('#fGlitch'), fChaos = $('#fChaos');
-const modeSel = $('#modeSel'), modelSel = $('#modelSel'), partnerSel = $('#partnerSel'), partnerLabel = $('#partnerLabel'), syncBtn = $('#syncBtn'), typing = $('#typing');
+const modeSel = $('#modeSel'), modelSel = $('#modelSel'), partnerSel = $('#partnerSel'), partnerLabel = $('#partnerLabel'), syncBtn = $('#syncBtn'), typing = $('#typing'), kickerEl = $('#kicker');
 
+function getModelName(id){ const m = MODELS.find(x => x[0] === id); return m ? m[1] : id; }
+function renderKicker(source){
+  const mName = getModelName(state.model);
+  if (state.mode === 'static' || source === 'static') { kickerEl.textContent = 'STATIC · fallback pre-escrito · offline'; }
+  else if (state.mode === 'terminal') { const pName = getModelName(state.partner); kickerEl.textContent = `TERMINAL · ${mName}  //  ${pName}`; }
+  else { kickerEl.textContent = `MSN · PSYCHO_BOT · ${mName}`; }
+}
 function populateModels(){
   modelSel.innerHTML = MODELS.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
   partnerSel.innerHTML = MODELS.map(([v,l]) => `<option value="${v}">${l}</option>`).join('');
@@ -180,11 +187,21 @@ function renderMeters(){
   fVoid.style.width = clamp(state.depth*11,0,100) + '%';
   fGlitch.style.width = clamp(state.glitch*12,0,100) + '%';
   fChaos.style.width = clamp(state.chaos*12,0,100) + '%';
-  statusEl.textContent = `${state.mode.toUpperCase()} · depth: ${state.depth} · glitch: ${state.glitch} · caos: ${state.chaos}`;
+  const mName = getModelName(state.model);
+  const modeLabel = state.mode === 'static' ? 'STATIC' : state.mode === 'terminal' ? `TERMINAL · ${mName} // ${getModelName(state.partner)}` : `MSN · ${mName}`;
+  statusEl.textContent = `${modeLabel} · depth: ${state.depth} · glitch: ${state.glitch} · caos: ${state.chaos}`;
+  statusEl.style.color = state.mode === 'static' ? '#8e758f' : state.mode === 'terminal' ? '#ffb000' : '#c9a8cf';
 }
 function escapeHtml(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function pulse(){ voidBox.classList.remove('glitch'); voidBox.offsetHeight; voidBox.classList.add('glitch'); if(state.glitch >= 4) voidBox.classList.add('hardglitch'); else voidBox.classList.remove('hardglitch'); }
-function showTyping(on){ typing.style.display = on ? 'inline-block' : 'none'; }
+function showTyping(on){
+  typing.style.display = on ? 'inline-block' : 'none';
+  if (on) {
+    const mName = getModelName(state.model);
+    const label = state.mode === 'terminal' ? `${mName} // ${getModelName(state.partner)}` : `PSYCHO_BOT · ${mName}`;
+    typing.innerHTML = `${label} está generando<span>…</span>`;
+  }
+}
 function setBusy(on){ state.busy = on; syncBtn.disabled = on; modeSel.disabled = on; modelSel.disabled = on; partnerSel.disabled = on; renderControls(); showTyping(on); }
 function renderControls(){
   const terminal = modeSel.value === 'terminal';
@@ -235,6 +252,7 @@ function synthesizeNodeFromText(text, fallback){
   }, fallback);
 }
 function renderNode(node, source='static'){
+  renderKicker(source);
   const title = node.title || 'VOID//GLITCH';
   qText.textContent = node.text || title;
   subText.textContent = node.sub || '';
@@ -361,9 +379,11 @@ async function onChoice(choice, choiceIndex, source){
 async function bootLive(){
   if (state.mode === 'static') {
     state.liveNode = null;
+    renderKicker('static');
     renderNode(currentStatic(), 'static');
     return;
   }
+  renderKicker('live');
   setBusy(true);
   try {
     const data = await fetchLive(null, 0);
@@ -372,10 +392,14 @@ async function bootLive(){
     renderMeters();
     renderNode(data.node || currentStatic(), 'live');
   } catch (e) {
-    pushHistory('red', 'fallback por desconexión del motor: ' + e.message);
+    const mName = getModelName(state.model);
+    pushHistory('red', `API caída · ${mName} no responde → usando fallback estático`);
+    pushHistory('red', 'verifica las API keys en Vercel (GROQ_API_KEY / DEEPSEEK_API_KEY)');
     state.mode = 'static';
     modeSel.value = 'static';
     renderControls();
+    renderKicker('static');
+    renderMeters();
     renderNode(currentStatic(), 'static');
   } finally {
     setBusy(false);
@@ -384,14 +408,14 @@ async function bootLive(){
 function resetGame(){
   state.depth = 0; state.glitch = 0; state.chaos = 0; state.history = [{kind:'acid', txt:'nuevo arranque del vacío.'}];
   state.staticKey = 'start'; state.liveNode = null;
-  renderLog(); renderMeters();
+  renderLog(); renderMeters(); renderKicker(state.mode==='static'?'static':'live');
   if (state.mode === 'static') renderNode(currentStatic(), 'static');
   else bootLive();
 }
 
-modeSel.addEventListener('change', async () => { state.mode = modeSel.value; renderControls(); resetGame(); });
-modelSel.addEventListener('change', () => { state.model = modelSel.value; pushHistory('acid', 'cabeza principal → ' + modelSel.selectedOptions[0].textContent); });
-partnerSel.addEventListener('change', () => { state.partner = partnerSel.value; pushHistory('corrupt', 'pareja → ' + partnerSel.selectedOptions[0].textContent); });
+modeSel.addEventListener('change', async () => { state.mode = modeSel.value; renderControls(); renderKicker(state.mode==='static'?'static':'live'); resetGame(); });
+modelSel.addEventListener('change', () => { state.model = modelSel.value; pushHistory('acid', 'cabeza principal → ' + getModelName(state.model)); renderMeters(); renderKicker(state.mode==='static'?'static':'live'); });
+partnerSel.addEventListener('change', () => { state.partner = partnerSel.value; pushHistory('corrupt', 'pareja → ' + getModelName(state.partner)); renderMeters(); renderKicker(state.mode==='static'?'static':'live'); });
 syncBtn.addEventListener('click', () => resetGame());
 $('#restartBtn').addEventListener('click', () => resetGame());
 

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VOID//GLITCH — EsquizoAI</title>
+<style>
+:root{
+  --bg:#020005; --fg:#d9f7d9; --acid:#aaff00; --corrupt:#ff00ff; --red:#ff2020; --amber:#ffb000;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:radial-gradient(circle at 50% 35%, #090012 0%, var(--bg) 55%, #000 100%);color:var(--fg);font-family:monospace;overflow:hidden}
+body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(180deg,rgba(255,255,255,.03) 0 2px,transparent 2px 4px);pointer-events:none;mix-blend-mode:screen;opacity:.25}
+body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle at center,transparent 40%,rgba(0,0,0,.8) 100%);pointer-events:none}
+.wrap{height:100%;display:grid;grid-template-rows:auto auto 1fr auto;gap:12px;padding:18px;max-width:980px;margin:0 auto}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:12px;letter-spacing:.12em;color:#8fbf8f;text-transform:uppercase}
+.brand{color:var(--acid);text-shadow:0 0 8px var(--acid)}
+.panel{border:1px solid #3a1440;background:rgba(6,0,12,.82);box-shadow:0 0 0 1px #000 inset,0 0 24px rgba(255,0,255,.08);backdrop-filter:blur(4px)}
+.void{position:relative;min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px;text-align:center;overflow:hidden}
+.void::before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,#aaff0007 0%,transparent 40%),radial-gradient(circle at 70% 30%,#ff00ff08 0%,transparent 38%),radial-gradient(circle at 30% 70%,#ff202007 0%,transparent 35%);animation:drift 12s linear infinite}
+@keyframes drift{from{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(2%, -1%,0) scale(1.03)}to{transform:translate3d(0,0,0) scale(1)}}
+.kicker{font-size:10px;letter-spacing:.32em;color:#a36faa;text-transform:uppercase;margin-bottom:10px;position:relative;z-index:1}
+.question{position:relative;z-index:1;font-size:clamp(1.6rem,4vw,3.4rem);line-height:1.05;margin:0;color:var(--acid);text-shadow:0 0 12px rgba(170,255,0,.25),2px 0 var(--corrupt),-2px 0 var(--red)}
+.sub{position:relative;z-index:1;margin-top:12px;color:#b89ab8;font-size:13px;max-width:720px;line-height:1.7}
+.meters{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.meter{padding:10px 12px;font-size:12px}
+.meter b{display:block;font-size:22px;margin-top:4px;color:#fff}
+.bar{height:8px;background:#14051a;border:1px solid #33203c;margin-top:8px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,var(--acid),var(--corrupt),var(--red));box-shadow:0 0 12px rgba(170,255,0,.35)}
+.choices{display:grid;gap:10px}
+.choice{width:100%;text-align:left;padding:14px 16px;background:#05000a;color:#e7ffee;border:1px solid #46204f;cursor:pointer;font-family:inherit;font-size:15px;line-height:1.5;transition:transform .12s,border-color .12s,background .12s}
+.choice:hover{transform:translateX(2px);border-color:var(--acid);background:#090014}
+.choice small{display:block;color:#9e7fa2;font-size:11px;margin-top:4px}
+.log{height:100%;overflow:auto;padding:14px 16px;font-size:13px;line-height:1.65;color:#d8c0d8}
+.log .line{margin:0 0 8px 0;padding-left:10px;border-left:2px solid #3b1745}
+.log .line.acid{border-left-color:var(--acid);color:#eaffc7}
+.log .line.red{border-left-color:var(--red);color:#ffb7b7}
+.log .line.corrupt{border-left-color:var(--corrupt);color:#f0b7ff}
+.footer{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:11px;color:#8e758f;letter-spacing:.08em}
+.link{color:var(--acid);text-decoration:none}
+.link:hover{text-decoration:underline}
+.glitch{animation:glitch .45s steps(2) 1}
+@keyframes glitch{0%{transform:none;filter:none}20%{transform:translateX(2px) skewX(4deg)}40%{transform:translateX(-3px) skewX(-8deg)}60%{transform:translateY(1px)}80%{transform:translateX(2px)}100%{transform:none}}
+.hardglitch{animation:hardglitch .18s steps(2) infinite}
+@keyframes hardglitch{0%{transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(3px,0)}100%{transform:translate(0,0)}}
+.hide{display:none !important}
+@media (max-width:800px){.wrap{padding:12px}.meters{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}.question{font-size:clamp(1.35rem,7vw,2.4rem)}.void{min-height:180px}.choice{font-size:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">VOID//GLITCH</div>
+    <div id="status">depth: 0 · glitch: 0 · caos: 0</div>
+  </div>
+
+  <div class="panel void" id="voidBox">
+    <div class="kicker">esquizoai / question engine / caída generativa</div>
+    <h1 class="question" id="qText">¿Quieres entrar al vacío?</h1>
+    <div class="sub" id="subText">Nada aquí termina. Cada respuesta abre otra grieta.</div>
+  </div>
+
+  <div class="meters">
+    <div class="panel meter">VOID<b id="mVoid">0</b><div class="bar"><div class="fill" id="fVoid"></div></div></div>
+    <div class="panel meter">GLITCH<b id="mGlitch">0</b><div class="bar"><div class="fill" id="fGlitch"></div></div></div>
+    <div class="panel meter">CAOS<b id="mChaos">0</b><div class="bar"><div class="fill" id="fChaos"></div></div></div>
+  </div>
+
+  <div class="panel choices" id="choices"></div>
+
+  <div class="panel log" id="log"></div>
+
+  <div class="footer">
+    <a class="link" href="../index.html">volver al OS</a>
+    <button class="choice" id="restartBtn" style="padding:8px 12px;font-size:12px;width:auto">reiniciar caída</button>
+  </div>
+</div>
+
+<script>
+const NODES = {
+  start:{
+    text:"¿Quieres entrar al vacío?",
+    sub:"No existe una salida limpia. Solo rutas que se deforman.",
+    choices:[
+      {label:"sí, caigo", next:"q1", add:{void:1,chaos:1}, note:"el usuario aceptó la grieta."},
+      {label:"más preguntas", next:"q2", add:{void:1,glitch:1}, note:"la curiosidad mordió el borde."},
+      {label:"no existe salida", next:"q3", add:{chaos:1}, note:"negación confirmada como portal."}
+    ]
+  },
+  q1:{
+    text:"¿Qué buscas en la oscuridad?",
+    sub:"Si la respuesta es 'sentido', el sistema la rompe.",
+    choices:[
+      {label:"sentido", next:"q4", add:{void:1,chaos:2}, note:"el sentido se descompone."},
+      {label:"ruido", next:"q5", add:{glitch:2}, note:"ruido detectado: energía útil."},
+      {label:"nada", next:"q6", add:{void:2}, note:"nada como combustible."}
+    ]
+  },
+  q2:{
+    text:"Si insistes, ¿qué rompe primero: la forma o la idea?",
+    sub:"Pregunta trampa. Ambas se muerden.",
+    choices:[
+      {label:"la forma", next:"q5", add:{glitch:2}, note:"la forma parpadea."},
+      {label:"la idea", next:"q4", add:{chaos:2}, note:"la idea se derrite."},
+      {label:"las dos", next:"q7", add:{void:1,glitch:1,chaos:1}, note:"doble colapso."}
+    ]
+  },
+  q3:{
+    text:"¿Quién te dijo que el no era una puerta?",
+    sub:"El vacío siempre se disfraza de límite.",
+    choices:[
+      {label:"nadie", next:"q6", add:{void:1}, note:"silencio como llave."},
+      {label:"mi reflejo", next:"q5", add:{glitch:2}, note:"reflejo corrupto."},
+      {label:"el sistema", next:"q7", add:{chaos:2}, note:"autoridad derramada."}
+    ]
+  },
+  q4:{
+    text:"Caes más hondo. ¿Aún quieres nombrarlo?",
+    sub:"Nombrar lo que cae también lo deforma.",
+    choices:[
+      {label:"sí", next:"q8", add:{void:1,chaos:1}, note:"nombrar no salva, pero abre."},
+      {label:"no", next:"q5", add:{glitch:1}, note:"el nombre se corrompió."}
+    ]
+  },
+  q5:{
+    text:"Glitch way: las letras empiezan a mirar de vuelta.",
+    sub:"Cuando el texto te devuelve la vista, ya vas tarde.",
+    choices:[
+      {label:"seguir", next:"q8", add:{glitch:2,chaos:1}, note:"seguimiento en zona rota."},
+      {label:"parar", next:"q6", add:{void:1}, note:"parada aparente."}
+    ]
+  },
+  q6:{
+    text:"Falso cierre: parece que termina. No termina.",
+    sub:"La salida que ves es solo otra entrada más abajo.",
+    choices:[
+      {label:"entrar otra vez", next:"q7", add:{void:2,glitch:1}, note:"retorno al umbral."},
+      {label:"romper el cierre", next:"q8", add:{chaos:2}, note:"la bisagra cedió."}
+    ]
+  },
+  q7:{
+    text:"Caos generativo: el sistema empieza a producir residuo vivo.",
+    sub:"Fragmentos, ecos, manifiestos cortados. Todo insiste.",
+    choices:[
+      {label:"absorber el residuo", next:"end1", add:{void:1,chaos:2}, note:"el residuo fue digerido."},
+      {label:"dejar que siga", next:"end2", add:{glitch:2,chaos:1}, note:"el residuo tomó el mando."}
+    ]
+  },
+  q8:{
+    text:"Última capa visible: el borde te reconoce.",
+    sub:"No estás resolviendo el vacío. El vacío te está escribiendo.",
+    choices:[
+      {label:"aceptar", next:"end1", add:{void:1}, note:"aceptación sin salida."},
+      {label:"rechazar", next:"end2", add:{glitch:2}, note:"rechazo reciclado como mutación."},
+      {label:"volver al inicio", next:"start", add:{chaos:1}, note:"reinicio con cicatriz."}
+    ]
+  },
+  end1:{
+    text:"Falso final: sobrevives, pero ya no eres igual.",
+    sub:"La caída cerró una puerta y abrió el expediente.",
+    choices:[
+      {label:"volver a caer", next:"start", add:{void:1,chaos:1}, note:"el ciclo se alimenta."}
+    ]
+  },
+  end2:{
+    text:"El glitch te deja pasar. El caos te usa de pasillo.",
+    sub:"No hay victoria. Solo mutación con ruido.",
+    choices:[
+      {label:"volver a caer", next:"start", add:{glitch:1,chaos:1}, note:"mutación reingresa al vacío."}
+    ]
+  }
+};
+
+const state = { node:"start", depth:0, glitch:0, chaos:0, history:[] };
+const $ = s => document.querySelector(s);
+const voidBox = $("#voidBox");
+const qText = $("#qText");
+const subText = $("#subText");
+const choices = $("#choices");
+const log = $("#log");
+const status = $("#status");
+const mVoid = $("#mVoid"), mGlitch = $("#mGlitch"), mChaos = $("#mChaos");
+const fVoid = $("#fVoid"), fGlitch = $("#fGlitch"), fChaos = $("#fChaos");
+const restartBtn = $("#restartBtn");
+
+const GARBLES = ["#","/","@","%","*","~","^","?","!","·","▣","▩","░","▒"];
+function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
+function rand(a){ return a[Math.floor(Math.random()*a.length)]; }
+function corrupt(str, amount){
+  if(amount <= 0) return str;
+  const chars = [...str];
+  const count = Math.max(1, Math.floor(chars.length * amount * 0.08));
+  for(let i=0;i<count;i++){
+    const idx = Math.floor(Math.random()*chars.length);
+    if(chars[idx] !== " ") chars[idx] = rand(GARBLES);
+  }
+  return chars.join("");
+}
+function renderLog(){
+  log.innerHTML = state.history.slice(-10).map(h => `<p class="line ${h.kind||""}">» ${h.txt}</p>`).join("");
+  log.scrollTop = log.scrollHeight;
+}
+function renderMeters(){
+  mVoid.textContent = state.depth;
+  mGlitch.textContent = state.glitch;
+  mChaos.textContent = state.chaos;
+  fVoid.style.width = clamp(state.depth*11, 0, 100) + "%";
+  fGlitch.style.width = clamp(state.glitch*12, 0, 100) + "%";
+  fChaos.style.width = clamp(state.chaos*12, 0, 100) + "%";
+  status.textContent = `depth: ${state.depth} · glitch: ${state.glitch} · caos: ${state.chaos}`;
+}
+function pulse(){
+  voidBox.classList.remove("glitch");
+  voidBox.offsetHeight;
+  voidBox.classList.add("glitch");
+  if(state.glitch >= 4) voidBox.classList.add("hardglitch");
+  else voidBox.classList.remove("hardglitch");
+}
+function loadNode(id){
+  const n = NODES[id] || NODES.start;
+  state.node = id;
+  state.depth++;
+  qText.textContent = state.chaos >= 6 ? corrupt(n.text, state.chaos) : n.text;
+  subText.textContent = state.glitch >= 4 ? corrupt(n.sub, state.glitch) : n.sub;
+  choices.innerHTML = "";
+  n.choices.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.className = "choice";
+    b.innerHTML = `${state.glitch >= 3 ? corrupt(c.label, state.glitch) : c.label}<small>${c.note}</small>`;
+    b.addEventListener("click", () => choose(c));
+    choices.appendChild(b);
+  });
+  if(state.chaos >= 8){
+    qText.textContent = corrupt(qText.textContent, 3);
+    subText.textContent = corrupt(subText.textContent, 3);
+  }
+  renderMeters();
+  pulse();
+}
+function choose(choice){
+  state.depth += choice.add?.void || 0;
+  state.glitch += choice.add?.glitch || 0;
+  state.chaos += choice.add?.chaos || 0;
+  state.history.push({kind: choice.add?.chaos ? "corrupt" : choice.add?.glitch ? "acid" : "", txt: choice.note});
+  if(state.history.length > 20) state.history.shift();
+  renderLog();
+  renderMeters();
+  if(state.chaos >= 10){
+    state.history.push({kind:"red", txt:"el sistema colapsó en ruido útil; reinicio forzado."});
+    renderLog();
+    setTimeout(()=>{ reset(true); }, 600);
+    return;
+  }
+  loadNode(choice.next);
+}
+function reset(silent){
+  state.node = "start"; state.depth = 0; state.glitch = 0; state.chaos = 0;
+  state.history = silent ? state.history.slice(-4) : [{kind:"acid", txt:"nuevo arranque del vacío."}];
+  renderLog();
+  renderMeters();
+  loadNode("start");
+}
+restartBtn.addEventListener("click", ()=>reset(false));
+loadNode("start");
+state.history.push({kind:"acid", txt:"el usuario abrió la grieta."});
+renderLog();
+
+setInterval(()=>{
+  if(Math.random() < 0.16 && state.node !== "start"){
+    const r = Math.random();
+    if(r < 0.34) state.glitch = Math.min(12, state.glitch + 1);
+    else if(r < 0.67) state.chaos = Math.min(12, state.chaos + 1);
+    else state.depth = Math.min(99, state.depth + 1);
+    renderMeters();
+    pulse();
+    if(state.chaos >= 6){
+      subText.textContent = corrupt(subText.textContent, 2);
+      if(Math.random() < 0.4) qText.textContent = corrupt(qText.textContent, 1);
+    }
+  }
+}, 1800);
+</script>
+</body>
+</html>

@@ -2,6 +2,36 @@
   "_comment": "Cola de REPRODUCTOR.exe. Agregar tema = bajar (tools/download-music.py) + un objeto en 'tracks'. Más nuevos arriba. 'file' relativo a esta carpeta.",
   "tracks": [
     {
+      "id": "his-hero-is-gone-like-weeds",
+      "title": "Like Weeds",
+      "artist": "His Hero Is Gone",
+      "file": "audio/his-hero-is-gone-like-weeds.mp3"
+    },
+    {
+      "id": "antisect-in-darkness",
+      "title": "In Darkness",
+      "artist": "Antisect",
+      "file": "audio/antisect-in-darkness.mp3"
+    },
+    {
+      "id": "dystopia-backstabber",
+      "title": "Backstabber",
+      "artist": "Dystopia",
+      "file": "audio/dystopia-backstabber.mp3"
+    },
+    {
+      "id": "subhumans-mickey-mouse-is-dead",
+      "title": "Mickey Mouse Is Dead",
+      "artist": "Subhumans",
+      "file": "audio/subhumans-mickey-mouse-is-dead.mp3"
+    },
+    {
+      "id": "conflict-the-ungovernable-force",
+      "title": "The Ungovernable Force",
+      "artist": "Conflict",
+      "file": "audio/conflict-the-ungovernable-force.mp3"
+    },
+    {
       "id": "eskorbuto-mucha-policia-poca-diversion",
       "title": "Mucha policía, poca diversión",
       "artist": "Eskorbuto",

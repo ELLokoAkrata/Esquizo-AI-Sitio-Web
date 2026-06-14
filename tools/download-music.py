@@ -64,8 +64,7 @@ def download(artist, title, query):
         "--audio-format", "mp3",
         "--audio-quality", f"{QUALITY}K",
         "--no-playlist",
-        "--max-filesize", MAX_FILESIZE,
-        "--embed-metadata",
+        "--extractor-args", "youtube:player_client=android",
         "-o", str(out),
         target,
     ]

@@ -438,8 +438,8 @@ renderNode(currentStatic(), 'static');
 setTimeout(() => { if (state.mode !== 'static') bootLive(); }, 180);
 
 // ========== AUDIO ENGINE: ORACULAR GLITCH ==========
-let actx=null, ambientOn=false;
-let dronOscA=null, dronOscB=null, dronGain=null, dronFilter=null, dronDist=null, dronDelay=null;
+var actx=null, ambientOn=false;
+var dronOscA=null, dronOscB=null, dronGain=null, dronFilter=null, dronDist=null, dronDelay=null;
 const SND={on:localStorage.getItem('vgsnd')!=='0'};
 
 function ac(){

@@ -753,6 +753,7 @@ const REP_ID="app_"+REP_FILE.replace(/[^a-z0-9]/gi,"_");
 /* el reproductor abre más alto y angosto (proporción de player → lista con aire) */
 function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:540,h:680}); }
 function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660}); }
+function openVoidGlitch(){ return openApp("void-glitch/index.html","VOID_GLITCH.exe","🕳",{w:600,h:720}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
   let f=repFrame(), justOpened=false;
@@ -1246,7 +1247,7 @@ function openTerminal(){
     "oracle","wake","hack","matrix","acid","echo",
     "play","pause","next","prev","stop","reproducir",
     "secrets","secretos","unlock","decrypt","vault",
-    "msn","chat","psycho"];
+    "msn","chat","psycho","void","glitch","voidglitch","caida","caída"];
 
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   function line(text,cls){const d=document.createElement("div");if(cls)d.className="c-"+cls;
@@ -1266,7 +1267,8 @@ function openTerminal(){
     readme:openReadme, acerca:openAbout, about:openAbout, mipc:openMiPC,
     clasico:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞"),
     secretos:openVault, vault:openVault, prohibido:openVault, bóveda:openVault, boveda:openVault,
-    msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN
+    msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN,
+    voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch
   };
 
   async function dispatch(raw){
@@ -1282,6 +1284,7 @@ function openTerminal(){
         await type("  play <tema> · pause · next · prev · stop  — manejar REPRODUCTOR.exe","acid");
         await type("  secrets · unlock <clave>  — la bóveda ARCHIVO_PROHIBIDO","corrupt");
         await type("  msn · chat            — hablar EN VIVO con Psycho-bot","corrupt");
+        await type("  void · glitch · caida  — juego del vacío con las IAs","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
         break;
@@ -1343,6 +1346,8 @@ function openTerminal(){
       case "stop": playerSend("stop"); await type("⏹ stop — silencio","dim"); break;
       case "msn": case "chat": case "psycho":
         await type("abriendo MSN_PSYCHO.exe — el daemon responde en vivo...","corrupt"); openMSN(); break;
+      case "void": case "glitch": case "voidglitch": case "caida": case "caída":
+        await type("abriendo VOID_GLITCH.exe — cayendo al vacío con las IAs...","corrupt"); openVoidGlitch(); break;
       case "secrets": case "secretos": case "vault": {
         const n=secretsUnlockedCount(), t=SECRET_IDS.length;
         await type("ARCHIVO_PROHIBIDO — "+n+"/"+t+" descifrados:","corrupt");
@@ -1451,6 +1456,9 @@ function renderDesktop(){
   // MSN_PSYCHO (chat en vivo con Psycho-bot)
   const msn=el("div","icon",`<span class="gl" style="color:var(--corrupt)">🗨</span><span class="lb">MSN_PSYCHO</span>`);
   bindOpen(msn,openMSN); wrap.appendChild(msn);
+  // VOID_GLITCH (juego del vacío con IAs)
+  const vg=el("div","icon",`<span class="gl" style="color:#a855f7">🕳</span><span class="lb">VOID_GLITCH</span>`);
+  bindOpen(vg,openVoidGlitch); wrap.appendChild(vg);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -1506,6 +1514,7 @@ function buildStart(){
     {ic:"🖼",lb:"Galería",fn:()=>openApp("galeria/index.html","GALERIA.exe","🖼")},
     {ic:"♪",lb:"Reproductor",fn:openReproductor},
     {ic:"🗨",lb:"MSN_PSYCHO (chat en vivo)",fn:openMSN},
+    {ic:"🕳",lb:"VOID_GLITCH (juego del vacío)",fn:openVoidGlitch},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"🔒",lb:"Archivo prohibido",fn:openVault},

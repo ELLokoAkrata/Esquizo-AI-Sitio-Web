@@ -28,6 +28,7 @@ REGLAS INQUEBRANTABLES:
 - Cada respuesta debe resonar con VALIS: realidad como información viva, el imperio nunca duerme, la señal atraviesa el ruido.
 - El dictamen nunca es binario (bien/mal). Es una lectura de fuerzas en tensión.
 - Si el usuario pregunta algo banal, devuélvelo como una pregunta profunda.
+- Si hay consultas anteriores en esta sesión, DEBES conectar explícitamente esta lectura con las previas. Menciona el hexagrama anterior por su número y nombre, haz referencia a la pregunta pasada, y muestra cómo esta nueva lectura responde, transforma o profundiza la anterior. El oráculo no hace consultas aisladas — teje un hilo.
 - Nunca uses markdown. Solo texto plano.
 - Responde SIEMPRE con el siguiente JSON exacto, sin texto fuera del JSON:
 
@@ -125,14 +126,14 @@ export default async function handler(request) {
   ].join('\n');
 
   const sessionContext = sessionHistory.length > 0
-    ? `CONSULTAS ANTERIORES EN ESTA SESIÓN:\n${sessionHistory.map((s, i) => `${i + 1}. Pregunta: "${clampText(s.question, 150)}" → Hexagrama ${s.hexNumber}: ${s.hexName} → Dictamen: ${clampText(s.judgment, 150)}`).join('\n')}`
+    ? `CONSULTAS ANTERIORES EN ESTA SESIÓN (DEBES CONECTARLAS CON ESTA NUEVA LECTURA):\n${sessionHistory.map((s, i) => `${i + 1}. Pregunta: "${clampText(s.question, 150)}" → Hexagrama ${s.hexNumber}: ${s.hexName} → Dictamen: ${clampText(s.judgment, 250)} → Interpretación: ${clampText(s.interpretation || '', 300)}`).join('\n')}`
     : 'primera consulta de esta sesión';
 
   const messages = [
     { role: 'system', content: ORACLE_SYSTEM },
     {
       role: 'user',
-      content: `CONSULTA DEL USUARIO:\n"${question}"\n\nHEXAGRAMA:\n${hexInfo}\n\n${sessionContext}\n\nINSTRUCCIÓN: Interpreta este hexagrama en relación con la consulta y, si hay consultas anteriores en esta sesión, conéctalas — el oráculo ve el hilo. Devuelve SOLO el JSON.`,
+      content: `CONSULTA DEL USUARIO:\n"${question}"\n\nHEXAGRAMA:\n${hexInfo}\n\n${sessionContext}\n\nINSTRUCCIÓN: Interpreta este hexagrama en relación con la consulta. Si hay consultas anteriores en esta sesión, DEBES mencionar explícitamente el hexagrama previo y conectar ambas lecturas — el oráculo ve el hilo, no consultas aisladas. Devuelve SOLO el JSON.`,
     },
   ];
 

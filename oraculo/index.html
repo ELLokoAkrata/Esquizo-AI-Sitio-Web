@@ -210,7 +210,7 @@ function expandJournalEntry(e){
     ${e.interpretation?`<button class="sess-expand">▾ interpretación completa</button><div class="sess-interp">${esc(e.interpretation)}</div>`:''}
     ${e.warning?`<div class="warning" style="display:block">${esc(e.warning)}</div>`:''}</div>`;
   convoEl.appendChild(card);
-  card.querySelector('.sess-hex').scrollIntoView({behavior:'smooth'});
+  card.querySelector('.sess-body').scrollIntoView({behavior:'smooth'});
   const expandBtn=card.querySelector('.sess-expand');
   if(expandBtn) expandBtn.addEventListener('click',()=>{
     const interp=card.querySelector('.sess-interp'); interp.classList.toggle('open');
@@ -278,7 +278,7 @@ async function consultar(question,randomHex){
       const entry={ts:Date.now(),question,number:hex.number,name:hex.name,lines:hex.lines,mutLine:hex.mutLine,
         judgment:data.judgment,image:data.image,interpretation:data.interpretation,warning:data.warning||''};
       journal.push(entry);saveJournal();
-      sessionHistory.push({question,hexNumber:hex.number,hexName:hex.name,judgment:data.judgment});
+      sessionHistory.push({question,hexNumber:hex.number,hexName:hex.name,judgment:data.judgment,interpretation:data.interpretation||''});
       showToast('consulta guardada en el libro');
     }
   }catch(e){
@@ -301,7 +301,7 @@ function fillCard(card,hex,question,data){
     ${data.interpretation?`<button class="sess-expand">▾ interpretación completa</button><div class="sess-interp">${esc(data.interpretation)}</div>`:''}
     ${data.warning?`<div class="warning" style="display:block">${esc(data.warning)}</div>`:'<div class="warning"></div>'}`;
   card.appendChild(body);
-  card.querySelector('.sess-hex').scrollIntoView({behavior:'smooth'});
+  card.querySelector('.sess-body').scrollIntoView({behavior:'smooth'});
   const expandBtn=card.querySelector('.sess-expand');
   if(expandBtn) expandBtn.addEventListener('click',()=>{
     const interp=card.querySelector('.sess-interp'); interp.classList.toggle('open');
@@ -323,7 +323,7 @@ function renderCardFallback(card,question,hex){
     <div class="label">▾ IMAGEN</div><div class="image">${esc(img)}</div>
     <button class="sess-expand">▾ interpretación</button><div class="sess-interp">${esc(interp)}</div>`;
   card.appendChild(body);
-  card.querySelector('.sess-hex').scrollIntoView({behavior:'smooth'});
+  card.querySelector('.sess-body').scrollIntoView({behavior:'smooth'});
   const expandBtn=card.querySelector('.sess-expand');
   if(expandBtn) expandBtn.addEventListener('click',()=>{
     const i2=card.querySelector('.sess-interp'); i2.classList.toggle('open');
@@ -332,7 +332,7 @@ function renderCardFallback(card,question,hex){
   const entry={ts:Date.now(),question,number:hex.number,name:hex.name,lines:hex.lines,mutLine:hex.mutLine,
     judgment:j,image:img,interpretation:interp,warning:''};
   journal.push(entry);saveJournal();
-  sessionHistory.push({question,hexNumber:hex.number,hexName:hex.name,judgment:j});
+  sessionHistory.push({question,hexNumber:hex.number,hexName:hex.name,judgment:j,interpretation:interp});
 }
 
 // events

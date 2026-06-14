@@ -103,8 +103,8 @@ function normalizeNode(node, fallback) {
       chaosDelta: Number.isFinite(node?.visual?.chaosDelta) ? node.visual.chaosDelta : 0,
     },
     choices: choices.slice(0, 3).map((c, i) => ({
-      label: String(c?.label || `continuar ${i + 1}`).slice(0, 48),
-      note: String(c?.note || 'la grieta continúa').slice(0, 80),
+      label: String(c?.label || `continuar ${i + 1}`).slice(0, 80),
+      note: String(c?.note || 'la grieta continúa').slice(0, 120),
     })),
   };
 }

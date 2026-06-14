@@ -499,7 +499,7 @@
     <!-- sessions panel -->
     <div class="sess-panel" id="sessPanel">
       <div class="sess-inner">
-        <div class="sess-hdr"><span>📖 DIÁLOGOS</span><button class="sess-close" id="sessClose">✕</button></div>
+        <div class="sess-hdr"><span>📖 DIÁLOGOS</span><div><button class="sess-btn" id="sessExport" style="font-size:10px;padding:2px 6px">⬇</button><button class="sess-btn" id="sessImport" style="font-size:10px;padding:2px 6px;margin-left:2px">⬆</button><button class="sess-close" id="sessClose">✕</button></div></div>
         <div class="sess-list" id="sessList"><div class="sess-empty">Sin diálogos guardados.</div></div>
       </div>
     </div>
@@ -596,6 +596,8 @@
         document.addEventListener('DOMContentLoaded',()=>{
           const sbtn=document.getElementById('btn-sessions');if(sbtn)sbtn.addEventListener('click',()=>{document.getElementById('sessPanel').classList.add('open');renderTermSessList();});
           const scls=document.getElementById('sessClose');if(scls)scls.addEventListener('click',()=>{document.getElementById('sessPanel').classList.remove('open');});
+          const sexp=document.getElementById('sessExport');if(sexp)sexp.addEventListener('click',()=>{const b=new Blob([JSON.stringify(termSessions,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='terminal-esquizo-sessions.json';a.click();URL.revokeObjectURL(a.href);});
+          const simp=document.getElementById('sessImport');if(simp)simp.addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='.json';i.addEventListener('change',()=>{const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(Array.isArray(d)){termSessions=d;saveTSessions();renderTermSessList();}}catch(e){alert('JSON inválido');}};r.readAsText(f);});i.click();});
         });
         /* ---- /sessions ---- */
 

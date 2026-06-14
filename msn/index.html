@@ -154,7 +154,7 @@
   <!-- sessions panel -->
   <div class="sess-panel" id="sessPanel">
     <div class="sess-inner">
-      <div class="sess-hdr"><span>📖 CONVERSACIONES</span><button class="sess-close" id="sessClose">✕</button></div>
+      <div class="sess-hdr"><span>📖 CONVERSACIONES</span><div><button class="new-sess-btn" id="sessExport" style="font-size:10px">⬇</button><button class="new-sess-btn" id="sessImport" style="font-size:10px;margin-left:2px">⬆</button><button class="sess-close" id="sessClose">✕</button></div></div>
       <div class="sess-list" id="sessList"><div class="sess-empty">Sin conversaciones guardadas.</div></div>
     </div>
   </div>
@@ -232,9 +232,25 @@
       loadSessIntoChat(sid);document.getElementById('sessPanel').classList.remove('open');
     });});
   }
-  // panel toggle
+  // panel toggle + export/import
+  function exportMSNSessions(){
+    const blob=new Blob([JSON.stringify(msnSessions,null,2)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='msn-psycho-sessions.json';a.click();URL.revokeObjectURL(a.href);
+  }
+  function importMSNSessions(){
+    const inp=document.createElement('input');inp.type='file';inp.accept='.json';
+    inp.addEventListener('change',()=>{
+      const f=inp.files[0];if(!f)return;
+      const r=new FileReader();r.onload=()=>{
+        try{const data=JSON.parse(r.result);if(Array.isArray(data)){msnSessions=data;saveSessions();renderSessList();showToast('sesiones importadas');}}catch(e){alert('JSON inválido');}
+      };r.readAsText(f);
+    });inp.click();
+  }
   document.getElementById('sessBtn').addEventListener('click',()=>{document.getElementById('sessPanel').classList.add('open');renderSessList();});
   document.getElementById('sessClose').addEventListener('click',()=>{document.getElementById('sessPanel').classList.remove('open');});
+  document.getElementById('sessExport').addEventListener('click',exportMSNSessions);
+  document.getElementById('sessImport').addEventListener('click',importMSNSessions);
   function showResumeCard(){
     const s=getActiveSess();if(!s||!(s.messages||[]).length)return;
     const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});

@@ -19,6 +19,8 @@ body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle 
 .controls select,.controls button{background:#05000a;color:#e7ffee;border:1px solid #46204f;font-family:inherit;font-size:12px;padding:6px 8px;cursor:pointer}
 .controls button:hover,.controls select:hover{border-color:var(--acid)}
 .controls .mini{font-size:11px;padding:6px 10px}
+.controls .snd{font-size:14px;padding:4px 6px;min-width:32px;text-align:center}
+.controls .snd.muted{opacity:.35;border-color:#46204f}
 .panel{border:1px solid #3a1440;background:rgba(6,0,12,.82);box-shadow:0 0 0 1px #000 inset,0 0 24px rgba(255,0,255,.08);backdrop-filter:blur(4px)}
 .void{position:relative;min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:24px;text-align:center;overflow:hidden}
 .void::before{content:"";position:absolute;inset:-40%;background:radial-gradient(circle,#aaff0007 0%,transparent 40%),radial-gradient(circle at 70% 30%,#ff00ff08 0%,transparent 38%),radial-gradient(circle at 30% 70%,#ff202007 0%,transparent 35%);animation:drift 12s linear infinite}
@@ -72,6 +74,7 @@ body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle 
       <label for="partnerSel" id="partnerLabel">PAREJA</label>
       <select id="partnerSel"></select>
       <button class="mini" id="syncBtn">LIVE</button>
+      <button class="mini snd" id="sndBtn" title="toggle sonido">🔊</button>
     </div>
   </div>
 
@@ -191,6 +194,7 @@ function renderMeters(){
   const modeLabel = state.mode === 'static' ? 'STATIC' : state.mode === 'terminal' ? `TERMINAL · ${mName} // ${getModelName(state.partner)}` : `MSN · ${mName}`;
   statusEl.textContent = `${modeLabel} · depth: ${state.depth} · glitch: ${state.glitch} · caos: ${state.chaos}`;
   statusEl.style.color = state.mode === 'static' ? '#8e758f' : state.mode === 'terminal' ? '#ffb000' : '#c9a8cf';
+  if (typeof updateAmbient === 'function') updateAmbient();
 }
 function escapeHtml(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function pulse(){ voidBox.classList.remove('glitch'); voidBox.offsetHeight; voidBox.classList.add('glitch'); if(state.glitch >= 4) voidBox.classList.add('hardglitch'); else voidBox.classList.remove('hardglitch'); }
@@ -202,7 +206,7 @@ function showTyping(on){
     typing.innerHTML = `${label} está generando<span>…</span>`;
   }
 }
-function setBusy(on){ state.busy = on; syncBtn.disabled = on; modeSel.disabled = on; modelSel.disabled = on; partnerSel.disabled = on; renderControls(); showTyping(on); }
+function setBusy(on){ state.busy = on; syncBtn.disabled = on; modeSel.disabled = on; modelSel.disabled = on; partnerSel.disabled = on; renderControls(); showTyping(on); if (on && typeof sfxTyping === 'function') sfxTyping(true); }
 function renderControls(){
   const terminal = modeSel.value === 'terminal';
   partnerSel.style.display = terminal ? '' : 'none';
@@ -253,6 +257,7 @@ function synthesizeNodeFromText(text, fallback){
 }
 function renderNode(node, source='static'){
   renderKicker(source);
+  if (node.mood && typeof sfxRender === 'function') sfxRender(node.mood);
   const title = node.title || 'VOID//GLITCH';
   qText.textContent = node.text || title;
   subText.textContent = node.sub || '';
@@ -273,7 +278,7 @@ function fallbackAdvance(choiceIndex){
   state.staticKey = next;
   renderNode(currentStatic(), 'static');
 }
-function pushHistory(kind, txt){ state.history.push({kind, txt}); if(state.history.length > 20) state.history.shift(); renderLog(); }
+function pushHistory(kind, txt){ state.history.push({kind, txt}); if(state.history.length > 20) state.history.shift(); renderLog(); if (kind === 'red' && typeof sfxFallback === 'function') sfxFallback(); }
 async function fetchStructured(apiUrl, payload){
   const res = await fetch(apiUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
   const data = await res.json().catch(() => ({}));
@@ -335,6 +340,7 @@ async function fetchLive(choice, choiceIndex){
   throw new Error(errors.join(' | ') || 'sin motores disponibles');
 }
 async function onChoice(choice, choiceIndex, source){
+  if (typeof sfxChoice === 'function') sfxChoice();
   const fallbackNext = currentStatic().choices?.[choiceIndex]?.next || 'start';
   state.staticKey = fallbackNext;
   state.depth += 1;
@@ -391,6 +397,7 @@ async function bootLive(){
     if (data.node?.log) pushHistory(lineKindFromMode(data.node.mood || 'void'), data.node.log);
     renderMeters();
     renderNode(data.node || currentStatic(), 'live');
+    if (typeof startAmbient === 'function') startAmbient();
   } catch (e) {
     const mName = getModelName(state.model);
     pushHistory('red', `API caída · ${mName} no responde → usando fallback estático`);
@@ -411,6 +418,7 @@ function resetGame(){
   renderLog(); renderMeters(); renderKicker(state.mode==='static'?'static':'live');
   if (state.mode === 'static') renderNode(currentStatic(), 'static');
   else bootLive();
+  if (typeof sfxBoot === 'function') sfxBoot();
 }
 
 modeSel.addEventListener('change', async () => { state.mode = modeSel.value; renderControls(); renderKicker(state.mode==='static'?'static':'live'); resetGame(); });
@@ -428,6 +436,121 @@ renderNode(currentStatic(), 'static');
 
 // intento inicial live salvo que arranque en static
 setTimeout(() => { if (state.mode !== 'static') bootLive(); }, 180);
+
+// ========== AUDIO ENGINE: ORACULAR GLITCH ==========
+let actx=null, ambientOn=false;
+let dronOscA=null, dronOscB=null, dronGain=null, dronFilter=null, dronDist=null, dronDelay=null;
+const SND={on:localStorage.getItem('vgsnd')!=='0'};
+
+function ac(){
+  if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}
+  if(actx.state==='suspended')actx.resume();
+  return actx;
+}
+function noiseBuf(dur){
+  const a=ac();if(!a)return null;
+  const len=a.sampleRate*dur,buf=a.createBuffer(1,len,a.sampleRate),ch=buf.getChannelData(0);
+  for(let i=0;i<len;i++)ch[i]=Math.random()*2-1;
+  return buf;
+}
+function tone(freq,dur,type,vol,rampTo){
+  const a=ac();if(!a||!SND.on)return;
+  const o=a.createOscillator(),g=a.createGain();
+  o.type=type||'sine';o.frequency.value=freq;g.gain.value=vol||0.04;
+  o.connect(g);g.connect(a.destination);o.start();
+  if(rampTo)o.frequency.linearRampToValueAtTime(rampTo,a.currentTime+dur);
+  g.gain.setTargetAtTime(0,a.currentTime+dur*0.7,dur*0.2);
+  o.stop(a.currentTime+dur);
+}
+function distCurve(amt){
+  const n=44100,curve=new Float32Array(n),k=Math.max(0,Math.min(amt*20,400));
+  for(let i=0;i<n;i++){const x=(i*2)/n-1;curve[i]=Math.tanh(k*x)/Math.tanh(k)||x;}
+  return curve;
+}
+
+function startAmbient(){
+  const a=ac();if(!a||ambientOn||!SND.on)return;ambientOn=true;
+  dronOscA=a.createOscillator();dronOscB=a.createOscillator();
+  dronGain=a.createGain();dronGain.gain.value=0;
+  dronFilter=a.createBiquadFilter();dronFilter.type='lowpass';dronFilter.frequency.value=200;dronFilter.Q.value=8;
+  dronDist=a.createWaveShaper();dronDist.curve=distCurve(0);
+  dronDelay=a.createDelay(0.3);dronDelay.delayTime.value=0.18;
+  const fb=a.createGain();fb.gain.value=0.15;
+  dronOscA.type='sawtooth';dronOscB.type='sawtooth';
+  dronOscA.frequency.value=55;dronOscB.frequency.value=55.5;
+  dronOscA.connect(dronDist);dronOscB.connect(dronDist);
+  dronDist.connect(dronFilter);dronFilter.connect(dronDelay);
+  dronDelay.connect(fb);fb.connect(dronDelay);
+  dronDelay.connect(dronGain);dronGain.connect(a.destination);
+  dronOscA.start();dronOscB.start();
+  dronGain.gain.setTargetAtTime(0.06,a.currentTime+0.3,0.6);
+}
+
+function updateAmbient(){
+  const a=ac();if(!a||!ambientOn||!SND.on)return;
+  const v=state.depth,g=state.glitch,c=state.chaos,now=a.currentTime;
+  const bf=clamp(55-v*3,25,80);
+  dronOscA.frequency.setTargetAtTime(bf,now,0.3);
+  dronOscB.frequency.setTargetAtTime(bf+0.5+g*0.8,now,0.3);
+  dronDist.curve=distCurve(g*0.5);
+  dronFilter.frequency.setTargetAtTime(clamp(200+g*300+c*100,80,3000),now,0.4);
+  dronFilter.Q.setTargetAtTime(clamp(2+g*3,0.5,30),now,0.3);
+  dronDelay.delayTime.setTargetAtTime(clamp(0.18-c*0.02,0.04,0.25),now,0.5);
+  dronOscB.detune.setTargetAtTime(g*10+c*15,now,0.3);
+  const vol=clamp(0.04+g*0.015+c*0.01,0.01,0.12);
+  dronGain.gain.setTargetAtTime(vol,now,0.4);
+}
+
+function sfxBoot(){
+  if(!SND.on)return;
+  const a=ac(),buf=noiseBuf(0.35);
+  if(buf){const sn=a.createBufferSource();sn.buffer=buf;const sg=a.createGain();
+    sg.gain.value=0.08;sn.connect(sg);sg.connect(a.destination);
+    sg.gain.setTargetAtTime(0,a.currentTime+0.25,0.1);sn.start();sn.stop(a.currentTime+0.4);}
+  tone(40,0.7,'sine',0.06,120);
+  setTimeout(()=>{if(ambientOn&&dronGain)dronGain.gain.setTargetAtTime(0.06,a.currentTime,0.8);},300);
+}
+
+function sfxChoice(){
+  if(!SND.on)return;
+  tone(880,0.04,'square',0.025);
+  setTimeout(()=>tone(220,0.06,'sawtooth',0.02),30);
+}
+
+function sfxRender(mood){
+  if(!SND.on)return;
+  const f=mood==='void'?200:mood==='glitch'?800:mood==='chaos'?1400:400;
+  tone(f,0.25,'triangle',0.025,f*0.5);
+}
+
+function sfxTyping(on){
+  if(!on||!SND.on)return;
+  const a=ac(),buf=noiseBuf(0.08);if(!a||!buf)return;
+  const sn=a.createBufferSource();sn.buffer=buf;const sg=a.createGain();sg.gain.value=0.015;
+  const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=2000;f.Q.value=5;
+  sn.connect(f);f.connect(sg);sg.connect(a.destination);
+  sn.start();sg.gain.setTargetAtTime(0,a.currentTime+0.06,0.02);sn.stop(a.currentTime+0.1);
+}
+
+function sfxFallback(){
+  if(!SND.on)return;
+  if(dronGain){const a=ac();if(a){dronDist.curve=distCurve(10);
+    dronGain.gain.setValueAtTime(0.12,a.currentTime);
+    dronGain.gain.setTargetAtTime(0,a.currentTime+0.15,0.08);}}
+  tone(60,0.5,'sawtooth',0.05);ambientOn=false;
+}
+
+function toggleSound(){
+  SND.on=!SND.on;localStorage.setItem('vgsnd',SND.on?'1':'0');
+  const btn=document.getElementById('sndBtn');
+  if(btn){btn.textContent=SND.on?'🔊':'🔇';btn.classList.toggle('muted',!SND.on);}
+  if(!SND.on&&dronGain){const a=ac();if(a)dronGain.gain.setTargetAtTime(0,a.currentTime,0.05);}
+  else if(SND.on&&ambientOn&&dronGain){const a=ac();if(a)dronGain.gain.setTargetAtTime(0.06,a.currentTime,0.3);}
+}
+
+// init sound button
+document.getElementById('sndBtn').addEventListener('click',toggleSound);
+if(!SND.on){const btn=document.getElementById('sndBtn');btn.textContent='🔇';btn.classList.add('muted');}
 </script>
 </body>
 </html>

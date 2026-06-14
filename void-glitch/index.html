@@ -49,6 +49,8 @@ body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle 
 @keyframes glitch{0%{transform:none;filter:none}20%{transform:translateX(2px) skewX(4deg)}40%{transform:translateX(-3px) skewX(-8deg)}60%{transform:translateY(1px)}80%{transform:translateX(2px)}100%{transform:none}}
 .hardglitch{animation:hardglitch .18s steps(2) infinite}
 @keyframes hardglitch{0%{transform:translate(0,0)}25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(3px,0)}100%{transform:translate(0,0)}}
+.void-loading{animation:voidPulse 1.8s ease-in-out infinite}
+@keyframes voidPulse{0%,100%{box-shadow:0 0 8px rgba(255,0,255,.15) inset,0 0 2px var(--corrupt)}50%{box-shadow:0 0 28px rgba(170,255,0,.25) inset,0 0 6px var(--corrupt),0 0 18px var(--acid)}}
 .typing{display:inline-block;color:var(--amber);font-size:12px;padding:4px 8px}
 .typing span{animation:dots 1.1s steps(4) infinite}
 @keyframes dots{0%{opacity:.2}30%{opacity:1}}
@@ -201,12 +203,11 @@ function pulse(){ voidBox.classList.remove('glitch'); voidBox.offsetHeight; void
 function showTyping(on){
   typing.style.display = on ? 'inline-block' : 'none';
   if (on) {
-    const mName = getModelName(state.model);
-    const label = state.mode === 'terminal' ? `${mName} // ${getModelName(state.partner)}` : `PSYCHO_BOT · ${mName}`;
-    typing.innerHTML = `${label} está generando<span>…</span>`;
+    const O=['el vacío consulta las líneas mutantes...','VALIS interfiere la transmisión...','el hexagrama se quiebra...','la máquina oracular procesa tu caída...','el oráculo glitch computa la grieta...','las voces del abismo deliberan...'];
+    typing.innerHTML = `${O[Math.floor(Math.random()*O.length)]}<span>…</span>`;
   }
 }
-function setBusy(on){ state.busy = on; syncBtn.disabled = on; modeSel.disabled = on; modelSel.disabled = on; partnerSel.disabled = on; renderControls(); showTyping(on); if (on && typeof sfxTyping === 'function') sfxTyping(true); }
+function setBusy(on){ state.busy = on; syncBtn.disabled = on; modeSel.disabled = on; modelSel.disabled = on; partnerSel.disabled = on; renderControls(); showTyping(on); if(on){voidBox.classList.add('void-loading');if(typeof sfxTyping==='function')sfxTyping(true);}else{voidBox.classList.remove('void-loading');} }
 function renderControls(){
   const terminal = modeSel.value === 'terminal';
   partnerSel.style.display = terminal ? '' : 'none';
@@ -225,9 +226,9 @@ function normalizeNode(node, fallback){
   const choices=Array.isArray(node?.choices) ? node.choices : [];
   return {
     title: String(node?.title || base.title || 'VOID//GLITCH').slice(0,90),
-    text: String(node?.text || base.text || 'La señal falla.').slice(0,220),
-    sub: String(node?.sub || base.sub || 'Otra grieta más abajo.').slice(0,220),
-    log: String(node?.log || base.log || 'registro: señal inestable').slice(0,180),
+    text: String(node?.text || base.text || 'La señal falla.').slice(0,380),
+    sub: String(node?.sub || base.sub || 'Otra grieta más abajo.').slice(0,280),
+    log: String(node?.log || base.log || 'registro: señal inestable').slice(0,200),
     mood: ['void','glitch','chaos','reset'].includes(node?.mood) ? node.mood : 'void',
     visual: {
       voidDelta: Number.isFinite(node?.visual?.voidDelta) ? node.visual.voidDelta : 0,
@@ -259,6 +260,8 @@ function renderNode(node, source='static'){
   renderKicker(source);
   if (node.mood && typeof sfxRender === 'function') sfxRender(node.mood);
   const title = node.title || 'VOID//GLITCH';
+  voidBox.classList.remove('glitch'); voidBox.offsetHeight; voidBox.classList.add('glitch');
+  if(state.glitch >= 4) voidBox.classList.add('hardglitch'); else voidBox.classList.remove('hardglitch');
   qText.textContent = node.text || title;
   subText.textContent = node.sub || '';
   choicesEl.innerHTML = '';
@@ -270,7 +273,6 @@ function renderNode(node, source='static'){
     b.addEventListener('click', () => onChoice(c, idx, source));
     choicesEl.appendChild(b);
   });
-  pulse();
   voidBox.scrollIntoView({behavior:'smooth'});
 }
 function fallbackAdvance(choiceIndex){
@@ -365,6 +367,8 @@ async function onChoice(choice, choiceIndex, source){
     if (Number.isFinite(v.chaosDelta)) state.chaos += v.chaosDelta;
     if (data.node?.log) pushHistory(lineKindFromMode(data.node.mood || 'void'), data.node.log);
     renderMeters();
+    voidBox.classList.remove('glitch'); voidBox.offsetHeight; voidBox.classList.add('glitch');
+    if (data.node?.mood && typeof sfxRender === 'function') sfxRender(data.node.mood);
     qText.textContent = data.node?.text || 'El vacío respondió, pero vino roto.';
     subText.textContent = data.node?.sub || 'La grieta sigue viva.';
     choicesEl.innerHTML = '';
@@ -375,7 +379,6 @@ async function onChoice(choice, choiceIndex, source){
       b.addEventListener('click', () => onChoice(c, idx, 'live'));
       choicesEl.appendChild(b);
     });
-    pulse();
     voidBox.scrollIntoView({behavior:'smooth'});
   } catch (e) {
     pushHistory('red', 'motor vivo caído: ' + e.message + ' → fallback activado');

@@ -22,7 +22,7 @@ const MODEL_LIMITS = {
 
 const DEFAULT_MODEL = 'llama-3.3-70b-versatile';
 const MAX_CONTEXT = 6;
-const MAX_CHARS = 1400;
+const MAX_CHARS = 1800;
 
 const VOID_SYSTEM = `Eres el motor en vivo de VOID//GLITCH, un juego interactivo de EsquizoAI.
 Debes devolver SOLO JSON válido, sin markdown, sin bloques de código y sin texto extra.
@@ -93,9 +93,9 @@ function normalizeNode(node, fallback) {
   const choices = Array.isArray(node?.choices) ? node.choices : [];
   return {
     title: String(node?.title || base.title || 'VOID//GLITCH').slice(0, 90),
-    text: String(node?.text || base.text || 'El vacío parpadea.').slice(0, 220),
-    sub: String(node?.sub || base.sub || 'Otra grieta más abajo.').slice(0, 220),
-    log: String(node?.log || base.log || 'registro: señal inestable').slice(0, 180),
+    text: String(node?.text || base.text || 'El vacío parpadea.').slice(0, 380),
+    sub: String(node?.sub || base.sub || 'Otra grieta más abajo.').slice(0, 280),
+    log: String(node?.log || base.log || 'registro: señal inestable').slice(0, 200),
     mood: ['void', 'glitch', 'chaos', 'reset'].includes(node?.mood) ? node.mood : 'void',
     visual: {
       voidDelta: Number.isFinite(node?.visual?.voidDelta) ? node.visual.voidDelta : 0,
@@ -152,7 +152,7 @@ async function callModel(model, messages, temperature = 1.05) {
     body: JSON.stringify({
       model,
       messages,
-      max_tokens: Math.min(conf.maxOutput, 1400),
+      max_tokens: Math.min(conf.maxOutput, 2000),
       temperature,
       stream: true,
     }),

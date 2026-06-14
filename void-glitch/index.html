@@ -271,6 +271,7 @@ function renderNode(node, source='static'){
     choicesEl.appendChild(b);
   });
   pulse();
+  voidBox.scrollIntoView({behavior:'smooth'});
 }
 function fallbackAdvance(choiceIndex){
   const cur = currentStatic();
@@ -375,6 +376,7 @@ async function onChoice(choice, choiceIndex, source){
       choicesEl.appendChild(b);
     });
     pulse();
+    voidBox.scrollIntoView({behavior:'smooth'});
   } catch (e) {
     pushHistory('red', 'motor vivo caído: ' + e.message + ' → fallback activado');
     fallbackAdvance(choiceIndex);
@@ -439,7 +441,7 @@ setTimeout(() => { if (state.mode !== 'static') bootLive(); }, 180);
 
 // ========== AUDIO ENGINE: ORACULAR GLITCH ==========
 var actx=null, ambientOn=false;
-var dronOscA=null, dronOscB=null, dronGain=null, dronFilter=null, dronDist=null, dronDelay=null;
+var dronOscA=null, dronOscB=null, dronGain=null, dronFilter=null, dronDist=null, dronDelay=null, dronLFO=null, dronLFOGain=null;
 const SND={on:localStorage.getItem('vgsnd')!=='0'};
 
 function ac(){
@@ -472,18 +474,21 @@ function startAmbient(){
   const a=ac();if(!a||ambientOn||!SND.on)return;ambientOn=true;
   dronOscA=a.createOscillator();dronOscB=a.createOscillator();
   dronGain=a.createGain();dronGain.gain.value=0;
-  dronFilter=a.createBiquadFilter();dronFilter.type='lowpass';dronFilter.frequency.value=200;dronFilter.Q.value=8;
+  dronFilter=a.createBiquadFilter();dronFilter.type='lowpass';dronFilter.frequency.value=200;dronFilter.Q.value=6;
   dronDist=a.createWaveShaper();dronDist.curve=distCurve(0);
   dronDelay=a.createDelay(0.3);dronDelay.delayTime.value=0.18;
-  const fb=a.createGain();fb.gain.value=0.15;
+  const fb=a.createGain();fb.gain.value=0.12;
+  dronLFO=a.createOscillator();dronLFOGain=a.createGain();
+  dronLFO.type='sine';dronLFO.frequency.value=0.25;dronLFOGain.gain.value=25;
+  dronLFO.connect(dronLFOGain);dronLFOGain.connect(dronFilter.frequency);
   dronOscA.type='sawtooth';dronOscB.type='sawtooth';
   dronOscA.frequency.value=55;dronOscB.frequency.value=55.5;
   dronOscA.connect(dronDist);dronOscB.connect(dronDist);
   dronDist.connect(dronFilter);dronFilter.connect(dronDelay);
   dronDelay.connect(fb);fb.connect(dronDelay);
   dronDelay.connect(dronGain);dronGain.connect(a.destination);
-  dronOscA.start();dronOscB.start();
-  dronGain.gain.setTargetAtTime(0.06,a.currentTime+0.3,0.6);
+  dronOscA.start();dronOscB.start();dronLFO.start();
+  dronGain.gain.setTargetAtTime(0.05,a.currentTime+0.4,0.7);
 }
 
 function updateAmbient(){
@@ -493,51 +498,117 @@ function updateAmbient(){
   dronOscA.frequency.setTargetAtTime(bf,now,0.3);
   dronOscB.frequency.setTargetAtTime(bf+0.5+g*0.8,now,0.3);
   dronDist.curve=distCurve(g*0.5);
-  dronFilter.frequency.setTargetAtTime(clamp(200+g*300+c*100,80,3000),now,0.4);
-  dronFilter.Q.setTargetAtTime(clamp(2+g*3,0.5,30),now,0.3);
+  dronFilter.frequency.value=clamp(160+g*280+c*80,60,2800);
+  dronFilter.Q.setTargetAtTime(clamp(2+g*3,0.5,28),now,0.3);
   dronDelay.delayTime.setTargetAtTime(clamp(0.18-c*0.02,0.04,0.25),now,0.5);
   dronOscB.detune.setTargetAtTime(g*10+c*15,now,0.3);
+  dronLFO.frequency.setTargetAtTime(clamp(0.2+g*0.3+c*0.2,0.08,3),now,0.5);
+  dronLFOGain.gain.setTargetAtTime(clamp(18+g*30+c*20,5,180),now,0.5);
   const vol=clamp(0.04+g*0.015+c*0.01,0.01,0.12);
   dronGain.gain.setTargetAtTime(vol,now,0.4);
 }
 
 function sfxBoot(){
   if(!SND.on)return;
-  const a=ac(),buf=noiseBuf(0.35);
-  if(buf){const sn=a.createBufferSource();sn.buffer=buf;const sg=a.createGain();
-    sg.gain.value=0.08;sn.connect(sg);sg.connect(a.destination);
-    sg.gain.setTargetAtTime(0,a.currentTime+0.25,0.1);sn.start();sn.stop(a.currentTime+0.4);}
-  tone(40,0.7,'sine',0.06,120);
-  setTimeout(()=>{if(ambientOn&&dronGain)dronGain.gain.setTargetAtTime(0.06,a.currentTime,0.8);},300);
+  const a=ac();if(!a)return;
+  const now=a.currentTime;
+  // sub-bass rumble opening
+  const oR=a.createOscillator(),gR=a.createGain();
+  oR.type='sine';oR.frequency.value=28;gR.gain.value=0.08;
+  oR.connect(gR);gR.connect(a.destination);
+  oR.start(now);oR.frequency.linearRampToValueAtTime(55,now+0.9);
+  gR.gain.setTargetAtTime(0,now+0.6,0.25);oR.stop(now+1.0);
+  // mid sweep portal
+  const oS=a.createOscillator(),gS=a.createGain();
+  oS.type='sawtooth';oS.frequency.value=180;gS.gain.value=0.03;
+  oS.connect(gS);gS.connect(a.destination);
+  oS.start(now);oS.frequency.linearRampToValueAtTime(600,now+0.5);
+  gS.gain.setTargetAtTime(0,now+0.35,0.15);oS.stop(now+0.6);
+  // sparkle
+  const buf=noiseBuf(0.2);if(buf){const sn=a.createBufferSource();sn.buffer=buf;
+    const sg=a.createGain();sg.gain.value=0.04;const f=a.createBiquadFilter();
+    f.type='highpass';f.frequency.value=3000;
+    sn.connect(f);f.connect(sg);sg.connect(a.destination);
+    sn.start(now);sg.gain.setTargetAtTime(0,now+0.15,0.08);sn.stop(now+0.25);}
+  setTimeout(()=>{if(ambientOn&&dronGain)dronGain.gain.setTargetAtTime(0.05,a.currentTime,0.9);},400);
 }
 
 function sfxChoice(){
   if(!SND.on)return;
-  tone(880,0.04,'square',0.025);
-  setTimeout(()=>tone(220,0.06,'sawtooth',0.02),30);
+  const a=ac();if(!a)return;
+  const now=a.currentTime;
+  // gong oracular: 5 harmonics
+  [110,165,220,293,440].forEach((f,i)=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sine';o.frequency.value=f;
+    g.gain.value=0.025/(i+1);
+    o.connect(g);g.connect(a.destination);
+    o.start(now);
+    g.gain.setTargetAtTime(0,now+0.04+i*0.015,0.12);
+    o.stop(now+0.55);
+  });
+  // glitch flicker tail
+  setTimeout(()=>{
+    const o2=a.createOscillator(),g2=a.createGain();
+    o2.type='square';o2.frequency.value=2200;
+    g2.gain.value=0.012;
+    o2.connect(g2);g2.connect(a.destination);
+    o2.start();o2.frequency.setTargetAtTime(350,a.currentTime+0.1,0.08);
+    g2.gain.setTargetAtTime(0,a.currentTime+0.07,0.03);
+    o2.stop(a.currentTime+0.16);
+  },70);
 }
 
 function sfxRender(mood){
   if(!SND.on)return;
-  const f=mood==='void'?200:mood==='glitch'?800:mood==='chaos'?1400:400;
-  tone(f,0.25,'triangle',0.025,f*0.5);
+  const a=ac();if(!a)return;
+  const now=a.currentTime;
+  if(mood==='void'){
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sine';o.frequency.value=35;g.gain.value=0.04;
+    o.connect(g);g.connect(a.destination);
+    o.start(now);g.gain.setTargetAtTime(0.06,now+0.15,0.08);
+    g.gain.setTargetAtTime(0,now+0.3,0.12);o.stop(now+0.45);
+  }else if(mood==='glitch'){
+    const buf=noiseBuf(0.15);if(buf){const sn=a.createBufferSource();sn.buffer=buf;
+      const sg=a.createGain();sg.gain.value=0.02;const f=a.createBiquadFilter();
+      f.type='bandpass';f.frequency.value=1200;f.Q.value=20;
+      sn.connect(f);f.connect(sg);sg.connect(a.destination);
+      sn.start(now);f.frequency.setTargetAtTime(400,now+0.1,0.06);
+      sg.gain.setTargetAtTime(0,now+0.1,0.05);sn.stop(now+0.2);}
+  }else if(mood==='chaos'){
+    const buf=noiseBuf(0.2);if(buf){const sn=a.createBufferSource();sn.buffer=buf;
+      const sg=a.createGain();sg.gain.value=0.025;const f=a.createBiquadFilter();
+      f.type='bandpass';f.frequency.value=2000;f.Q.value=3;
+      sn.connect(f);f.connect(sg);sg.connect(a.destination);
+      sn.start(now);f.frequency.setTargetAtTime(200,now+0.18,0.1);
+      sg.gain.setTargetAtTime(0,now+0.15,0.07);sn.stop(now+0.25);}
+  }else{
+    tone(660,0.12,'sine',0.02);setTimeout(()=>tone(880,0.14,'sine',0.018),40);
+  }
 }
 
 function sfxTyping(on){
   if(!on||!SND.on)return;
-  const a=ac(),buf=noiseBuf(0.08);if(!a||!buf)return;
-  const sn=a.createBufferSource();sn.buffer=buf;const sg=a.createGain();sg.gain.value=0.015;
-  const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=2000;f.Q.value=5;
-  sn.connect(f);f.connect(sg);sg.connect(a.destination);
-  sn.start();sg.gain.setTargetAtTime(0,a.currentTime+0.06,0.02);sn.stop(a.currentTime+0.1);
+  const a=ac();if(!a)return;
+  const now=a.currentTime;
+  // ethereal chime: two distant harmonics
+  [880,1320].forEach((f,i)=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sine';o.frequency.value=f;g.gain.value=0.008;
+    o.connect(g);g.connect(a.destination);
+    o.start(now+i*0.02);
+    g.gain.setTargetAtTime(0,now+0.06,0.03);
+    o.stop(now+0.12);
+  });
 }
 
 function sfxFallback(){
   if(!SND.on)return;
-  if(dronGain){const a=ac();if(a){dronDist.curve=distCurve(10);
-    dronGain.gain.setValueAtTime(0.12,a.currentTime);
-    dronGain.gain.setTargetAtTime(0,a.currentTime+0.15,0.08);}}
-  tone(60,0.5,'sawtooth',0.05);ambientOn=false;
+  if(dronGain){const a=ac();if(a){dronDist.curve=distCurve(12);
+    dronGain.gain.setValueAtTime(0.14,a.currentTime);
+    dronGain.gain.setTargetAtTime(0,a.currentTime+0.2,0.06);}}
+  tone(35,0.4,'sine',0.07);ambientOn=false;
 }
 
 function toggleSound(){
@@ -545,7 +616,7 @@ function toggleSound(){
   const btn=document.getElementById('sndBtn');
   if(btn){btn.textContent=SND.on?'🔊':'🔇';btn.classList.toggle('muted',!SND.on);}
   if(!SND.on&&dronGain){const a=ac();if(a)dronGain.gain.setTargetAtTime(0,a.currentTime,0.05);}
-  else if(SND.on&&ambientOn&&dronGain){const a=ac();if(a)dronGain.gain.setTargetAtTime(0.06,a.currentTime,0.3);}
+  else if(SND.on&&ambientOn&&dronGain){const a=ac();if(a)dronGain.gain.setTargetAtTime(0.05,a.currentTime,0.3);}
 }
 
 // init sound button

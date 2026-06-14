@@ -6,7 +6,7 @@
 >
 > Leyenda: `[x]` hecho y desplegado · `[~]` en progreso · `[ ]` pendiente
 >
-> **Última actualización:** 2026-06-04
+> **Última actualización:** 2026-06-14
 
 ---
 
@@ -93,9 +93,12 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 ## 💡 Ideas sueltas (sin fase asignada)
 
 - [ ] Dominio propio (en vez de `*.vercel.app`) — refuerza identidad
-- [ ] Más drops en la galería · más temas en el reproductor · más formatos de glitch text
-- [ ] Más comandos en VOMIT.SH
+- [ ] Más drops en la galería · más formatos de glitch text
 - [ ] Ep04+ de Psycho-bot (cuando el mundo lo justifique — ver `PSYCHOBOT_AGENT.md`)
+- [x] Más temas en el reproductor (14-Jun: +5 temas punk — Conflict, Subhumans, Dystopia, Antisect, His Hero Is Gone) · commit `bcb0b2b`
+- [x] Más comandos en VOMIT.SH (14-Jun: `void`, `glitch`, `caida`, `oraculo`, `iching`, `hexagrama`, `mutacion`)
+- [x] VOID_GLITCH integrado en el OS (escritorio, Inicio, VOMIT.SH) + audio oracular + UX psycho-oracular · commits `c8f2ef0`→`154b67f`
+- [x] ORACULO.exe — I Ching + VALIS, motor de hexagramas con IA, journal, sesión contextual · commit `78bfd08`→`66f9048`
 
 ---
 

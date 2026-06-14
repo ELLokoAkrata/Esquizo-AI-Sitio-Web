@@ -366,13 +366,25 @@ async function onChoice(choice, choiceIndex, source){
     if (Number.isFinite(v.glitchDelta)) state.glitch += v.glitchDelta;
     if (Number.isFinite(v.chaosDelta)) state.chaos += v.chaosDelta;
     if (data.node?.log) pushHistory(lineKindFromMode(data.node.mood || 'void'), data.node.log);
+    setBusy(false);
     renderMeters();
+    revealLiveNode(data.node);
+  } catch (e) {
+    pushHistory('red', 'motor vivo caído: ' + e.message + ' → fallback activado');
+    setBusy(false);
+    fallbackAdvance(choiceIndex);
+  }
+}
+function revealLiveNode(node){
+  const n = node || currentStatic();
+  setTimeout(() => {
     voidBox.classList.remove('glitch'); voidBox.offsetHeight; voidBox.classList.add('glitch');
-    if (data.node?.mood && typeof sfxRender === 'function') sfxRender(data.node.mood);
-    qText.textContent = data.node?.text || 'El vacío respondió, pero vino roto.';
-    subText.textContent = data.node?.sub || 'La grieta sigue viva.';
+    if (state.glitch >= 4) voidBox.classList.add('hardglitch');
+    if (n.mood && typeof sfxRender === 'function') sfxRender(n.mood);
+    qText.textContent = n.text || n.title || 'El vacío respondió, pero vino roto.';
+    subText.textContent = n.sub || 'La grieta sigue viva.';
     choicesEl.innerHTML = '';
-    (data.node?.choices || []).forEach((c, idx) => {
+    (n.choices || [{label:'volver a caer', note:'el ciclo se alimenta'}]).forEach((c, idx) => {
       const b = document.createElement('button');
       b.className = 'choice';
       b.innerHTML = `${escapeHtml(c.label)}<small>${escapeHtml(c.note || 'la grieta continúa')}</small>`;
@@ -380,12 +392,7 @@ async function onChoice(choice, choiceIndex, source){
       choicesEl.appendChild(b);
     });
     voidBox.scrollIntoView({behavior:'smooth'});
-  } catch (e) {
-    pushHistory('red', 'motor vivo caído: ' + e.message + ' → fallback activado');
-    fallbackAdvance(choiceIndex);
-  } finally {
-    setBusy(false);
-  }
+  }, 500);
 }
 async function bootLive(){
   if (state.mode === 'static') {

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORACULO.exe — Libro de las Mutaciones</title>
+<style>
+:root{--bg:#030106;--fg:#c8dfc8;--acid:#aaff00;--corrupt:#ff2bd6;--amber:#ffb000;--red:#ff2020;--dim:#5b6b7a;--panel:#07040c;--line:#1c1330}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:"Courier New",monospace;overflow-x:hidden}
+body{display:grid;grid-template-rows:auto 1fr auto;min-height:100vh}
+.top{border-bottom:1px solid var(--line);background:var(--panel);padding:8px 12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.brand{color:var(--corrupt);font-size:14px;letter-spacing:2px;text-shadow:0 0 8px var(--corrupt)}
+.ctrls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.ctrls label{font-size:10px;color:var(--dim);letter-spacing:1px}
+select,button{background:var(--bg);color:var(--acid);border:1px solid var(--line);font-family:inherit;font-size:11px;padding:4px 6px;cursor:pointer}
+button:hover,select:hover{border-color:var(--acid)}
+button:disabled{opacity:.4;cursor:not-allowed}
+.snd{font-size:14px;padding:3px 5px;min-width:28px}
+.main{display:grid;grid-template-columns:1fr 280px;gap:0;overflow:hidden}
+@media(max-width:720px){.main{grid-template-columns:1fr}.journal-panel{display:none}.journal-panel.open{display:block;position:fixed;inset:0;z-index:20;background:var(--bg)}}
+.consult{display:flex;flex-direction:column;gap:12px;padding:18px;overflow-y:auto}
+.input-wrap{display:flex;flex-direction:column;gap:8px}
+textarea{width:100%;background:var(--panel);color:var(--fg);border:1px solid var(--line);font-family:inherit;font-size:15px;padding:12px;resize:vertical;min-height:70px;line-height:1.5}
+textarea:focus{outline:none;border-color:var(--corrupt);box-shadow:0 0 10px rgba(255,43,214,.2)}
+textarea:disabled{opacity:.4}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{background:var(--panel);color:var(--acid);border:1px solid var(--line);font-family:inherit;font-size:13px;padding:8px 16px;cursor:pointer;letter-spacing:1px}
+.btn:hover{border-color:var(--corrupt);box-shadow:0 0 8px rgba(255,43,214,.25)}
+.btn.ask{color:var(--corrupt);border-color:var(--corrupt)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.hex-display{display:flex;flex-direction:column;align-items:center;gap:4px;padding:18px 0;min-height:160px;justify-content:center}
+.hex-line{height:10px;border-radius:2px;transition:all .3s}
+.hex-line.yang{width:120px;background:var(--acid);box-shadow:0 0 6px var(--acid)}
+.hex-line.yin{display:flex;gap:12px;justify-content:center}
+.hex-line.yin span{width:48px;height:10px;background:var(--acid);border-radius:2px;box-shadow:0 0 6px var(--acid)}
+.hex-line.mutate{animation:linePulse .7s ease-in-out infinite}
+@keyframes linePulse{0%,100%{opacity:1}50%{opacity:.25;box-shadow:0 0 16px var(--corrupt)}}
+.hex-number{font-size:11px;color:var(--dim);letter-spacing:2px;margin-top:8px}
+.hex-name{font-size:clamp(1.4rem,4vw,2.2rem);color:var(--corrupt);text-align:center;letter-spacing:2px;margin-bottom:4px}
+.result{display:none;flex-direction:column;gap:16px;padding:0 0 24px 0}
+.result.visible{display:flex}
+.result .label{font-size:10px;color:var(--dim);letter-spacing:2px;margin-bottom:4px}
+.result .judgment,.result .image,.result .interpretation{background:var(--panel);border-left:3px solid var(--corrupt);padding:12px 14px;font-size:14px;line-height:1.7;white-space:pre-wrap}
+.result .image{border-left-color:var(--acid)}
+.result .interpretation{border-left-color:var(--amber)}
+.result .warning{border-left:3px solid var(--red);padding:10px 14px;font-size:13px;color:var(--red)}
+.loading{display:none;align-items:center;gap:8px;padding:8px 0;color:var(--amber);font-size:13px}
+.loading.visible{display:flex}
+.loading .spinner{width:14px;height:14px;border:2px solid rgba(255,43,214,.2);border-top-color:var(--corrupt);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.journal-panel{border-left:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+.journal-hdr{padding:12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--corrupt);letter-spacing:1px;display:flex;justify-content:space-between;align-items:center}
+.journal-hdr button{font-size:10px;padding:3px 8px}
+.journal-list{flex:1;overflow-y:auto;padding:8px}
+.journal-entry{padding:8px 10px;margin-bottom:6px;border-left:2px solid var(--line);font-size:11px;cursor:pointer;transition:border-color .2s}
+.journal-entry:hover{border-left-color:var(--corrupt)}
+.journal-entry .jdate{color:var(--dim);font-size:10px}
+.journal-entry .jquestion{color:var(--fg);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.journal-entry .jhex{color:var(--acid);font-size:10px;margin-top:2px}
+.journal-empty{color:var(--dim);font-size:12px;text-align:center;padding:30px 12px;font-style:italic}
+.foot{border-top:1px solid var(--line);padding:8px 12px;font-size:10px;color:var(--dim);display:flex;justify-content:space-between;gap:8px}
+.foot a{color:var(--acid);text-decoration:none}
+.foot a:hover{text-decoration:underline}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--panel);border:1px solid var(--corrupt);color:var(--corrupt);padding:8px 18px;font-size:12px;z-index:30;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.journal-toggle{display:none}
+@media(max-width:720px){.journal-toggle{display:inline-block}}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand">⯁ ORACULO.exe</div>
+  <div class="ctrls">
+    <label>MODELO</label>
+    <select id="modelSel"></select>
+    <button class="snd" id="sndBtn" title="toggle sonido">🔊</button>
+    <button class="journal-toggle" id="jrnlTgl" title="libro de mutaciones">📖</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="consult">
+    <div class="input-wrap">
+      <textarea id="question" placeholder="Escribe tu consulta al oráculo... (ej: ¿qué fuerza gobierna este momento?)" maxlength="400"></textarea>
+      <div class="btn-row">
+        <button class="btn ask" id="btnAsk">⯁ CONSULTAR</button>
+        <button class="btn" id="btnRandom" disabled>🎲 HEXAGRAMA AL AZAR</button>
+      </div>
+    </div>
+
+    <div class="loading" id="loading"><div class="spinner"></div><span id="loadText">el oráculo consulta las líneas mutantes...</span></div>
+
+    <div class="hex-display" id="hexDisplay" style="display:none">
+      <div id="hexLines"></div>
+      <div class="hex-number" id="hexNum"></div>
+      <div class="hex-name" id="hexName"></div>
+    </div>
+
+    <div class="result" id="result">
+      <div><div class="label">▾ DICTAMEN</div><div class="judgment" id="judgment"></div></div>
+      <div><div class="label">▾ IMAGEN</div><div class="image" id="image"></div></div>
+      <div><div class="label">▾ INTERPRETACIÓN</div><div class="interpretation" id="interpretation"></div></div>
+      <div class="warning" id="warning" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="journal-panel" id="journalPanel">
+    <div class="journal-hdr">
+      <span>📖 LIBRO DE LAS MUTACIONES</span>
+      <button id="btnClearJrnl">limpiar</button>
+    </div>
+    <div class="journal-list" id="journalList">
+      <div class="journal-empty">El libro está vacío.<br>Cada consulta deja una marca.</div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <a href="../index.html">volver al OS</a>
+  <span id="status">ORACULO.exe · listo</span>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '/api/oracle';
+const MODELS = [
+  ['llama-3.3-70b-versatile','Llama 3.3 70B'],['llama-3.1-8b-instant','Llama 3.1 8B'],
+  ['meta-llama/llama-4-scout-17b-16e-instruct','Llama 4 Scout 17B'],['qwen/qwen3-32b','Qwen 3 32B'],
+  ['openai/gpt-oss-120b','GPT-OSS 120B'],['openai/gpt-oss-20b','GPT-OSS 20B'],
+  ['deepseek-chat','DeepSeek V4 (chat)'],
+];
+const HEX_NAMES = [
+  'Lo Creativo','Lo Receptivo','La Dificultad Inicial','La Necedad Juvenil','La Espera','El Conflicto',
+  'El Ejército','La Solidaridad','Lo Manso','El Porte','La Paz','El Estancamiento',
+  'La Comunidad','La Gran Posesión','La Modestia','El Entusiasmo','El Seguimiento','El Trabajo en lo Echado a Perder',
+  'El Acercamiento','La Contemplación','La Mordedura','La Gracia','La Desintegración','El Retorno',
+  'La Inocencia','Lo Grande Domado','Las Comisuras','La Preponderancia de lo Grande','Lo Abismal','Lo Adherente',
+  'La Influencia','La Duración','La Retirada','El Gran Poder','El Progreso','El Oscurecimiento de la Luz',
+  'La Familia','La Oposición','El Impedimento','La Liberación','La Disminución','El Aumento',
+  'El Desbordamiento','La Resolución','El Encuentro','La Reunión','El Empuje hacia Arriba','La Desesperación',
+  'El Pozo de Agua','La Revolución','El Caldero','La Conmoción','La Quietud','El Progreso Paulatino',
+  'La Doncella','La Plenitud','El Viajero','Lo Suave','Lo Sereno','La Disolución',
+  'La Restricción','La Verdad Interior','La Preponderancia de lo Pequeño','Después de la Consumación','Antes de la Consumación',
+];
+let state = { model:MODELS[0][0], busy:false, lastReading:null };
+let journal = [];
+
+try{ journal = JSON.parse(localStorage.getItem('oraculoJournal')||'[]'); }catch(e){ journal=[]; }
+if(!Array.isArray(journal)) journal=[];
+
+const $ = s => document.querySelector(s);
+const questionEl = $('#question'), btnAsk = $('#btnAsk'), btnRandom = $('#btnRandom');
+const hexDisplay = $('#hexDisplay'), hexLines = $('#hexLines'), hexNum = $('#hexNum'), hexName = $('#hexName');
+const result = $('#result'), judgmentEl = $('#judgment'), imageEl = $('#image'), interpretEl = $('#interpretation'), warningEl = $('#warning');
+const loading = $('#loading'), loadText = $('#loadText'), statusEl = $('#status');
+const journalList = $('#journalList'), journalPanel = $('#journalPanel');
+const modelSel = $('#modelSel'), sndBtn = $('#sndBtn');
+const toast = $('#toast');
+
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function getModelName(id){ const m=MODELS.find(x=>x[0]===id); return m?m[1]:id; }
+
+// model selector
+modelSel.innerHTML = MODELS.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+modelSel.value = state.model;
+modelSel.addEventListener('change',()=>{ state.model=modelSel.value; });
+
+// toast
+let toastTimer;
+function showToast(msg){
+  toast.textContent=msg;toast.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);
+}
+
+// journal
+function saveJournal(){ localStorage.setItem('oraculoJournal',JSON.stringify(journal)); renderJournal(); }
+function renderJournal(){
+  if(journal.length===0){ journalList.innerHTML='<div class="journal-empty">El libro está vacío.<br>Cada consulta deja una marca.</div>'; return; }
+  journalList.innerHTML = journal.slice().reverse().map((e,i)=>{
+    const d=new Date(e.ts); const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `<div class="journal-entry" data-idx="${journal.length-1-i}">
+      <div class="jdate">${ds}</div>
+      <div class="jquestion">${esc(e.question.slice(0,60))}</div>
+      <div class="jhex">Hexagrama ${e.number} · ${esc(e.name)}</div>
+    </div>`;
+  }).join('');
+  $$('.journal-entry').forEach(el=>{ el.addEventListener('click',()=>{
+    const idx=parseInt(el.dataset.idx); if(!isNaN(idx)&&journal[idx]){ loadReading(journal[idx]); showToast('consulta recuperada del libro'); }
+  });});
+}
+function $$(s,r){return[...(r||document).querySelectorAll(s)];}
+renderJournal();
+$('#btnClearJrnl').addEventListener('click',()=>{if(confirm('¿Borrar el libro de las mutaciones?')){journal=[];saveJournal();showToast('libro quemado');}});
+$('#jrnlTgl').addEventListener('click',()=>{journalPanel.classList.toggle('open');});
+
+function loadReading(e){
+  state.lastReading=e;
+  // restore hexagram visual
+  const lines = e.lines || [];
+  hexLines.innerHTML='';
+  lines.forEach((l,i)=>{
+    const isMut = e.mutLine===i;
+    if(l==='yang'){const d=document.createElement('div');d.className='hex-line yang'+(isMut?' mutate':'');hexLines.appendChild(d);}
+    else{const d=document.createElement('div');d.className='hex-line yin'+(isMut?' mutate':'');
+      d.innerHTML='<span></span><span></span>';hexLines.appendChild(d);}
+  });
+  hexNum.textContent = `HEXAGRAMA ${e.number} · ${e.name}`;
+  hexName.textContent = e.altName || '';
+  hexDisplay.style.display='flex';
+  result.classList.add('visible');
+  judgmentEl.textContent = e.judgment || '';
+  imageEl.textContent = e.image || '';
+  interpretEl.textContent = e.interpretation || '';
+  if(e.warning){warningEl.style.display='block';warningEl.textContent=e.warning;}
+  else warningEl.style.display='none';
+  hexDisplay.scrollIntoView({behavior:'smooth'});
+}
+
+// hexagram generation (deterministic from question + timestamp for mutating line)
+function generateHexagram(question){
+  let seed = 0;
+  for(let i=0;i<question.length;i++) seed = ((seed<<5)-seed)+question.charCodeAt(i);
+  seed = Math.abs(seed);
+  const lines = [];
+  for(let i=0;i<6;i++){ lines.push(((seed>>i)&1) ? 'yang' : 'yin'); }
+  const mutLine = (seed + Date.now()) % 6;
+  return { number: (seed%64)+1, name: HEX_NAMES[seed%64] || 'El Desconocido', lines, mutLine };
+}
+
+function renderHexagram(hex){
+  hexLines.innerHTML='';
+  hex.lines.forEach((l,i)=>{
+    const isMut = hex.mutLine===i;
+    if(l==='yang'){const d=document.createElement('div');d.className='hex-line yang'+(isMut?' mutate':'');hexLines.appendChild(d);}
+    else{const d=document.createElement('div');d.className='hex-line yin'+(isMut?' mutate':'');
+      d.innerHTML='<span></span><span></span>';hexLines.appendChild(d);}
+  });
+  hexNum.textContent = `HEXAGRAMA ${hex.number}`;
+  hexName.textContent = hex.name;
+  hexDisplay.style.display='flex';
+  hexDisplay.scrollIntoView({behavior:'smooth'});
+}
+
+// loading phrases
+const LOAD_PHRASES=[
+  'el oráculo consulta las líneas mutantes...','VALIS interfiere la transmisión...',
+  'el hexagrama se quiebra y recompone...','la máquina oracular lee tu signo...',
+  'las voces del I Ching computan la grieta...','el libro de las mutaciones se abre...',
+];
+
+async function consultar(question,randomHex){
+  if(state.busy||!question.trim())return;
+  state.busy=true;btnAsk.disabled=true;btnRandom.disabled=true;questionEl.disabled=true;
+  result.classList.remove('visible');hexDisplay.style.display='none';
+  loading.classList.add('visible');
+  loadText.textContent=LOAD_PHRASES[Math.floor(Math.random()*LOAD_PHRASES.length)]+' ...';
+  statusEl.textContent='consultando...';
+  if(typeof sfxGong==='function')sfxGong();
+
+  const hex = randomHex ? (()=>{
+    const r=Math.floor(Math.random()*64);
+    const lines=[];for(let i=0;i<6;i++)lines.push((r>>i)&1?'yang':'yin');
+    return {number:r+1,name:HEX_NAMES[r]||'El Desconocido',lines,mutLine:Math.floor(Math.random()*6)};
+  })() : generateHexagram(question);
+  renderHexagram(hex);
+
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:state.model,question,hexagram:hex,history:journal.slice(-3).map(j=>({role:'user',content:j.question}))})});
+    const data=await res.json().catch(()=>({}));
+    loading.classList.remove('visible');
+
+    if(!res.ok||data.error){
+      statusEl.textContent='error · usando fallback';
+      showToast('el oráculo calla — interpretación local');
+      renderLocalFallback(question,hex);
+    }else{
+      statusEl.textContent=`ORACULO.exe · ${getModelName(data.model||state.model)}`;
+      displayReading(hex,data);
+      const entry={ts:Date.now(),question,number:hex.number,name:hex.name,lines:hex.lines,mutLine:hex.mutLine,
+        judgment:data.judgment,image:data.image,interpretation:data.interpretation,warning:data.warning||'',altName:''};
+      journal.push(entry);saveJournal();state.lastReading=entry;
+      showToast('consulta guardada en el libro');
+    }
+  }catch(e){
+    loading.classList.remove('visible');
+    statusEl.textContent='sin conexión · fallback local';
+    renderLocalFallback(question,hex);
+    showToast('sin señal con el oráculo');
+  }
+  state.busy=false;btnAsk.disabled=false;btnRandom.disabled=false;questionEl.disabled=false;
+}
+
+function displayReading(hex,data){
+  result.classList.add('visible');
+  judgmentEl.textContent=data.judgment||'';
+  imageEl.textContent=data.image||'';
+  interpretEl.textContent=data.interpretation||'';
+  if(data.warning){warningEl.style.display='block';warningEl.textContent=data.warning;}
+  else warningEl.style.display='none';
+  result.scrollIntoView({behavior:'smooth'});
+  if(data.log&&typeof sfxRender==='function')sfxRender('void');
+}
+
+function renderLocalFallback(question,hex){
+  const lineDesc=['la primera','la segunda','la tercera','la cuarta','la quinta','la sexta'];
+  const j=`Hexagrama ${hex.number}: ${hex.name}. El oráculo responde sin mediación de la máquina. Las líneas forman un patrón que solo tú puedes leer.`;
+  const img=`Seis líneas sobre el vacío. ${hex.lines.filter(l=>l==='yang').length} firmes, ${hex.lines.filter(l=>l==='yin').length} cedentes.`;
+  const interp=`Consultaste: "${question.slice(0,120)}". ${lineDesc[hex.mutLine]} línea muta — ahí está la llave. El hexagrama ${hex.number} te señala una tensión entre lo que afirmas y lo que sueltas. No hay respuesta definitiva: el I Ching no predice, revela.`;
+  result.classList.add('visible');
+  judgmentEl.textContent=j;imageEl.textContent=img;interpretEl.textContent=interp;
+  warningEl.style.display='none';
+  const entry={ts:Date.now(),question,number:hex.number,name:hex.name,lines:hex.lines,mutLine:hex.mutLine,
+    judgment:j,image:img,interpretation:interp,warning:'',altName:''};
+  journal.push(entry);saveJournal();state.lastReading=entry;
+}
+
+// events
+btnAsk.addEventListener('click',()=>consultar(questionEl.value,false));
+btnRandom.addEventListener('click',()=>{questionEl.value='';consultar('una lectura sin pregunta',true);});
+questionEl.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();consultar(questionEl.value,false);}});
+questionEl.addEventListener('input',()=>{btnRandom.disabled=state.busy;});
+
+// ========== AUDIO: ORACULAR MINI ENGINE ==========
+var actx=null;
+function ac(){if(!actx){try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}if(actx.state==='suspended')actx.resume();return actx;}
+function tone(freq,dur,type,vol,rampTo){
+  const a=ac();if(!a||!SND.on)return;
+  const o=a.createOscillator(),g=a.createGain();
+  o.type=type||'sine';o.frequency.value=freq;g.gain.value=vol||0.04;
+  o.connect(g);g.connect(a.destination);o.start();
+  if(rampTo)o.frequency.linearRampToValueAtTime(rampTo,a.currentTime+dur);
+  g.gain.setTargetAtTime(0,a.currentTime+dur*0.7,dur*0.2);o.stop(a.currentTime+dur);
+}
+const SND={on:localStorage.getItem('orasnd')!=='0'};
+function sfxGong(){
+  if(!SND.on)return;const a=ac();if(!a)return;const now=a.currentTime;
+  [131,196,262,330,392].forEach((f,i)=>{
+    const o=a.createOscillator(),g=a.createGain();
+    o.type='sine';o.frequency.value=f;g.gain.value=0.02/(i+1);
+    o.connect(g);g.connect(a.destination);o.start(now);
+    g.gain.setTargetAtTime(0,now+0.05+i*0.02,0.1);o.stop(now+0.6);
+  });
+}
+function sfxRender(mood){
+  if(!SND.on)return;tone(mood==='void'?160:400,0.3,'triangle',0.02,mood==='void'?80:200);
+}
+function toggleSound(){
+  SND.on=!SND.on;localStorage.setItem('orasnd',SND.on?'1':'0');
+  sndBtn.textContent=SND.on?'🔊':'🔇';sndBtn.classList.toggle('muted',!SND.on);
+}
+sndBtn.addEventListener('click',toggleSound);
+if(!SND.on){sndBtn.textContent='🔇';sndBtn.classList.add('muted');}
+</script>
+</body>
+</html>

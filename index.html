@@ -608,6 +608,7 @@ const FS = {
     {label:"ECOSISTEMA_GENERATIVO", file:"animaciones/ECOSISTEMA_GENERATIVO/ecosistema.html", icon:"🧫"},
     {label:"CANAL_666", file:"animaciones/ECOSISTEMA_GENERATIVO_V2/fusion.html", icon:"📺"},
     {label:"VOID_GLITCH", file:"void-glitch/index.html", icon:"🕳", desc:"void interactivo de preguntas en espiral"},
+    {label:"ORACULO.exe", file:"oraculo/index.html", icon:"⯁", desc:"I Ching + VALIS — libro de las mutaciones"},
   ]},
 };
 
@@ -754,6 +755,7 @@ const REP_ID="app_"+REP_FILE.replace(/[^a-z0-9]/gi,"_");
 function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:540,h:680}); }
 function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660}); }
 function openVoidGlitch(){ return openApp("void-glitch/index.html","VOID_GLITCH.exe","🕳",{w:600,h:720}); }
+function openOracle(){ return openApp("oraculo/index.html","ORACULO.exe","⯁",{w:620,h:750}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
   let f=repFrame(), justOpened=false;
@@ -1247,7 +1249,7 @@ function openTerminal(){
     "oracle","wake","hack","matrix","acid","echo",
     "play","pause","next","prev","stop","reproducir",
     "secrets","secretos","unlock","decrypt","vault",
-    "msn","chat","psycho","void","glitch","voidglitch","caida","caída"];
+    "msn","chat","psycho","void","glitch","voidglitch","caida","caída","oraculo","oracle","iching","mutacion","mutación","hexagrama"];
 
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   function line(text,cls){const d=document.createElement("div");if(cls)d.className="c-"+cls;
@@ -1268,7 +1270,8 @@ function openTerminal(){
     clasico:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞"),
     secretos:openVault, vault:openVault, prohibido:openVault, bóveda:openVault, boveda:openVault,
     msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN,
-    voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch
+    voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch,
+    oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle
   };
 
   async function dispatch(raw){
@@ -1285,6 +1288,7 @@ function openTerminal(){
         await type("  secrets · unlock <clave>  — la bóveda ARCHIVO_PROHIBIDO","corrupt");
         await type("  msn · chat            — hablar EN VIVO con Psycho-bot","corrupt");
         await type("  void · glitch · caida  — juego del vacío con las IAs","corrupt");
+        await type("  oraculo · iching · hexagrama  — I Ching + VALIS, libro de mutaciones","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
         break;
@@ -1348,6 +1352,8 @@ function openTerminal(){
         await type("abriendo MSN_PSYCHO.exe — el daemon responde en vivo...","corrupt"); openMSN(); break;
       case "void": case "glitch": case "voidglitch": case "caida": case "caída":
         await type("abriendo VOID_GLITCH.exe — cayendo al vacío con las IAs...","corrupt"); openVoidGlitch(); break;
+      case "oraculo": case "oracle": case "iching": case "mutacion": case "mutación": case "hexagrama":
+        await type("abriendo ORACULO.exe — el libro de las mutaciones se abre...","corrupt"); openOracle(); break;
       case "secrets": case "secretos": case "vault": {
         const n=secretsUnlockedCount(), t=SECRET_IDS.length;
         await type("ARCHIVO_PROHIBIDO — "+n+"/"+t+" descifrados:","corrupt");
@@ -1459,6 +1465,9 @@ function renderDesktop(){
   // VOID_GLITCH (juego del vacío con IAs)
   const vg=el("div","icon",`<span class="gl" style="color:#a855f7">🕳</span><span class="lb">VOID_GLITCH</span>`);
   bindOpen(vg,openVoidGlitch); wrap.appendChild(vg);
+  // ORACULO (I Ching + VALIS)
+  const orac=el("div","icon",`<span class="gl" style="color:#ffb000">⯁</span><span class="lb">ORACULO</span>`);
+  bindOpen(orac,openOracle); wrap.appendChild(orac);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -1515,6 +1524,7 @@ function buildStart(){
     {ic:"♪",lb:"Reproductor",fn:openReproductor},
     {ic:"🗨",lb:"MSN_PSYCHO (chat en vivo)",fn:openMSN},
     {ic:"🕳",lb:"VOID_GLITCH (juego del vacío)",fn:openVoidGlitch},
+    {ic:"⯁",lb:"ORACULO (I Ching + VALIS)",fn:openOracle},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"🔒",lb:"Archivo prohibido",fn:openVault},

@@ -210,7 +210,7 @@ function expandJournalEntry(e){
     ${e.interpretation?`<button class="sess-expand">▾ interpretación completa</button><div class="sess-interp">${esc(e.interpretation)}</div>`:''}
     ${e.warning?`<div class="warning" style="display:block">${esc(e.warning)}</div>`:''}</div>`;
   convoEl.appendChild(card);
-  convoEl.scrollTop=convoEl.scrollHeight;
+  convoEl.scrollTo({top:convoEl.scrollHeight,behavior:'smooth'});
   const expandBtn=card.querySelector('.sess-expand');
   if(expandBtn) expandBtn.addEventListener('click',()=>{
     const interp=card.querySelector('.sess-interp'); interp.classList.toggle('open');
@@ -259,7 +259,7 @@ async function consultar(question,randomHex){
   loadCard.innerHTML = `<div class="sess-hex">${hexToHTML(hex)}<div class="hex-num">HEXAGRAMA ${hex.number}</div><div class="hex-tit">${esc(hex.name)}</div></div>
     <div class="sess-loading"><div class="spinner"></div><span>${LOAD_PHRASES[Math.floor(Math.random()*LOAD_PHRASES.length)]} ...</span></div>`;
   convoEl.appendChild(loadCard);
-  convoEl.scrollTop=convoEl.scrollHeight;
+  convoEl.scrollTo({top:convoEl.scrollHeight,behavior:'smooth'});
   questionEl.value='';
 
   try{
@@ -301,7 +301,7 @@ function fillCard(card,hex,question,data){
     ${data.interpretation?`<button class="sess-expand">▾ interpretación completa</button><div class="sess-interp">${esc(data.interpretation)}</div>`:''}
     ${data.warning?`<div class="warning" style="display:block">${esc(data.warning)}</div>`:'<div class="warning"></div>'}`;
   card.appendChild(body);
-  convoEl.scrollTop=convoEl.scrollHeight;
+  convoEl.scrollTo({top:convoEl.scrollHeight,behavior:'smooth'});
   const expandBtn=card.querySelector('.sess-expand');
   if(expandBtn) expandBtn.addEventListener('click',()=>{
     const interp=card.querySelector('.sess-interp'); interp.classList.toggle('open');
@@ -323,7 +323,7 @@ function renderCardFallback(card,question,hex){
     <div class="label">▾ IMAGEN</div><div class="image">${esc(img)}</div>
     <button class="sess-expand">▾ interpretación</button><div class="sess-interp">${esc(interp)}</div>`;
   card.appendChild(body);
-  convoEl.scrollTop=convoEl.scrollHeight;
+  convoEl.scrollTo({top:convoEl.scrollHeight,behavior:'smooth'});
   const expandBtn=card.querySelector('.sess-expand');
   if(expandBtn) expandBtn.addEventListener('click',()=>{
     const i2=card.querySelector('.sess-interp'); i2.classList.toggle('open');

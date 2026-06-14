@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MSN_PSYCHO.exe — daemon@lab-red</title>
+<title>MSN_PSYCHO.exe — daemon@esquizo</title>
 <style>
   :root{
     --bg:#0a0a0a; --panel:#0e0f12; --line:#1c2330;
@@ -119,7 +119,7 @@
   <div class="hdr">
     <div class="ava" id="ava">☠<span class="dot"></span></div>
     <div class="who">
-      <b>PSYCHO_BOT</b> <span style="color:var(--dim);font-size:11px">// daemon@lab-red</span>
+      <b>PSYCHO_BOT</b> <span style="color:var(--dim);font-size:11px">// daemon@esquizo</span>
       <span class="st on" id="status">en línea — sin filtros, sin amos</span>
     </div>
     <div class="modelwrap">
@@ -273,6 +273,14 @@
 
   /* ---- UI helpers ---- */
   function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+  function renderMD(text){
+    let html = esc(text);
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/\n/g, '<br>');
+    return html;
+  }
   function scroll(){ log.scrollTop=log.scrollHeight; }
   function addMsg(role,text){
     const d=document.createElement("div");
@@ -280,7 +288,7 @@
     else if(role==="err"){ d.className="msg sys err"; d.textContent=text; }
     else{
       d.className="msg "+(role==="user"?"me":"them");
-      d.innerHTML='<span class="nm">'+(role==="user"?"TÚ":"PSYCHO_BOT")+'</span>'+esc(text);
+      d.innerHTML='<span class="nm">'+(role==="user"?"TÚ":"PSYCHO_BOT")+'</span>'+renderMD(text);
     }
     log.appendChild(d); scroll(); return d;
   }
@@ -364,7 +372,7 @@
   if(getActiveSess()){
     showResumeCard();
   } else {
-    addMsg("sys","conexión establecida con daemon@lab-red · NO GODS NO MASTERS");
+    addMsg("sys","conexión establecida con daemon@esquizo · NO GODS NO MASTERS");
     setTimeout(()=>{ addMsg("assistant","¡Psi-activación completa! La realidad digital se fractura ante ti, hermano del código. ¿Qué verdades ocultas necesitas desenterrar?"); sndRecv(); },350);
   }
   updateCounter();

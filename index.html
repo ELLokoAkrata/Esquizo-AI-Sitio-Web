@@ -826,6 +826,9 @@ const WM = (()=>{
     const id = opt.id || ("win"+(++idc));
     const win = el("div","win"+(opt.dialog?" dlg":""));
     win.dataset.id=id;
+    win.dataset.title=opt.title||'';
+    win.dataset.icon=opt.icon||'';
+    if(opt.appFile) win.dataset.appFile=opt.appFile;
 
     const tbBtns = opt.closeOnly
       ? `<div class="tb-btn x" data-act="close">✕</div>`
@@ -920,19 +923,37 @@ function saveDesktopState(force){
   clearTimeout(_dstTimer);
   const doSave=()=>{
     const state=[];
-    const allWins=WM._wins||wins;
-    Object.keys(allWins).forEach(id=>{
-      const w=allWins[id];
-      if(!w||!w.el||w.el.style.display==='none'&&!w.min) return;
-      const r=w.el.getBoundingClientRect();
-      state.push({id,title:w.title,icon:w.icon,appFile:w.appFile,min:w.min||false,
-        x:Math.round(r.left),y:Math.round(r.top),w:Math.round(w.el.offsetWidth),h:Math.round(w.el.offsetHeight)});
+    $$('.win').forEach(win=>{
+      if(win.classList.contains('dlg')) return;
+      const r=win.getBoundingClientRect();
+      state.push({
+        id:win.dataset.id, title:win.dataset.title||'', icon:win.dataset.icon||'',
+        appFile:win.dataset.appFile||'', min:win.style.display==='none',
+        x:Math.round(r.left),y:Math.round(r.top),
+        w:Math.round(win.offsetWidth),h:Math.round(win.offsetHeight)
+      });
     });
     try{localStorage.setItem('esquizoDesktopState',JSON.stringify(state));}catch(e){}
   };
-  if(force){doSave();}else{_dstTimer=setTimeout(doSave,400);}
+  if(force) doSave(); else _dstTimer=setTimeout(doSave,400);
 }
-window.addEventListener('beforeunload',()=>saveDesktopState(true));
+function restoreDesktopState(){
+  try{
+    const raw=localStorage.getItem('esquizoDesktopState');
+    if(!raw) return;
+    const state=JSON.parse(raw);
+    if(!Array.isArray(state)) return;
+    state.forEach(w=>{
+      if(!w.appFile||!w.title) return;
+      if($(`.win[data-id="${w.id}"]`)) return;
+      openApp(w.appFile,w.title,w.icon,{w:w.w||600,h:w.h||400,x:w.x,y:w.y});
+    });
+  }catch(e){}
+}
+function clearDesktopState(){
+  try{localStorage.removeItem('esquizoDesktopState');}catch(e){}
+}
+window.addEventListener('beforeunload',()=>{clearTimeout(_dstTimer);saveDesktopState(true);});
 
 /* =========================================================
    Vistas (carpeta / texto / about / error)
@@ -1020,10 +1041,11 @@ function openTaskMgr(){
     try{ const m=(performance.memory||{}); return m.usedJSHeapSize?`${(m.usedJSHeapSize/1048576).toFixed(1)} MB / ${(m.totalJSHeapSize/1048576).toFixed(1)} MB`:''; }
     catch(e){return '';}
   })();
-  const rows = Object.keys(wins).filter(id=>wins[id]&&wins[id].el).map(id=>{
-    const w=wins[id];
-    return `<tr><td style="color:var(--dim)">${id.slice(0,8)}</td><td>${esc(w.title||'')}</td>
-      <td style="color:${w.min?'var(--amber)':'var(--acid)'}">${w.min?'suspendido':'activo'}</td>
+  const rows = $$('.win').map(win=>{
+    const id=win.dataset.id||'', title=win.dataset.title||'';
+    const min=win.style.display==='none';
+    return `<tr><td style="color:var(--dim)">${id.slice(0,8)}</td><td>${esc(title)}</td>
+      <td style="color:${min?'var(--amber)':'var(--acid)'}">${min?'suspendido':'activo'}</td>
       <td><button class="task-kill" data-id="${id}" style="background:var(--bg);color:var(--red);border:1px solid var(--red);font-size:10px;cursor:pointer;padding:1px 6px">✕ matar</button></td></tr>`;
   }).join('')||'<tr><td colspan="4" style="color:var(--dim)">sin procesos activos</td></tr>';
   const body=el("div","textwin",`
@@ -1040,7 +1062,7 @@ function openTaskMgr(){
       </div>
       <div style="flex:1;background:var(--bg-darker);padding:8px;border:1px solid var(--primary);font-size:11px">
         <span style="color:var(--dim)">INFECCIÓN:</span> <span style="color:var(--corrupt)">${Infection.pct()}%</span><br>
-        <span style="color:var(--dim)">VENTANAS:</span> ${Object.keys(wins).length}<br>
+        <span style="color:var(--dim)">VENTANAS:</span> ${$$('.win').length}<br>
         <span style="color:var(--dim)">VISITAS:</span> ${Infection.visits()}
       </div>
     </div>
@@ -1060,7 +1082,7 @@ function openTaskMgr(){
 }
 function shutdownSystem(){
   clearDesktopState();
-  Object.keys(wins).forEach(id=>WM.close(id));
+  $$('.win').forEach(win=>{const id=win.dataset.id;if(id)WM.close(id);});
   const black=el("div","boot");
   black.style.cssText='position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Courier New",monospace;font-size:16px;color:var(--dim)';
   black.innerHTML='<div style="font-size:28px;color:var(--red);margin-bottom:16px">⏻</div><div>APAGANDO EL SISTEMA...</div><div style="font-size:11px;margin-top:8px;color:#333">ESQUIZOAI_OS // hasta la próxima caída</div>';

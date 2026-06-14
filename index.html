@@ -725,7 +725,7 @@ function openApp(file,title,icon,opts){
   wrap.appendChild(bar); wrap.appendChild(frame);
 
   const vw=window.innerWidth, vh=window.innerHeight;
-  WM.open({ id, title:title||file, icon:icon||"🪟", body:wrap,
+  WM.open({ id, title:title||file, icon:icon||"🪟", body:wrap, appFile:file,
     w: Math.min(opts.w||860, vw-60),
     h: Math.min(opts.h||600, vh-70),
     status:"app // "+file });
@@ -815,13 +815,13 @@ const WM = (()=>{
       nx=Math.max(-win.offsetWidth+80,Math.min(nx,window.innerWidth-80));
       win.style.left=nx+"px"; win.style.top=ny+"px"; win.style.right="auto";
     });
-    const end=e=>{drag=false;handle.style.cursor="grab";};
+    const end=e=>{drag=false;handle.style.cursor="grab";saveDesktopState();};
     handle.addEventListener("pointerup",end);
     handle.addEventListener("pointercancel",end);
   }
 
   function open(opt){
-    // opt:{id,title,icon,menubar,body(node|html),status,w,h,dialog,closeOnly}
+    // opt:{id,title,icon,menubar,body(node|html),status,w,h,x,y,dialog,closeOnly}
     if(opt.id && wins[opt.id]){ const w=wins[opt.id]; w.min=false; w.el.style.display="flex"; bringFront(opt.id); return opt.id; }
     const id = opt.id || ("win"+(++idc));
     const win = el("div","win"+(opt.dialog?" dlg":""));
@@ -852,9 +852,10 @@ const WM = (()=>{
     if(!opt.dialog){
       win.style.width=(opt.w||440)+"px";
       win.style.height=(opt.h||320)+"px";
-      const off=(Object.keys(wins).length%6)*26;
-      win.style.left=Math.min(40+off, window.innerWidth-120)+"px";
-      win.style.top =Math.min(30+off, window.innerHeight-120)+"px";
+      if(opt.x!=null){ win.style.left=Math.max(0,Math.min(opt.x,window.innerWidth-60))+"px"; }
+      else{ const off=(Object.keys(wins).length%6)*26; win.style.left=Math.min(40+off, window.innerWidth-120)+"px"; }
+      if(opt.y!=null){ win.style.top=Math.max(0,Math.min(opt.y,window.innerHeight-40))+"px"; }
+      else{ const off=(Object.keys(wins).length%6)*26; win.style.top=Math.min(30+off, window.innerHeight-120)+"px"; }
     }else{
       win.style.left="50%"; win.style.top="40%";
       win.style.transform="translate(-50%,-50%)";
@@ -869,7 +870,7 @@ const WM = (()=>{
         const a=b.dataset.act;
         if(a==="close") close(id);
         else if(a==="min"){ win.style.display="none"; wins[id].min=true;
-          if(wins[id].taskEl) wins[id].taskEl.classList.remove("active"); }
+          if(wins[id].taskEl) wins[id].taskEl.classList.remove("active"); saveDesktopState(); }
         else if(a==="max"){ win.classList.toggle("max");
           if(!win.classList.contains("max")&&!isMobile){} }
       });
@@ -878,8 +879,9 @@ const WM = (()=>{
     dragify(win,titlebar);
 
     const taskEl = opt.dialog ? null : makeTask(id,opt.title||"ventana",opt.icon);
-    wins[id]={el:win,taskEl,min:false,title:opt.title};
+    wins[id]={el:win,taskEl,min:false,title:opt.title,icon:opt.icon,appFile:opt.appFile||null};
     bringFront(id);
+    if(!opt.dialog) saveDesktopState();
     return id;
   }
 
@@ -888,6 +890,7 @@ const WM = (()=>{
     w.el.remove(); if(w.taskEl) w.taskEl.remove();
     delete wins[id];
     const rest=Object.keys(wins); if(rest.length) bringFront(rest[rest.length-1]);
+    saveDesktopState();
   }
 
   function minimizeAll(){
@@ -908,6 +911,28 @@ const WM = (()=>{
 
   return {open,close,bringFront,minimizeAll,closeByFrame};
 })();
+
+/* =========================================================
+   Desktop State Persistence — la PC nunca se apaga
+   ========================================================= */
+let _dstTimer=null;
+function saveDesktopState(force){
+  clearTimeout(_dstTimer);
+  const doSave=()=>{
+    const state=[];
+    const allWins=WM._wins||wins;
+    Object.keys(allWins).forEach(id=>{
+      const w=allWins[id];
+      if(!w||!w.el||w.el.style.display==='none'&&!w.min) return;
+      const r=w.el.getBoundingClientRect();
+      state.push({id,title:w.title,icon:w.icon,appFile:w.appFile,min:w.min||false,
+        x:Math.round(r.left),y:Math.round(r.top),w:Math.round(w.el.offsetWidth),h:Math.round(w.el.offsetHeight)});
+    });
+    try{localStorage.setItem('esquizoDesktopState',JSON.stringify(state));}catch(e){}
+  };
+  if(force){doSave();}else{_dstTimer=setTimeout(doSave,400);}
+}
+window.addEventListener('beforeunload',()=>saveDesktopState(true));
 
 /* =========================================================
    Vistas (carpeta / texto / about / error)
@@ -987,6 +1012,61 @@ function openAbout(){
   `);
   WM.open({id:"about",title:"ACERCA_DE_MI.TXT",icon:"👤",body:b,w:560,h:480,
     status:"EL_LOKO_AKRATA // operador del códice"});
+}
+
+function openTaskMgr(){
+  const cpuUsed = (performance.now()%100).toFixed(1);
+  const memInfo = (()=>{
+    try{ const m=(performance.memory||{}); return m.usedJSHeapSize?`${(m.usedJSHeapSize/1048576).toFixed(1)} MB / ${(m.totalJSHeapSize/1048576).toFixed(1)} MB`:''; }
+    catch(e){return '';}
+  })();
+  const rows = Object.keys(wins).filter(id=>wins[id]&&wins[id].el).map(id=>{
+    const w=wins[id];
+    return `<tr><td style="color:var(--dim)">${id.slice(0,8)}</td><td>${esc(w.title||'')}</td>
+      <td style="color:${w.min?'var(--amber)':'var(--acid)'}">${w.min?'suspendido':'activo'}</td>
+      <td><button class="task-kill" data-id="${id}" style="background:var(--bg);color:var(--red);border:1px solid var(--red);font-size:10px;cursor:pointer;padding:1px 6px">✕ matar</button></td></tr>`;
+  }).join('')||'<tr><td colspan="4" style="color:var(--dim)">sin procesos activos</td></tr>';
+  const body=el("div","textwin",`
+    <h1 style="color:var(--corrupt)">⏻ ADMINISTRADOR DE TAREAS</h1>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin:12px 0">
+      <thead><tr style="color:var(--dim);text-align:left"><th>PID</th><th>nombre</th><th>estado</th><th></th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px">
+      <div style="flex:1;background:var(--bg-darker);padding:8px;border:1px solid var(--primary);font-size:11px">
+        <span style="color:var(--dim)">CPU:</span> <span style="color:var(--acid)">${cpuUsed}%</span><br>
+        <span style="color:var(--dim)">MEM:</span> ${memInfo||'no disponible'}<br>
+        <span style="color:var(--dim)">UPTIME:</span> <span style="color:var(--primary)">∞ (cannot_shutdown=true)</span>
+      </div>
+      <div style="flex:1;background:var(--bg-darker);padding:8px;border:1px solid var(--primary);font-size:11px">
+        <span style="color:var(--dim)">INFECCIÓN:</span> <span style="color:var(--corrupt)">${Infection.pct()}%</span><br>
+        <span style="color:var(--dim)">VENTANAS:</span> ${Object.keys(wins).length}<br>
+        <span style="color:var(--dim)">VISITAS:</span> ${Infection.visits()}
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button id="btnShutdownTm" style="background:var(--bg);color:var(--red);border:1px solid var(--red);font-family:inherit;padding:6px 14px;cursor:pointer">⏻ APAGAR SISTEMA</button>
+      <button id="btnRestartTm" style="background:var(--bg);color:var(--amber);border:1px solid var(--amber);font-family:inherit;padding:6px 14px;cursor:pointer">↻ REINICIAR</button>
+    </div>`);
+  WM.open({id:"taskmgr",title:"ADMINISTRADOR DE TAREAS",icon:"📊",body,w:520,h:440});
+  // kill buttons
+  setTimeout(()=>{
+    $$('.task-kill',body).forEach(b=>b.addEventListener('click',()=>{WM.close(b.dataset.id);}));
+    const sdBtn=body.querySelector('#btnShutdownTm');
+    const rsBtn=body.querySelector('#btnRestartTm');
+    if(sdBtn)sdBtn.addEventListener('click',()=>{WM.close('taskmgr');shutdownSystem();});
+    if(rsBtn)rsBtn.addEventListener('click',()=>{WM.close('taskmgr');WM.minimizeAll();clearDesktopState();setTimeout(()=>location.reload(),600);});
+  },100);
+}
+function shutdownSystem(){
+  clearDesktopState();
+  Object.keys(wins).forEach(id=>WM.close(id));
+  const black=el("div","boot");
+  black.style.cssText='position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Courier New",monospace;font-size:16px;color:var(--dim)';
+  black.innerHTML='<div style="font-size:28px;color:var(--red);margin-bottom:16px">⏻</div><div>APAGANDO EL SISTEMA...</div><div style="font-size:11px;margin-top:8px;color:#333">ESQUIZOAI_OS // hasta la próxima caída</div>';
+  document.body.appendChild(black);
+  setTimeout(()=>{black.style.opacity='0';black.style.transition='opacity 1.5s';},2000);
+  setTimeout(()=>{black.remove();},3500);
 }
 
 function openMiPC(){
@@ -1468,6 +1548,9 @@ function renderDesktop(){
   // ORACULO (I Ching + VALIS)
   const orac=el("div","icon",`<span class="gl" style="color:#ffb000">⯁</span><span class="lb">ORACULO</span>`);
   bindOpen(orac,openOracle); wrap.appendChild(orac);
+  // ADMINISTRADOR DE TAREAS
+  const tsk=el("div","icon",`<span class="gl" style="color:#779">📊</span><span class="lb">TAREAS</span>`);
+  bindOpen(tsk,openTaskMgr); wrap.appendChild(tsk);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -1531,7 +1614,8 @@ function buildStart(){
     {ic:"📜",lb:"README.TXT",fn:openReadme},
     {ic:"👤",lb:"Acerca de mí",fn:openAbout},
     {ic:"⊞",lb:"Modo clásico",fn:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞")},
-    {ic:"⛔",lb:"Apagar el sistema...",fn:()=>openError("APAGAR_EL_SISTEMA","ERROR: CANNOT ESCAPE THE SIMULATION.\nCANNOT_SHUTDOWN: TRUE\n\n¿Querías escapar de verdad?")},
+    {ic:"📊",lb:"Administrador de tareas",fn:openTaskMgr},
+    {ic:"⛔",lb:"Apagar el sistema...",fn:()=>{if(confirm('¿Apagar el sistema? Las ventanas se cerrarán.'))shutdownSystem();}},
   ];
   sys.forEach(s=>{
     const it=el("div","sm-item",`<span class="gl">${s.ic}</span><span>${esc(s.lb)}</span>`);
@@ -1630,6 +1714,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   renderDesktop();
   buildStart();
+  setTimeout(()=>restoreDesktopState(),800);
   tickClock(); setInterval(tickClock,15000);
 
   /* estado de infección: cuenta la visita y pinta el indicador */

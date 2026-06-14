@@ -116,6 +116,7 @@ footer a:hover{text-shadow:0 0 8px var(--acid);}
     <button class="ctl" id="shuf" title="aleatorio (shuffle)">🔀</button>
     <button class="ctl" id="loop" title="repetir todo (loop)">🔁</button>
     <button class="ctl" id="glitch" title="modo glitch visual">▓</button>
+    <button class="ctl" id="import" title="importar mp3">📂</button>
     <span class="vol"><input type="range" id="vol" min="0" max="1" step="0.01" value="0.85"></span>
   </div>
 </div>
@@ -312,10 +313,35 @@ window.addEventListener("message",e=>{
   applyCmd(d);
 });
 
+// ---- importar tracks ----
+let importedTracks = [];
+try{ importedTracks = JSON.parse(localStorage.getItem('esquizoImportedTracks')||'[]'); }catch(e){ importedTracks=[]; }
+
+$("#import").addEventListener("click",()=>{
+  const inp=document.createElement('input');inp.type='file';inp.accept='audio/mp3,audio/mpeg,.mp3';inp.multiple=true;
+  inp.addEventListener('change',()=>{
+    [...inp.files].forEach(f=>{
+      const url=URL.createObjectURL(f);
+      const name=f.name.replace(/\.mp3$/i,'');
+      const artist=prompt('Artista para "'+name+'":','desconocido');
+      const title=prompt('Título:',name);
+      if(!title) return;
+      const id='imp_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+      importedTracks.push({id,title,artist:artist||'desconocido',file:url,_imported:true});
+      TRACKS.push(importedTracks[importedTracks.length-1]);
+      localStorage.setItem('esquizoImportedTracks',JSON.stringify(importedTracks));
+    });
+    renderList();
+  });inp.click();
+});
+
+// load imported tracks
+importedTracks.forEach(t=>{TRACKS.push(t);});
+
 fetch("playlist.json",{cache:"no-store"})
   .then(r=>r.json())
-  .then(j=>{ TRACKS=(j&&j.tracks)||[]; renderList(); if(pendingCmd){ applyCmd(pendingCmd); pendingCmd=null; } })
-  .catch(()=>{ TRACKS=[]; renderList(); });
+  .then(j=>{ TRACKS=(j&&j.tracks)||[]; importedTracks.forEach(t=>TRACKS.push(t)); renderList(); if(pendingCmd){ applyCmd(pendingCmd); pendingCmd=null; } })
+  .catch(()=>{ TRACKS=[]; importedTracks.forEach(t=>TRACKS.push(t)); renderList(); });
 </script>
 </body>
 </html>

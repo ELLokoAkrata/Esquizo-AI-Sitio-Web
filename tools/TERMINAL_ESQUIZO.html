@@ -361,6 +361,31 @@
             background: #a855f7;
             color: var(--bg);
         }
+        /* sessions */
+        .sess-panel{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85)}
+        .sess-panel.open{display:flex;flex-direction:column}
+        .sess-inner{background:var(--bg-card);border:1px solid var(--primary);max-width:360px;width:100%;margin:auto;display:flex;flex-direction:column;max-height:80vh;overflow:hidden}
+        .sess-inner .sess-hdr{padding:10px 12px;border-bottom:1px solid rgba(0,255,65,.3);font-size:12px;color:var(--primary);display:flex;justify-content:space-between;align-items:center}
+        .sess-inner .sess-list{flex:1;overflow-y:auto;padding:8px}
+        .sess-inner .sess-entry{padding:8px 10px;margin-bottom:4px;border:1px solid rgba(0,255,65,.15);cursor:pointer;font-size:11px;color:var(--text)}
+        .sess-inner .sess-entry:hover,.sess-inner .sess-entry.active{border-color:var(--primary)}
+        .sess-inner .sess-entry .sdate{color:var(--text-dim);font-size:10px}
+        .sess-inner .sess-entry .sfirst{color:var(--text);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .sess-inner .sess-entry .scnt{color:var(--primary);font-size:10px;margin-top:2px}
+        .sess-inner .sess-entry .sdel{float:right;color:#ef4444;font-size:16px;line-height:1;cursor:pointer;opacity:.5}
+        .sess-inner .sess-entry .sdel:hover{opacity:1}
+        .sess-inner .sess-empty{color:var(--text-dim);font-size:12px;text-align:center;padding:24px 12px;font-style:italic}
+        .sess-inner .sess-close{background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer}
+        .sess-inner .sess-close:hover{color:#ef4444}
+        .sess-btn{background:var(--bg-card);border:1px solid var(--primary);color:var(--primary);font-family:inherit;font-size:11px;padding:2px 8px;cursor:pointer}
+        .sess-btn:hover{background:var(--primary);color:var(--bg)}
+        /* resume */
+        .resume-card{background:var(--bg-card);border:1px solid var(--primary);padding:12px;margin:0 0 12px;font-size:12px;text-align:center;color:var(--text)}
+        .resume-card .rq{color:var(--primary);font-size:13px;margin-bottom:4px}
+        .resume-card .rmeta{color:var(--text-dim);margin-bottom:8px}
+        .resume-card .rbtns{display:flex;gap:6px;justify-content:center}
+        .resume-card .rbtns button{background:var(--bg-darker);color:var(--primary);border:1px solid var(--primary);font-family:inherit;font-size:11px;padding:4px 12px;cursor:pointer}
+        .resume-card .rbtns button:hover{background:var(--primary);color:var(--bg)}
     </style>
 </head>
 <body>
@@ -442,6 +467,7 @@
             <button id="btn-stop" class="control-btn danger" disabled>■ DETENER</button>
             <button id="btn-clear" class="control-btn danger">✕ LIMPIAR</button>
             <button id="btn-download" class="control-btn" disabled style="border-color: #a855f7; color: #a855f7;">⬇ DESCARGAR MD</button>
+            <button id="btn-sessions" class="sess-btn">📖 SESIONES</button>
         </div>
 
         <!-- ÁREA DE CONVERSACIÓN -->
@@ -470,6 +496,14 @@
         </div>
     </div>
 
+    <!-- sessions panel -->
+    <div class="sess-panel" id="sessPanel">
+      <div class="sess-inner">
+        <div class="sess-hdr"><span>📖 DIÁLOGOS</span><button class="sess-close" id="sessClose">✕</button></div>
+        <div class="sess-list" id="sessList"><div class="sess-empty">Sin diálogos guardados.</div></div>
+      </div>
+    </div>
+
     <script>
         // Configuración
         const API_URL = '/api/terminal';
@@ -486,6 +520,84 @@
         let isRunning = false;
         let initialPrompt = '';
         let targetTurns = 5;
+
+        /* ---- sessions (localStorage) ---- */
+        let termSessions=[], termActiveSessionId=null;
+        function loadTSessions(){
+          try{termSessions=JSON.parse(localStorage.getItem('terminalSessions')||'[]');}catch(e){termSessions=[];}
+          if(!Array.isArray(termSessions))termSessions=[];
+          termActiveSessionId=localStorage.getItem('terminalActiveSession')||null;
+          if(termActiveSessionId&&!termSessions.find(s=>s.id===termActiveSessionId))termActiveSessionId=null;
+        }
+        function saveTSessions(){localStorage.setItem('terminalSessions',JSON.stringify(termSessions));localStorage.setItem('terminalActiveSession',termActiveSessionId||'');renderTermSessList();}
+        function getActiveTSess(){return termSessions.find(s=>s.id===termActiveSessionId)||null;}
+        function saveToTSess(){
+          const s=getActiveTSess();if(!s)return;
+          s.modelA=modelASelect.value;s.modelB=modelBSelect.value;
+          s.grimorio=currentGrimorio?currentGrimorio.titulo:'CAOS PURO';
+          s.initialPrompt=initialPrompt;s.targetTurns=targetTurns;
+          s.history=conversationHistory.slice();s.currentTurn=currentTurn;s.totalTokens=totalTokens;
+          s.updatedAt=Date.now();saveTSessions();
+        }
+        function startNewTDialog(){
+          termActiveSessionId=null;const sid='s'+Date.now();
+          termSessions.push({id:sid,createdAt:Date.now(),modelA:modelASelect.value,modelB:modelBSelect.value,
+            grimorio:'',initialPrompt:'',targetTurns:0,history:[],currentTurn:0,totalTokens:0});
+          termActiveSessionId=sid;saveTSessions();
+        }
+        function loadTDialog(id){
+          const s=termSessions.find(x=>x.id===id);if(!s)return;
+          termActiveSessionId=id;saveTSessions();
+          conversationHistory=s.history.slice();currentTurn=s.currentTurn;totalTokens=s.totalTokens;
+          if(s.modelA)modelASelect.value=s.modelA;if(s.modelB)modelBSelect.value=s.modelB;
+          conversationArea.innerHTML='';conversationHistory.forEach((m,i)=>{
+            const turn=Math.floor(i/2)+1;const isA=i%2===0;const type=isA?'model-a':'model-b';
+            const color=isA?'🔴':'🔵';addMessage(m.content,type,`${color} ${m.model}`,turn);
+          });
+          statTurns.textContent=currentTurn;statTokens.textContent=totalTokens;
+          btnDownload.disabled=conversationHistory.length===0;
+        }
+        function renderTermSessList(){
+          const el=document.getElementById('sessList');if(!el)return;
+          if(termSessions.length===0){el.innerHTML='<div class="sess-empty">Sin diálogos guardados.</div>';return;}
+          el.innerHTML=termSessions.map(s=>{
+            const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+            const lastMsg=(s.history||[]).slice(-1)[0]?.content||'sin mensajes';
+            const cnt=(s.history||[]).length;const isActive=s.id===termActiveSessionId;
+            return `<div class="sess-entry${isActive?' active':''}" data-sid="${s.id}">
+              <span class="sdel" data-del="${s.id}">×</span>
+              <div class="sdate">${ds}</div>
+              <div class="sfirst">${esc2(lastMsg.slice(0,60))}</div>
+              <div class="scnt">${cnt} turnos · ${s.grimorio||'CAOS PURO'}${isActive?' · activo':''}</div>
+            </div>`;
+          }).join('');
+          [...el.querySelectorAll('.sess-entry')].forEach(entry=>{entry.addEventListener('click',e=>{
+            if(e.target.classList.contains('sdel')){e.stopPropagation();
+              const sid=e.target.dataset.del;if(confirm('¿Borrar este diálogo?')){
+                termSessions=termSessions.filter(s=>s.id!==sid);if(termActiveSessionId===sid){termActiveSessionId=null;clearConversation();}
+                saveTSessions();}
+              return;}
+            const sid=entry.dataset.sid;if(sid===termActiveSessionId)return;
+            loadTDialog(sid);document.getElementById('sessPanel').classList.remove('open');
+          });});
+        }
+        function esc2(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+        function showTermResumeCard(){
+          const s=getActiveTSess();if(!s||!(s.history||[]).length)return;
+          const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+          const card=document.createElement('div');card.className='resume-card';
+          card.innerHTML=`<div class="rq">Diálogo activo</div><div class="rmeta">${ds} · ${s.history.length} turnos · ${s.grimorio||'CAOS PURO'}</div>
+            <div class="rbtns"><button id="btnTResume">CARGAR</button><button id="btnTResumeNew">NUEVO</button></div>`;
+          conversationArea.insertBefore(card,conversationArea.firstChild);
+          card.querySelector('#btnTResume').addEventListener('click',()=>{card.remove();loadTDialog(termActiveSessionId);});
+          card.querySelector('#btnTResumeNew').addEventListener('click',()=>{card.remove();startNewTDialog();});
+        }
+        // panel events
+        document.addEventListener('DOMContentLoaded',()=>{
+          const sbtn=document.getElementById('btn-sessions');if(sbtn)sbtn.addEventListener('click',()=>{document.getElementById('sessPanel').classList.add('open');renderTermSessList();});
+          const scls=document.getElementById('sessClose');if(scls)scls.addEventListener('click',()=>{document.getElementById('sessPanel').classList.remove('open');});
+        });
+        /* ---- /sessions ---- */
 
         // Elementos DOM
         const modelASelect = document.getElementById('model-a');
@@ -724,6 +836,7 @@
                     content: data.content,
                     model: modelDisplayName,
                 });
+                saveToTSess();
 
                 addMessage(data.content, msgType, `${colorLabel} ${modelDisplayName}`, turnNum);
 
@@ -794,6 +907,7 @@
             btnStop.disabled = true;
             btnDownload.disabled = conversationHistory.length === 0;
             statStatus.textContent = currentTurn >= targetTurns ? '✅ Completado' : '⏹ Detenido';
+            saveToTSess();
         }
 
         // Detener conversación
@@ -826,6 +940,7 @@
                     Selecciona modo, turnos y opcionalmente un prompt inicial. Presiona INICIAR.
                 </div>
             `;
+            startNewTDialog();
         }
 
         // Descargar conversación como Markdown
@@ -880,6 +995,8 @@
 
         // Inicializar
         loadGrimorios();
+        loadTSessions();
+        if(getActiveTSess()){ showTermResumeCard(); } else { startNewTDialog(); }
     </script>
 </body>
 </html>

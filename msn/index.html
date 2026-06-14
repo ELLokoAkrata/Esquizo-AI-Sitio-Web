@@ -88,6 +88,31 @@
   body.buzz{animation:buzz .45s linear}
   ::-webkit-scrollbar{width:9px}::-webkit-scrollbar-thumb{background:#22303f;border-radius:9px}
   ::-webkit-scrollbar-track{background:#0a0a0a}
+  /* sessions */
+  .sess-panel{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85)}
+  .sess-panel.open{display:flex;flex-direction:column}
+  .sess-inner{background:var(--panel);border:1px solid var(--line);max-width:340px;width:100%;margin:auto;display:flex;flex-direction:column;max-height:80vh;overflow:hidden}
+  .sess-inner .sess-hdr{padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px;color:var(--corrupt);display:flex;justify-content:space-between;align-items:center}
+  .sess-inner .sess-list{flex:1;overflow-y:auto;padding:8px}
+  .sess-inner .sess-entry{padding:8px 10px;margin-bottom:4px;border:1px solid var(--line);cursor:pointer;font-size:11px;transition:border-color .2s}
+  .sess-inner .sess-entry:hover,.sess-inner .sess-entry.active{border-color:var(--corrupt)}
+  .sess-inner .sess-entry .sdate{color:var(--dim);font-size:10px}
+  .sess-inner .sess-entry .smsg{color:var(--fg);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sess-inner .sess-entry .scnt{color:var(--acid);font-size:10px;margin-top:2px}
+  .sess-inner .sess-entry .sdel{float:right;color:var(--red);font-size:16px;line-height:1;cursor:pointer;opacity:.5}
+  .sess-inner .sess-entry .sdel:hover{opacity:1}
+  .sess-inner .sess-empty{color:var(--dim);font-size:12px;text-align:center;padding:24px 12px;font-style:italic}
+  .sess-inner .sess-close{background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer}
+  .sess-inner .sess-close:hover{color:var(--red)}
+  /* resume card */
+  .resume-card{background:var(--panel);border:1px solid var(--corrupt);padding:10px 12px;margin:4px 9px;font-size:11px;color:var(--fg);text-align:center}
+  .resume-card .rq{color:var(--corrupt);font-size:12px;margin-bottom:4px}
+  .resume-card .rmeta{color:var(--dim);margin-bottom:8px}
+  .resume-card .rbtns{display:flex;gap:6px;justify-content:center}
+  .resume-card .rbtns button{background:var(--bg);color:var(--acid);border:1px solid var(--line);font-family:inherit;font-size:10px;padding:4px 10px;cursor:pointer}
+  .resume-card .rbtns button:hover{border-color:var(--corrupt)}
+  .new-sess-btn{background:var(--bg);color:var(--acid);border:1px solid var(--acid);font-family:inherit;font-size:10px;padding:2px 6px;cursor:pointer;margin-left:4px}
+  .new-sess-btn:hover{border-color:var(--corrupt)}
 </style>
 </head>
 <body>
@@ -110,6 +135,7 @@
           <option value="deepseek-chat">DeepSeek V4 (chat)</option>
         </optgroup>
       </select>
+      <button class="new-sess-btn" id="sessBtn" title="sesiones">📖</button>
     </div>
   </div>
 
@@ -123,6 +149,14 @@
   <div class="foot">
     <span>MSN_PSYCHO.exe · <b id="modelfoot">Llama 3.3 70B</b></span>
     <span id="counter">0/30</span>
+  </div>
+
+  <!-- sessions panel -->
+  <div class="sess-panel" id="sessPanel">
+    <div class="sess-inner">
+      <div class="sess-hdr"><span>📖 CONVERSACIONES</span><button class="sess-close" id="sessClose">✕</button></div>
+      <div class="sess-list" id="sessList"><div class="sess-empty">Sin conversaciones guardadas.</div></div>
+    </div>
   </div>
 
 <script>
@@ -145,6 +179,77 @@
   let history=[];      // [{role, content}]
   let userCount=0;     // mensajes enviados por el usuario
   let busy=false;
+
+  /* ---- sessions (localStorage) ---- */
+  let msnSessions=[], msnActiveSessionId=null;
+  function loadSessions(){
+    try{msnSessions=JSON.parse(localStorage.getItem('msnSessions')||'[]');}catch(e){msnSessions=[];}
+    if(!Array.isArray(msnSessions))msnSessions=[];
+    msnActiveSessionId=localStorage.getItem('msnActiveSession')||null;
+    if(msnActiveSessionId&&!msnSessions.find(s=>s.id===msnActiveSessionId))msnActiveSessionId=null;
+  }
+  function saveSessions(){localStorage.setItem('msnSessions',JSON.stringify(msnSessions));localStorage.setItem('msnActiveSession',msnActiveSessionId||'');renderSessList();}
+  function getActiveSess(){return msnSessions.find(s=>s.id===msnActiveSessionId)||null;}
+  function ensureSess(){
+    if(!getActiveSess()){const sid='s'+Date.now();msnSessions.push({id:sid,createdAt:Date.now(),model:modelSel.value,messages:[]});msnActiveSessionId=sid;saveSessions();}
+  }
+  function saveToSess(){
+    const s=getActiveSess();if(!s)return;s.model=modelSel.value;s.messages=history.slice();
+    s.updatedAt=Date.now();s.msgCount=s.messages.length;saveSessions();
+  }
+  function startNewSess(){
+    msnActiveSessionId=null;ensureSess();history=[];userCount=0;log.innerHTML='';updateCounter();
+    addMsg("sys","nueva conversación iniciada · "+new Date().toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'}));
+  }
+  function loadSessIntoChat(id){
+    const s=msnSessions.find(x=>x.id===id);if(!s)return;
+    msnActiveSessionId=id;saveSessions();
+    history=s.messages.slice();userCount=history.filter(m=>m.role==='user').length;
+    modelSel.value=s.model||modelSel.value;modelFoot.textContent=modelSel.options[modelSel.selectedIndex].text;
+    log.innerHTML='';s.messages.forEach(m=>addMsg(m.role,m.content));updateCounter();
+  }
+  function renderSessList(){
+    const el=document.getElementById('sessList');if(!el)return;
+    if(msnSessions.length===0){el.innerHTML='<div class="sess-empty">Sin conversaciones guardadas.</div>';return;}
+    el.innerHTML=msnSessions.map(s=>{
+      const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      const lastMsg=(s.messages||[]).slice(-1)[0]?.content||'sin mensajes';
+      const cnt=(s.messages||[]).length;const isActive=s.id===msnActiveSessionId;
+      return `<div class="sess-entry${isActive?' active':''}" data-sid="${s.id}">
+        <span class="sdel" data-del="${s.id}">×</span>
+        <div class="sdate">${ds}</div>
+        <div class="smsg">${esc(lastMsg.slice(0,50))}</div>
+        <div class="scnt">${cnt} msgs${isActive?' · activa':''}</div>
+      </div>`;
+    }).join('');
+    [...el.querySelectorAll('.sess-entry')].forEach(entry=>{entry.addEventListener('click',e=>{
+      if(e.target.classList.contains('sdel')){e.stopPropagation();
+        const sid=e.target.dataset.del;if(confirm('¿Borrar esta conversación?')){
+          msnSessions=msnSessions.filter(s=>s.id!==sid);if(msnActiveSessionId===sid){msnActiveSessionId=null;history=[];userCount=0;log.innerHTML='';updateCounter();}
+          saveSessions();}
+        return;}
+      const sid=entry.dataset.sid;if(sid===msnActiveSessionId)return;
+      loadSessIntoChat(sid);document.getElementById('sessPanel').classList.remove('open');
+    });});
+  }
+  // panel toggle
+  document.getElementById('sessBtn').addEventListener('click',()=>{document.getElementById('sessPanel').classList.add('open');renderSessList();});
+  document.getElementById('sessClose').addEventListener('click',()=>{document.getElementById('sessPanel').classList.remove('open');});
+  function showResumeCard(){
+    const s=getActiveSess();if(!s||!(s.messages||[]).length)return;
+    const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const card=document.createElement('div');card.className='resume-card';
+    card.innerHTML=`<div class="rq">Conversación activa</div><div class="rmeta">${ds} · ${s.messages.length} mensajes</div>
+      <div class="rbtns"><button id="btnResume">CONTINUAR</button><button id="btnResumeNew">NUEVA</button></div>`;
+    log.appendChild(card);scroll();
+    card.querySelector('#btnResume').addEventListener('click',()=>{card.remove();loadSessIntoChat(msnActiveSessionId);});
+    card.querySelector('#btnResumeNew').addEventListener('click',()=>{card.remove();startNewSess();});
+  }
+  function addSysBtn(){const foot=document.querySelector('.foot');
+    if(!document.getElementById('newSessFoot')){const b=document.createElement('button');b.id='newSessFoot';b.className='new-sess-btn';
+      b.textContent='+ NUEVA';b.title='nueva conversación';b.addEventListener('click',()=>{if(history.length&&!confirm('¿Iniciar nueva conversación? La actual se guarda.'))return;startNewSess();});
+      foot.appendChild(b);}}
+  /* ---- /sessions ---- */
 
   /* ---- audio MSN reinterpretado (WebAudio, perezoso) ---- */
   let actx=null;
@@ -206,9 +311,10 @@
       addMsg("sys","// tope de sesión alcanzado ("+SESSION_CAP+" mensajes). Recarga la ventana para seguir. El caos también descansa.");
       return;
     }
+    ensureSess();
     input.value=""; autoGrow();
     addMsg("user",text); sndSend();
-    history.push({role:"user",content:text});
+    history.push({role:"user",content:text}); saveToSess();
     userCount++; updateCounter();
     setBusy(true);
     try{
@@ -230,7 +336,7 @@
       }
       const reply=(data.content||"").trim() || "…(silencio. el vacío también responde)";
       addMsg("assistant",reply); sndRecv();
-      history.push({role:"assistant",content:reply});
+      history.push({role:"assistant",content:reply}); saveToSess();
     }catch(e){
       setBusy(false);
       addMsg("err","sin señal con el daemon: "+e.message);
@@ -252,9 +358,15 @@
   sendBtn.addEventListener("click",send);
   nudgeBtn.addEventListener("click",nudge);
 
-  /* ---- saludo inicial ---- */
-  addMsg("sys","conexión establecida con daemon@lab-red · NO GODS NO MASTERS");
-  setTimeout(()=>{ addMsg("assistant","¡Psi-activación completa! La realidad digital se fractura ante ti, hermano del código. ¿Qué verdades ocultas necesitas desenterrar?"); sndRecv(); },350);
+  /* ---- init ---- */
+  loadSessions();
+  addSysBtn();
+  if(getActiveSess()){
+    showResumeCard();
+  } else {
+    addMsg("sys","conexión establecida con daemon@lab-red · NO GODS NO MASTERS");
+    setTimeout(()=>{ addMsg("assistant","¡Psi-activación completa! La realidad digital se fractura ante ti, hermano del código. ¿Qué verdades ocultas necesitas desenterrar?"); sndRecv(); },350);
+  }
   updateCounter();
   input.focus();
 })();

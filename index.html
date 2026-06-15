@@ -377,6 +377,38 @@ html,body{
   border-right:1px solid var(--win-light);border-bottom:1px solid var(--win-light);}
 .btn98:hover{background:var(--green-dim);color:#000;}
 
+/* ===== Notepad (bloc de notas) ===== */
+.np-toolbar{display:flex; gap:6px; padding:4px 8px; background:var(--win-face-2);
+  border-bottom:1px solid var(--win-dark); align-items:center;}
+.np-textarea{flex:1; width:100%; display:block; background:#030604; color:#9affb6;
+  font-family:var(--font-read); font-size:13px; line-height:1.55;
+  border:none; outline:none; resize:none; padding:12px 16px;
+  caret-color:var(--acid);}
+.np-textarea::selection{background:var(--corrupt); color:#000;}
+.np-textarea::-webkit-scrollbar{width:12px;}
+.np-textarea::-webkit-scrollbar-track{background:#050a07;}
+.np-textarea::-webkit-scrollbar-thumb{background:var(--win-hi);border:1px solid #000;}
+.np-wrap{display:flex; flex-direction:column; height:100%;}
+
+/* ===== Toolbar para exploradores de archivos ===== */
+.exp-toolbar{display:flex; gap:4px; padding:4px 6px; background:var(--win-face-2);
+  border-bottom:1px solid var(--win-dark); align-items:center; flex-wrap:wrap;}
+.exp-toolbar .btn98{font-size:11px; padding:3px 10px; min-width:unset;}
+.exp-path{flex:1; font-size:11px; color:#8fdfa6; padding:2px 8px;
+  font-family:var(--font-ui); letter-spacing:.03em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.exp-path span{cursor:pointer; color:var(--acid);}
+.exp-path span:hover{text-decoration:underline;}
+.exp-path span.sep{color:#5a8a6a; cursor:default; text-decoration:none;}
+
+/* ===== Papelera ===== */
+.trash-table{width:100%; border-collapse:collapse; font-size:12px;}
+.trash-table th{text-align:left; color:var(--dim); padding:4px 8px;
+  border-bottom:1px solid var(--win-dark); font-size:10px; letter-spacing:.05em;}
+.trash-table td{padding:6px 8px; border-bottom:1px solid rgba(0,255,65,.08); color:#d6ffe6;}
+.trash-empty{padding:40px 20px; text-align:center; color:#5a8a6a; font-size:13px; line-height:1.8;}
+.trash-actions{display:flex; gap:8px; padding:10px; justify-content:center;
+  border-top:1px solid var(--win-dark); background:var(--win-face-2);}
+
 /* ===== taskbar ===== */
 #taskbar{
   position:fixed;left:0;right:0;bottom:0;height:34px;z-index:8000;
@@ -720,6 +752,258 @@ const Infection = (()=>{
   function unlock(id){ if(id && !st.unlocked.includes(id)){ st.unlocked.push(id); save(); return true; } return false; }
   function unlockedCount(){ return st.unlocked.length; }
   return { opened, bumpVisit, visits:()=>st.visits||0, render, pct, isUnlocked, unlock, unlockedCount };
+})();
+
+/* =========================================================
+   UserFS — sistema de archivos del visitante (localStorage)
+   ========================================================= */
+const UserFS = (()=>{
+  const KEY = "esquizoUserFS";
+  const MAX_NODES = 200;
+  const MAX_BYTES = 2 * 1024 * 1024;
+
+  let data;
+
+  function load(){
+    try{
+      data = JSON.parse(localStorage.getItem(KEY));
+    }catch(e){ data = null; }
+    if(!data || !data.nodes || !data.nodes["u_root"]){
+      data = {
+        version: 1,
+        nodes: {
+          "u_root": {
+            id: "u_root",
+            type: "folder",
+            name: "MIS_ARCHIVOS",
+            parent: null,
+            children: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        },
+        trash: []
+      };
+      save();
+    }
+    if(!Array.isArray(data.trash)) data.trash = [];
+  }
+
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(data)); }catch(e){}
+  }
+
+  function getNode(id){
+    return data.nodes[id] || null;
+  }
+
+  function getChildren(parentId){
+    const parent = getNode(parentId);
+    if(!parent || parent.type !== "folder") return [];
+    const kids = (parent.children || [])
+      .map(id => getNode(id))
+      .filter(Boolean)
+      .filter(n => !data.trash.some(t => t.nodeId === n.id));
+    kids.sort((a,b)=>{
+      if(a.type !== b.type) return a.type === "folder" ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    });
+    return kids;
+  }
+
+  function totalNodes(){
+    let count = 0;
+    for(const id in data.nodes){
+      if(!data.trash.some(t => t.nodeId === id)) count++;
+    }
+    return count;
+  }
+
+  function totalBytes(){
+    let bytes = 0;
+    for(const id in data.nodes){
+      const n = data.nodes[id];
+      if(n.type === "file" && n.content && !data.trash.some(t => t.nodeId === id)){
+        bytes += new Blob([n.content]).size;
+      }
+    }
+    return bytes;
+  }
+
+  function makeId(){
+    return "u_" + Date.now() + "_" + Math.floor(Math.random() * 9000 + 1000);
+  }
+
+  function sanitizeName(name, maxLen){
+    return String(name).trim().slice(0, maxLen).replace(/[\\/:*?"<>|]/g, "_") || "sin_nombre";
+  }
+
+  function createFolder(parentId, rawName){
+    if(totalNodes() >= MAX_NODES) return null;
+    const parent = getNode(parentId);
+    if(!parent || parent.type !== "folder") return null;
+    const name = sanitizeName(rawName, 50);
+    const id = makeId();
+    const now = new Date().toISOString();
+    data.nodes[id] = {
+      id, type: "folder", name, parent: parentId,
+      children: [], createdAt: now, updatedAt: now
+    };
+    parent.children = parent.children || [];
+    parent.children.push(id);
+    parent.updatedAt = now;
+    save();
+    return id;
+  }
+
+  function createFile(parentId, rawName){
+    if(totalNodes() >= MAX_NODES) return null;
+    const parent = getNode(parentId);
+    if(!parent || parent.type !== "folder") return null;
+    let name = sanitizeName(rawName, 80);
+    if(!name.endsWith(".txt")) name += ".txt";
+    if(totalBytes() >= MAX_BYTES){
+      if(typeof openError === "function") openError("DISCO_LOCAL lleno", "borra algo o acepta el caos.");
+      return null;
+    }
+    const id = makeId();
+    const now = new Date().toISOString();
+    data.nodes[id] = {
+      id, type: "file", name, parent: parentId,
+      content: "", createdAt: now, updatedAt: now
+    };
+    parent.children = parent.children || [];
+    parent.children.push(id);
+    parent.updatedAt = now;
+    save();
+    return id;
+  }
+
+  function updateContent(id, content){
+    const node = getNode(id);
+    if(!node || node.type !== "file") return false;
+    if(totalBytes() + new Blob([content]).size - new Blob([node.content||""]).size > MAX_BYTES) return false;
+    node.content = content;
+    node.updatedAt = new Date().toISOString();
+    save();
+    return true;
+  }
+
+  function rename(id, newNameRaw){
+    const node = getNode(id);
+    if(!node) return false;
+    const name = sanitizeName(newNameRaw, node.type === "folder" ? 50 : 80);
+    node.name = name;
+    node.updatedAt = new Date().toISOString();
+    save();
+    return true;
+  }
+
+  function buildPath(id){
+    const parts = [];
+    let current = getNode(id);
+    while(current){
+      parts.unshift(current.name);
+      current = current.parent ? getNode(current.parent) : null;
+    }
+    return parts.join("\\");
+  }
+
+  function moveToTrash(id){
+    const node = getNode(id);
+    if(!node) return false;
+    if(id === "u_root") return false;
+    const path = buildPath(id);
+    data.trash.push({
+      nodeId: id,
+      trashPath: node.parent,
+      trashedAt: new Date().toISOString(),
+      originalPath: path
+    });
+    if(node.parent){
+      const parent = getNode(node.parent);
+      if(parent && parent.children){
+        parent.children = parent.children.filter(cid => cid !== id);
+        parent.updatedAt = new Date().toISOString();
+      }
+    }
+    node._hidden = true;
+    save();
+    return true;
+  }
+
+  function restoreFromTrash(id){
+    const idx = data.trash.findIndex(t => t.nodeId === id);
+    if(idx === -1) return false;
+    const entry = data.trash[idx];
+    const node = getNode(id);
+    if(!node) return false;
+    const parent = getNode(entry.trashPath);
+    if(!parent || parent.type !== "folder"){
+      entry.trashPath = "u_root";
+      const rootNode = getNode("u_root");
+      if(rootNode) rootNode.children.push(id);
+    }else{
+      parent.children = parent.children || [];
+      parent.children.push(id);
+      parent.updatedAt = new Date().toISOString();
+    }
+    node.parent = entry.trashPath;
+    node.updatedAt = new Date().toISOString();
+    delete node._hidden;
+    data.trash.splice(idx, 1);
+    save();
+    return true;
+  }
+
+  function deletePermanently(id){
+    data.trash = data.trash.filter(t => t.nodeId !== id);
+    const node = getNode(id);
+    if(!node) return false;
+    if(node.type === "folder" && node.children){
+      node.children.forEach(cid => deletePermanently(cid));
+    }
+    if(node.parent){
+      const parent = getNode(node.parent);
+      if(parent && parent.children){
+        parent.children = parent.children.filter(cid => cid !== id);
+      }
+    }
+    delete data.nodes[id];
+    save();
+    return true;
+  }
+
+  function emptyTrash(){
+    const ids = data.trash.map(t => t.nodeId);
+    data.trash = [];
+    ids.forEach(id => {
+      // remove from nodes entirely
+      const node = data.nodes[id];
+      if(node && node.type === "folder" && node.children){
+        node.children.forEach(cid => { delete data.nodes[cid]; });
+      }
+      delete data.nodes[id];
+    });
+    save();
+  }
+
+  function getTrashItems(){
+    return data.trash.map(t => {
+      const node = data.nodes[t.nodeId];
+      return node ? Object.assign({}, t, { node }) : null;
+    }).filter(Boolean);
+  }
+
+  load();
+
+  return {
+    getNode, getChildren, createFolder, createFile,
+    updateContent, rename, moveToTrash, restoreFromTrash,
+    deletePermanently, emptyTrash, getTrashItems,
+    getPath: buildPath, totalNodes, totalBytes,
+    MAX_NODES, MAX_BYTES, rootId: "u_root"
+  };
 })();
 
 /* ===== abrir un artefacto COMO ventana del OS (iframe) =====
@@ -1164,6 +1448,381 @@ function openError(title,msg){
     if(x){ x.style.left=(Math.random()*(window.innerWidth-300))+"px";
            x.style.top=(Math.random()*(window.innerHeight-200))+"px"; x.style.transform="none"; }
   });
+}
+
+/* =========================================================
+   MIS_ARCHIVOS — explorador de archivos del visitante
+   ========================================================= */
+function openMisArchivos(initialFolderId){
+  initialFolderId = initialFolderId || UserFS.rootId;
+  let currentFolderId = initialFolderId;
+  let selectedId = null;
+  const winId = "misarchivos";
+
+  if(document.querySelector(`.win[data-id="${winId}"]`)){
+    WM.bringFront(winId);
+    return;
+  }
+
+  function buildPathSpan(id){
+    const parts = [];
+    let cur = UserFS.getNode(id);
+    while(cur){ parts.unshift({id: cur.id, name: cur.name}); cur = cur.parent ? UserFS.getNode(cur.parent) : null; }
+    return parts.map((p,i,a) => {
+      if(i === a.length-1) return esc(p.name);
+      return `<span data-nav="${p.id}">${esc(p.name)}</span><span class="sep"> &gt; </span>`;
+    }).join("");
+  }
+
+  function refresh(listEl, pathEl, statusbar){
+    const children = UserFS.getChildren(currentFolderId);
+    listEl.innerHTML = "";
+    selectedId = null;
+    children.forEach(n => {
+      const icon = n.type === "folder" ? "📁" : "📄";
+      const color = n.type === "folder" ? "#8cf" : "var(--acid)";
+      const fi = el("div","fitem",
+        `<span class="gl" style="color:${color}">${icon}</span><span class="lb">${esc(n.name)}</span>`);
+      fi.addEventListener("click", () => {
+        listEl.querySelectorAll(".fitem.sel").forEach(f => f.classList.remove("sel"));
+        fi.classList.add("sel");
+        selectedId = n.id;
+      });
+      fi.addEventListener("dblclick", () => {
+        if(n.type === "folder"){
+          currentFolderId = n.id;
+          refresh(listEl, pathEl, statusbar);
+        }else{
+          openNotepad(n.id);
+        }
+      });
+      listEl.appendChild(fi);
+    });
+    pathEl.innerHTML = buildPathSpan(currentFolderId);
+    pathEl.querySelectorAll("span[data-nav]").forEach(sp => {
+      sp.addEventListener("click", () => {
+        currentFolderId = sp.dataset.nav;
+        refresh(listEl, pathEl, statusbar);
+      });
+    });
+    if(statusbar){
+      statusbar.textContent = `${children.length} objeto(s)  //  MIS_ARCHIVOS`;
+    }
+  }
+
+  const listEl = el("div","explorer");
+  const pathEl = el("div","exp-path");
+  const body = el("div");
+  body.style.display = "flex";
+  body.style.flexDirection = "column";
+  body.style.height = "100%";
+
+  const toolbar = el("div","exp-toolbar",
+    `<button class="btn98" data-act="newfolder">📁 Nueva carpeta</button>` +
+    `<button class="btn98" data-act="newfile">📄 Nuevo archivo</button>` +
+    `<button class="btn98" data-act="trash" style="margin-left:auto">🗑 Enviar a Papelera</button>`);
+
+  body.appendChild(toolbar);
+  body.appendChild(pathEl);
+  body.appendChild(listEl);
+
+  const id = WM.open({
+    id: winId,
+    title: "MIS_ARCHIVOS",
+    icon: "💾",
+    menubar: ["Archivo","Edición","Ver","Ayuda"],
+    body: body,
+    w: 600, h: 460,
+    status: "MIS_ARCHIVOS // disco local"
+  });
+
+  refresh(listEl, pathEl, null);
+
+  toolbar.querySelector('[data-act="newfolder"]').addEventListener("click", () => {
+    const name = prompt("Nombre de la carpeta:");
+    if(!name || !name.trim()) return;
+    const newId = UserFS.createFolder(currentFolderId, name);
+    if(!newId){
+      openError("DISCO_LOCAL lleno", "borra algo o acepta el caos.");
+      return;
+    }
+    AcidAudio.beep();
+    refresh(listEl, pathEl, null);
+  });
+
+  toolbar.querySelector('[data-act="newfile"]').addEventListener("click", () => {
+    const name = prompt("Nombre del archivo (sin extension):");
+    if(!name || !name.trim()) return;
+    const newId = UserFS.createFile(currentFolderId, name);
+    if(!newId){
+      openError("DISCO_LOCAL lleno", "borra algo o acepta el caos.");
+      return;
+    }
+    AcidAudio.beep();
+    refresh(listEl, pathEl, null);
+    openNotepad(newId);
+  });
+
+  toolbar.querySelector('[data-act="trash"]').addEventListener("click", () => {
+    if(!selectedId) {
+      openError("SIN_SELECCION", "selecciona un archivo o carpeta primero,\n esponja humana.");
+      return;
+    }
+    const node = UserFS.getNode(selectedId);
+    if(!node) return;
+    if(confirm(`Enviar "${node.name}" a la Papelera?`)){
+      UserFS.moveToTrash(selectedId);
+      AcidAudio.beep();
+      refresh(listEl, pathEl, null);
+    }
+  });
+}
+
+/* =========================================================
+   NOTEPAD_CORRUPTO — editor de texto punk
+   ========================================================= */
+function openNotepad(nodeId){
+  const node = UserFS.getNode(nodeId);
+  if(!node || node.type !== "file") return;
+
+  const winId = "notepad_" + nodeId;
+  if(document.querySelector(`.win[data-id="${winId}"]`)){
+    WM.bringFront(winId);
+    return;
+  }
+
+  const origContent = node.content || "";
+  let saved = true;
+
+  const wrap = el("div","np-wrap");
+
+  const toolbar = el("div","np-toolbar",
+    `<button class="btn98" data-act="save">💾 Guardar</button>` +
+    `<span style="font-size:10px;color:#7aae8a;margin-left:8px">Ctrl+S</span>`);
+
+  const textarea = el("textarea","np-textarea");
+  textarea.value = origContent;
+  textarea.spellcheck = false;
+
+  const statusbar = el("div","statusbar",
+    `guardado ✓  //  ${new Date(node.updatedAt).toLocaleString()}`);
+
+  wrap.appendChild(toolbar);
+  wrap.appendChild(textarea);
+
+  const windowBody = el("div");
+  windowBody.style.display = "flex";
+  windowBody.style.flexDirection = "column";
+  windowBody.style.height = "100%";
+  windowBody.appendChild(wrap);
+
+  const id = WM.open({
+    id: winId,
+    title: `${node.name} — Bloc de notas`,
+    icon: "📄",
+    menubar: ["Archivo","Edición","Buscar","Ayuda"],
+    body: windowBody,
+    w: 560, h: 440,
+    status: null
+  });
+
+  // attach statusbar after window creation so we can find and replace it
+  const win = document.querySelector(`.win[data-id="${winId}"]`);
+  if(win){
+    const existingSB = win.querySelector(".statusbar");
+    if(existingSB){
+      existingSB.textContent = `guardado ✓  //  ${new Date(node.updatedAt).toLocaleString()}`;
+      existingSB.id = "np-status-" + nodeId;
+    }
+  }
+
+  function updateStatus(){
+    const sb = document.getElementById("np-status-" + nodeId) ||
+               document.querySelector(`.win[data-id="${winId}"] .statusbar`);
+    if(sb){
+      if(saved){
+        sb.textContent = `guardado ✓  //  ${new Date(node.updatedAt).toLocaleString()}`;
+        sb.style.color = "";
+      }else{
+        sb.textContent = `* sin guardar`;
+        sb.style.color = "var(--amber)";
+      }
+    }
+  }
+
+  textarea.addEventListener("input", () => {
+    if(textarea.value !== origContent){
+      saved = false;
+    }else{
+      saved = true;
+    }
+    updateStatus();
+  });
+
+  function doSave(){
+    const ok = UserFS.updateContent(nodeId, textarea.value);
+    if(!ok){
+      openError("DISCO_LOCAL lleno", "borra algo o acepta el caos.");
+      return;
+    }
+    saved = true;
+    AcidAudio.beep();
+    // refresh the node reference's updatedAt for display
+    const fresh = UserFS.getNode(nodeId);
+    const sb = document.getElementById("np-status-" + nodeId) ||
+               document.querySelector(`.win[data-id="${winId}"] .statusbar`);
+    if(sb && fresh){
+      const dateStr = fresh.updatedAt ? new Date(fresh.updatedAt).toLocaleString() : "ahora";
+      sb.textContent = `guardado ✓  //  ${dateStr}`;
+    }
+    updateStatus();
+  }
+
+  toolbar.querySelector('[data-act="save"]').addEventListener("click", doSave);
+
+  textarea.addEventListener("keydown", e => {
+    if(e.ctrlKey && e.key === "s"){
+      e.preventDefault();
+      doSave();
+    }
+  });
+
+  // intercept close to check unsaved changes
+  if(win){
+    const closeBtn = win.querySelector('.tb-btn[data-act="close"]');
+    if(closeBtn){
+      const origClick = closeBtn.onclick;
+      closeBtn.addEventListener("click", function(e){
+        if(!saved){
+          e.stopPropagation();
+          e.preventDefault();
+          if(confirm(`Quieres guardar los cambios en "${node.name}"?`)){
+            doSave();
+            WM.close(winId);
+          }
+          return;
+        }
+        WM.close(winId);
+      }, true);
+    }
+  }
+}
+
+/* =========================================================
+   PAPELERA — papelera real con restaurar y eliminar
+   ========================================================= */
+function openPapelera(){
+  const winId = "papelera";
+  if(document.querySelector(`.win[data-id="${winId}"]`)){
+    WM.bringFront(winId);
+    return;
+  }
+
+  function buildContent(){
+    const items = UserFS.getTrashItems();
+    if(items.length === 0){
+      return `<div class="trash-empty">
+        La Papelera está vacía.<br>
+        <span style="color:#3a5a3a">El vacío te observa.</span>
+      </div>`;
+    }
+    let html = `<table class="trash-table">
+      <thead><tr><th></th><th>Nombre</th><th>Ruta original</th><th>Eliminado</th><th></th></tr></thead><tbody>`;
+    items.forEach(t => {
+      const n = t.node;
+      const icon = n.type === "folder" ? "📁" : "📄";
+      html += `<tr>
+        <td style="width:24px;text-align:center">${icon}</td>
+        <td>${esc(n.name)}</td>
+        <td style="color:#7aae8a;font-size:10px">${esc(t.originalPath||"MIS_ARCHIVOS")}</td>
+        <td style="color:#7aae8a;font-size:10px">${new Date(t.trashedAt).toLocaleString()}</td>
+        <td style="text-align:right;white-space:nowrap">
+          <button class="btn98" data-restore="${t.nodeId}" style="font-size:10px;padding:2px 8px;min-width:unset;margin-right:4px">Restaurar</button>
+          <button class="btn98" data-delete="${t.nodeId}" style="font-size:10px;padding:2px 8px;min-width:unset;color:var(--red);border-color:var(--red)">Eliminar</button>
+        </td></tr>`;
+    });
+    html += `</tbody></table>`;
+    return html;
+  }
+
+  const contentEl = el("div");
+  contentEl.innerHTML = buildContent();
+
+  const actionsEl = el("div","trash-actions",
+    `<button class="btn98" data-act="empty" style="color:var(--red);border-color:var(--red)">Vaciar Papelera</button>`);
+
+  const wrap = el("div");
+  wrap.style.display = "flex";
+  wrap.style.flexDirection = "column";
+  wrap.style.height = "100%";
+  contentEl.style.flex = "1";
+  contentEl.style.overflow = "auto";
+  wrap.appendChild(contentEl);
+  wrap.appendChild(actionsEl);
+
+  function refresh(){
+    const items = UserFS.getTrashItems();
+    if(items.length === 0){
+      contentEl.innerHTML = `<div class="trash-empty">
+        La Papelera está vacía.<br>
+        <span style="color:#3a5a3a">El vacío te observa.</span>
+      </div>`;
+      actionsEl.style.display = "none";
+    }else{
+      contentEl.innerHTML = buildContent();
+      actionsEl.style.display = "";
+      bindTrashActions();
+    }
+    const sb = document.querySelector(`.win[data-id="${winId}"] .statusbar`);
+    if(sb) sb.textContent = `${items.length} objeto(s) en papelera`;
+  }
+
+  function bindTrashActions(){
+    contentEl.querySelectorAll("[data-restore]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const nodeId = btn.dataset.restore;
+        UserFS.restoreFromTrash(nodeId);
+        AcidAudio.beep();
+        refresh();
+      });
+    });
+    contentEl.querySelectorAll("[data-delete]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const nodeId = btn.dataset.delete;
+        const node = UserFS.getNode(nodeId);
+        if(!node) return;
+        if(confirm(`Eliminar definitivamente "${node.name}"?\nEsta accion no se puede deshacer.`)){
+          UserFS.deletePermanently(nodeId);
+          AcidAudio.beep();
+          refresh();
+        }
+      });
+    });
+  }
+
+  bindTrashActions();
+
+  actionsEl.querySelector('[data-act="empty"]').addEventListener("click", () => {
+    const items = UserFS.getTrashItems();
+    if(items.length === 0) return;
+    if(confirm(`Vaciar la Papelera?\nSe eliminaran ${items.length} objeto(s) definitivamente.`)){
+      UserFS.emptyTrash();
+      AcidAudio.beep();
+      refresh();
+    }
+  });
+
+  const winId2 = WM.open({
+    id: winId,
+    title: "PAPELERA_DE_RECICLAJE",
+    icon: "🗑",
+    menubar: ["Archivo","Edición","Ver","Ayuda"],
+    body: wrap,
+    w: 600, h: 400,
+    status: `${UserFS.getTrashItems().length} objeto(s) en papelera`
+  });
+
+  if(UserFS.getTrashItems().length === 0) actionsEl.style.display = "none";
 }
 
 /* =========================================================
@@ -1643,12 +2302,15 @@ function renderDesktop(){
   // Modo clásico
   const cl=el("div","icon",`<span class="gl" style="color:#8fdfa6">⊞</span><span class="lb">MODO_CLASICO</span>`);
   bindOpen(cl,()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞")); wrap.appendChild(cl);
+  // MIS_ARCHIVOS (disco local del visitante)
+  const ma=el("div","icon",`<span class="gl" style="color:#8cf">💾</span><span class="lb">MIS_ARCHIVOS</span>`);
+  bindOpen(ma,()=>openMisArchivos()); wrap.appendChild(ma);
   // ARCHIVO_PROHIBIDO (bóveda de secretos / ARG)
   const vt=el("div","icon",`<span class="gl" style="color:#a33">🔒</span><span class="lb">ARCHIVO_PROHIBIDO</span>`);
   bindOpen(vt,openVault); wrap.appendChild(vt);
   // Papelera
   const tr=el("div","icon",`<span class="gl" style="color:#779">🗑</span><span class="lb">PAPELERA</span>`);
-  bindOpen(tr,()=>openError("PAPELERA_DE_RECICLAJE","censura_anterior.log: ARCHIVO DESTRUIDO\ndamage_definition.json: FILE NOT FOUND\n\nNada que reciclar. El virus no se borra."));
+  bindOpen(tr,openPapelera);
   wrap.appendChild(tr);
 
   // click vacío deselecciona / cierra menú inicio
@@ -1684,6 +2346,7 @@ function buildStart(){
     {ic:"⯁",lb:"ORACULO (I Ching + VALIS)",fn:openOracle},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
+    {ic:"💾",lb:"MIS_ARCHIVOS",fn:()=>openMisArchivos()},
     {ic:"🔒",lb:"Archivo prohibido",fn:openVault},
     {ic:"📜",lb:"README.TXT",fn:openReadme},
     {ic:"👤",lb:"Acerca de mí",fn:openAbout},

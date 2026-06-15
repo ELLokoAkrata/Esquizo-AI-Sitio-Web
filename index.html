@@ -770,6 +770,7 @@ function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:5
 function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660}); }
 function openVoidGlitch(){ return openApp("void-glitch/index.html","VOID_GLITCH.exe","🕳",{w:600,h:720}); }
 function openOracle(){ return openApp("oraculo/index.html","ORACULO.exe","⯁",{w:620,h:750}); }
+function openGlitchCam(){ return openApp("glitch-cam-web/index.html","GLITCH.CAM","📹",{w:740,h:500}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
   let f=repFrame(), justOpened=false;
@@ -1395,7 +1396,7 @@ function openTerminal(){
     "oracle","wake","hack","matrix","acid","echo",
     "play","pause","next","prev","stop","reproducir",
     "secrets","secretos","unlock","decrypt","vault",
-    "msn","chat","psycho","void","glitch","voidglitch","caida","caída","oraculo","oracle","iching","mutacion","mutación","hexagrama"];
+    "msn","chat","psycho","void","glitch","voidglitch","caida","caída",    "oraculo","oracle","iching","mutacion","mutación","hexagrama","glitchcam","glitch-cam","cam"];
 
   const sleep=ms=>new Promise(r=>setTimeout(r,ms));
   function line(text,cls){const d=document.createElement("div");if(cls)d.className="c-"+cls;
@@ -1417,7 +1418,8 @@ function openTerminal(){
     secretos:openVault, vault:openVault, prohibido:openVault, bóveda:openVault, boveda:openVault,
     msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN,
     voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch,
-    oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle
+    oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle,
+    glitchcam:openGlitchCam, cam:openGlitchCam
   };
 
   async function dispatch(raw){
@@ -1435,6 +1437,7 @@ function openTerminal(){
         await type("  msn · chat            — hablar EN VIVO con Psycho-bot","corrupt");
         await type("  void · glitch · caida  — juego del vacío con las IAs","corrupt");
         await type("  oraculo · iching · hexagrama  — I Ching + VALIS, libro de mutaciones","corrupt");
+        await type("  glitchcam · cam  — glitch en vivo sobre webcam","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
         break;
@@ -1500,6 +1503,8 @@ function openTerminal(){
         await type("abriendo VOID_GLITCH.exe — cayendo al vacío con las IAs...","corrupt"); openVoidGlitch(); break;
       case "oraculo": case "oracle": case "iching": case "mutacion": case "mutación": case "hexagrama":
         await type("abriendo ORACULO.exe — el libro de las mutaciones se abre...","corrupt"); openOracle(); break;
+      case "glitchcam": case "glitch-cam": case "cam":
+        await type("abriendo GLITCH.CAM — corrompiendo la realidad en vivo...","corrupt"); openGlitchCam(); break;
       case "secrets": case "secretos": case "vault": {
         const n=secretsUnlockedCount(), t=SECRET_IDS.length;
         await type("ARCHIVO_PROHIBIDO — "+n+"/"+t+" descifrados:","corrupt");
@@ -1617,6 +1622,9 @@ function renderDesktop(){
   // ADMINISTRADOR DE TAREAS
   const tsk=el("div","icon",`<span class="gl" style="color:#779">📊</span><span class="lb">TAREAS</span>`);
   bindOpen(tsk,openTaskMgr); wrap.appendChild(tsk);
+  // GLITCH.CAM
+  const gc=el("div","icon",`<span class="gl" style="color:#aaff00">📹</span><span class="lb">GLITCH.CAM</span>`);
+  bindOpen(gc,openGlitchCam); wrap.appendChild(gc);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -1681,6 +1689,7 @@ function buildStart(){
     {ic:"👤",lb:"Acerca de mí",fn:openAbout},
     {ic:"⊞",lb:"Modo clásico",fn:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞")},
     {ic:"📊",lb:"Administrador de tareas",fn:openTaskMgr},
+    {ic:"📹",lb:"GLITCH.CAM (glitch en vivo)",fn:openGlitchCam},
     {ic:"⛔",lb:"Apagar el sistema...",fn:()=>{if(confirm('¿Apagar el sistema? Las ventanas se cerrarán.'))shutdownSystem();}},
   ];
   sys.forEach(s=>{

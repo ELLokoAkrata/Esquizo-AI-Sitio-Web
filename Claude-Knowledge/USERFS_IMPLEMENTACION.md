@@ -5,6 +5,7 @@
 >
 > **Implementado por:** Claude (deepseek-v4-pro) via opencode
 > **Branch:** main (aun sin commit al momento de escribir)
+> **Parche posterior:** 2026-06-15 — correcciones de Papelera recursiva, statusbar de `MIS_ARCHIVOS` y cierre seguro de `NOTEPAD_CORRUPTO`.
 
 ---
 
@@ -110,10 +111,10 @@ const UserFS = (()=>{
 **Reglas de negocio:**
 - IDs: `"u_" + Date.now() + "_" + random(1000-9999)`
 - Nombres sanitizados: sin `\ / : * ? " < > |`, max 50 chars (carpetas) / 80 chars (archivos)
-- Archivos siempre reciben extension `.txt` si no la tienen
+- Archivos siempre reciben extension `.txt` si no la tienen, tambien al renombrar
 - Limite 200 nodos + 2 MB de texto
 - `moveToTrash("u_root")` retorna false (no se puede borrar la raiz)
-- Los nodos en papelera se marcan con `_hidden: true` y se excluyen de `getChildren()`
+- Los nodos en papelera se marcan con `_hidden: true` de forma recursiva y se excluyen de `getChildren()`, `totalNodes()` y `totalBytes()`
 
 ### 3.3 openMisArchivos() (linea ~1456)
 
@@ -152,20 +153,9 @@ function openNotepad(nodeId){
 - Toolbar con boton `💾 Guardar` + hint `Ctrl+S`
 - Statusbar muestra: `guardado ✓ // fecha` o `* sin guardar` (ambar)
 - `Ctrl+S` guarda y actualiza statusbar
-- **Cierre con cambios sin guardar:** intercepta el boton ✕ (capture phase), muestra `confirm()` para guardar. Si cancela, no cierra.
+- El estado `sin guardar` compara contra el ultimo contenido guardado, no solo contra el contenido original al abrir.
+- **Cierre con cambios sin guardar:** usa `beforeClose` en `WM.open()`, asi protege cierre desde `✕`, Task Manager y shutdown. Recargar/cerrar pestana usa `beforeunload` nativo del navegador.
 - Suena `AcidAudio.beep()` al guardar
-
-**Detalle del interceptor de cierre:**
-```js
-closeBtn.addEventListener("click", function(e){
-    if(!saved){
-        e.stopPropagation(); e.preventDefault();
-        if(confirm('...')){ doSave(); WM.close(winId); }
-        return;  // cancel = no cerrar
-    }
-    WM.close(winId);
-}, true);  // capture phase, antes del handler del WM
-```
 
 ### 3.5 openPapelera() (linea ~1714)
 
@@ -217,7 +207,7 @@ Agregada entrada en `sys` array entre `Mi PC` y `Archivo prohibido`:
 
 | Dependencia | Uso |
 |-------------|-----|
-| `WM.open()`, `WM.close()`, `WM.bringFront()` | Crear/cerrar/enfocar ventanas |
+| `WM.open()`, `WM.close()`, `WM.bringFront()` | Crear/cerrar/enfocar ventanas. `WM.open()` ahora acepta `beforeClose` |
 | `el()`, `esc()`, `$$()`, `$()` | Utilidades DOM |
 | `openError()` | Mostrar dialogos de error (limite disco, sin seleccion) |
 | `AcidAudio.beep()` | Feedback sonoro en guardar/borrar/restaurar |
@@ -229,7 +219,7 @@ Agregada entrada en `sys` array entre `Mi PC` y `Archivo prohibido`:
 - **`FS`** (catalogo de artefactos reales) — solo lectura, sin cambios
 - **`Infection`** — sin cambios
 - **`SECRETS`** — sin cambios
-- **`WM`** — sin cambios internos
+- **`WM`** — cambio minimo interno: `WM.open()` acepta `beforeClose` y `WM.close()` lo respeta
 - **`openFolder()`, `openMiPC()`, `openApp()`** — sin cambios
 - **VOMIT.SH** — sin cambios (los comandos `rm`, `mkdir`, `touch` del shell NO operan sobre `UserFS` aun, eso es Fase E)
 
@@ -259,21 +249,28 @@ Agregada entrada en `sys` array entre `Mi PC` y `Archivo prohibido`:
 
 7. **Menus contextuales** — click derecho en items de `MIS_ARCHIVOS` (Fase B).
 
-### 5.2 Bugs conocidos / limitaciones:
+### 5.2 Bugs corregidos en el parche posterior:
 
-- **El breadcrumb en `openMisArchivos` no actualiza el statusbar** — el `refresh()` recibe el `statusbar` como parametro pero nunca se le pasa (es `null` en la llamada inicial). El statusbar muestra el texto inicial del `WM.open`. **Fix:** pasar una referencia al statusbar o hacer `document.querySelector(...)` dentro de refresh.
+- **Papelera recursiva** — enviar una carpeta a papelera ahora oculta tambien todos sus descendientes, y restaurar/eliminar definitivo opera sobre todo el subarbol.
+
+- **Statusbar de `MIS_ARCHIVOS`** — el breadcrumb y los cambios de carpeta ahora actualizan correctamente el statusbar.
+
+- **Dirty state de `NOTEPAD_CORRUPTO`** — volver al ultimo contenido guardado ya limpia el estado `* sin guardar`.
+
+- **Cierre seguro del bloc de notas** — ya no depende solo del boton `✕`; tambien protege cierre desde `WM.close()`, shutdown y Task Manager.
+
+### 5.3 Limitaciones actuales:
 
 - **`openNotepad` no tiene scroll horizontal** en el textarea por `resize:none`. Es intencional (wrap de lineas), pero si se necesita, cambiar en CSS.
 
-- **No hay confirmacion al enviar carpeta con hijos a papelera** — `moveToTrash` mueve el nodo pero los hijos quedan huerfanos en el arbol (no se muestran porque `getChildren` del padre ya no los lista, pero siguen en `data.nodes`). Al restaurar, solo se restaura la carpeta, no sus hijos. **Esto es un bug:** `moveToTrash` deberia recursivamente mover los hijos tambien.
+- **No hay opcion "cerrar sin guardar"** — el `confirm()` actual ofrece solo guardar y cerrar, o cancelar para seguir editando.
 
-- **`emptyTrash` elimina los nodos del arbol pero no recursivamente para carpetas** — si una carpeta esta en papelera, sus hijos se eliminan del arbol pero podrian quedar referencias sueltas.
+- **No hay validacion de nombres duplicados en una misma carpeta** — pueden coexistir dos `nota.txt` en el mismo nivel.
 
-### 5.3 Mejoras sugeridas:
+### 5.4 Mejoras sugeridas:
 
-- Agregar `moveToTrashRecursive(id)` que mueva el nodo Y todos sus descendientes al trash.
-- Agregar `restoreFromTrashRecursive(id)` que restaure con todos los hijos.
 - El breadcrumb deberia ser un componente reutilizable (ahora esta inline en `openMisArchivos`).
+- El `beforeClose` de `WM` podria evolucionar a un sistema mas general de hooks (`beforeMinimize`, `beforeMaximize`, etc.) si el OS sigue creciendo.
 
 ---
 

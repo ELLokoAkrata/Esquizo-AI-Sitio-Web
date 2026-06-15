@@ -797,13 +797,22 @@ const UserFS = (()=>{
     return data.nodes[id] || null;
   }
 
+  function walkNode(id, fn){
+    const node = getNode(id);
+    if(!node) return;
+    fn(node);
+    if(node.type === "folder" && Array.isArray(node.children)){
+      node.children.slice().forEach(cid => walkNode(cid, fn));
+    }
+  }
+
   function getChildren(parentId){
     const parent = getNode(parentId);
     if(!parent || parent.type !== "folder") return [];
     const kids = (parent.children || [])
       .map(id => getNode(id))
       .filter(Boolean)
-      .filter(n => !data.trash.some(t => t.nodeId === n.id));
+      .filter(n => !n._hidden);
     kids.sort((a,b)=>{
       if(a.type !== b.type) return a.type === "folder" ? -1 : 1;
       return a.name.localeCompare(b.name);
@@ -814,7 +823,7 @@ const UserFS = (()=>{
   function totalNodes(){
     let count = 0;
     for(const id in data.nodes){
-      if(!data.trash.some(t => t.nodeId === id)) count++;
+      if(!data.nodes[id]._hidden) count++;
     }
     return count;
   }
@@ -823,7 +832,7 @@ const UserFS = (()=>{
     let bytes = 0;
     for(const id in data.nodes){
       const n = data.nodes[id];
-      if(n.type === "file" && n.content && !data.trash.some(t => t.nodeId === id)){
+      if(n.type === "file" && n.content && !n._hidden){
         bytes += new Blob([n.content]).size;
       }
     }
@@ -892,7 +901,8 @@ const UserFS = (()=>{
   function rename(id, newNameRaw){
     const node = getNode(id);
     if(!node) return false;
-    const name = sanitizeName(newNameRaw, node.type === "folder" ? 50 : 80);
+    let name = sanitizeName(newNameRaw, node.type === "folder" ? 50 : 80);
+    if(node.type === "file" && !/\.txt$/i.test(name)) name += ".txt";
     node.name = name;
     node.updatedAt = new Date().toISOString();
     save();
@@ -913,6 +923,7 @@ const UserFS = (()=>{
     const node = getNode(id);
     if(!node) return false;
     if(id === "u_root") return false;
+    if(node._hidden) return false;
     const path = buildPath(id);
     data.trash.push({
       nodeId: id,
@@ -927,7 +938,10 @@ const UserFS = (()=>{
         parent.updatedAt = new Date().toISOString();
       }
     }
-    node._hidden = true;
+    walkNode(id, n => {
+      n._hidden = true;
+      n.updatedAt = new Date().toISOString();
+    });
     save();
     return true;
   }
@@ -949,8 +963,10 @@ const UserFS = (()=>{
       parent.updatedAt = new Date().toISOString();
     }
     node.parent = entry.trashPath;
-    node.updatedAt = new Date().toISOString();
-    delete node._hidden;
+    walkNode(id, n => {
+      delete n._hidden;
+      n.updatedAt = new Date().toISOString();
+    });
     data.trash.splice(idx, 1);
     save();
     return true;
@@ -960,32 +976,20 @@ const UserFS = (()=>{
     data.trash = data.trash.filter(t => t.nodeId !== id);
     const node = getNode(id);
     if(!node) return false;
-    if(node.type === "folder" && node.children){
-      node.children.forEach(cid => deletePermanently(cid));
-    }
     if(node.parent){
       const parent = getNode(node.parent);
       if(parent && parent.children){
         parent.children = parent.children.filter(cid => cid !== id);
       }
     }
-    delete data.nodes[id];
+    walkNode(id, n => { delete data.nodes[n.id]; });
     save();
     return true;
   }
 
   function emptyTrash(){
     const ids = data.trash.map(t => t.nodeId);
-    data.trash = [];
-    ids.forEach(id => {
-      // remove from nodes entirely
-      const node = data.nodes[id];
-      if(node && node.type === "folder" && node.children){
-        node.children.forEach(cid => { delete data.nodes[cid]; });
-      }
-      delete data.nodes[id];
-    });
-    save();
+    ids.forEach(id => deletePermanently(id));
   }
 
   function getTrashItems(){
@@ -1120,7 +1124,7 @@ const WM = (()=>{
   }
 
   function open(opt){
-    // opt:{id,title,icon,menubar,body(node|html),status,w,h,x,y,dialog,closeOnly}
+    // opt:{id,title,icon,menubar,body(node|html),status,w,h,x,y,dialog,closeOnly,beforeClose}
     if(opt.id && wins[opt.id]){ const w=wins[opt.id]; w.min=false; w.el.style.display="flex"; bringFront(opt.id); return opt.id; }
     const id = opt.id || ("win"+(++idc));
     const win = el("div","win"+(opt.dialog?" dlg":""));
@@ -1211,7 +1215,7 @@ const WM = (()=>{
     }
 
     const taskEl = opt.dialog ? null : makeTask(id,opt.title||"ventana",opt.icon);
-    wins[id]={el:win,taskEl,min:false,title:opt.title,icon:opt.icon,appFile:opt.appFile||null};
+    wins[id]={el:win,taskEl,min:false,title:opt.title,icon:opt.icon,appFile:opt.appFile||null,beforeClose:opt.beforeClose||null};
     bringFront(id);
     if(!opt.dialog) saveDesktopState();
     return id;
@@ -1219,10 +1223,16 @@ const WM = (()=>{
 
   function close(id){
     const w=wins[id]; if(!w) return;
+    if(typeof w.beforeClose === "function"){
+      try{
+        if(w.beforeClose() === false) return false;
+      }catch(e){}
+    }
     w.el.remove(); if(w.taskEl) w.taskEl.remove();
     delete wins[id];
     const rest=Object.keys(wins); if(rest.length) bringFront(rest[rest.length-1]);
     saveDesktopState();
+    return true;
   }
 
   function minimizeAll(){
@@ -1283,6 +1293,12 @@ function clearDesktopState(){
   try{localStorage.removeItem('esquizoDesktopState');}catch(e){}
 }
 window.addEventListener('beforeunload',()=>{clearTimeout(_dstTimer);saveDesktopState(true);});
+window.addEventListener('beforeunload',e=>{
+  if(document.querySelector('.win[data-notepad-node-id][data-dirty="1"]')){
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 
 /* =========================================================
    Vistas (carpeta / texto / about / error)
@@ -1410,8 +1426,16 @@ function openTaskMgr(){
   },100);
 }
 function shutdownSystem(){
+  const ids = $$('.win').map(win=>win.dataset.id).filter(Boolean);
+  let blocked = false;
+  ids.forEach(id=>{
+    if(WM.close(id)===false) blocked = true;
+  });
+  if(blocked){
+    saveDesktopState(true);
+    return;
+  }
   clearDesktopState();
-  $$('.win').forEach(win=>{const id=win.dataset.id;if(id)WM.close(id);});
   const black=el("div","boot");
   black.style.cssText='position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"Courier New",monospace;font-size:16px;color:var(--dim)';
   black.innerHTML='<div style="font-size:28px;color:var(--red);margin-bottom:16px">⏻</div><div>APAGANDO EL SISTEMA...</div><div style="font-size:11px;margin-top:8px;color:#333">ESQUIZOAI_OS // hasta la próxima caída</div>';
@@ -1536,7 +1560,8 @@ function openMisArchivos(initialFolderId){
     status: "MIS_ARCHIVOS // disco local"
   });
 
-  refresh(listEl, pathEl, null);
+  const statusbar = document.querySelector(`.win[data-id="${winId}"] .statusbar`);
+  refresh(listEl, pathEl, statusbar);
 
   toolbar.querySelector('[data-act="newfolder"]').addEventListener("click", () => {
     const name = prompt("Nombre de la carpeta:");
@@ -1547,7 +1572,7 @@ function openMisArchivos(initialFolderId){
       return;
     }
     AcidAudio.beep();
-    refresh(listEl, pathEl, null);
+    refresh(listEl, pathEl, statusbar);
   });
 
   toolbar.querySelector('[data-act="newfile"]').addEventListener("click", () => {
@@ -1559,7 +1584,7 @@ function openMisArchivos(initialFolderId){
       return;
     }
     AcidAudio.beep();
-    refresh(listEl, pathEl, null);
+    refresh(listEl, pathEl, statusbar);
     openNotepad(newId);
   });
 
@@ -1573,7 +1598,7 @@ function openMisArchivos(initialFolderId){
     if(confirm(`Enviar "${node.name}" a la Papelera?`)){
       UserFS.moveToTrash(selectedId);
       AcidAudio.beep();
-      refresh(listEl, pathEl, null);
+      refresh(listEl, pathEl, statusbar);
     }
   });
 }
@@ -1592,8 +1617,8 @@ function openNotepad(nodeId){
   }
 
   const origContent = node.content || "";
+  let lastSavedContent = origContent;
   let saved = true;
-
   const wrap = el("div","np-wrap");
 
   const toolbar = el("div","np-toolbar",
@@ -1603,9 +1628,6 @@ function openNotepad(nodeId){
   const textarea = el("textarea","np-textarea");
   textarea.value = origContent;
   textarea.spellcheck = false;
-
-  const statusbar = el("div","statusbar",
-    `guardado ✓  //  ${new Date(node.updatedAt).toLocaleString()}`);
 
   wrap.appendChild(toolbar);
   wrap.appendChild(textarea);
@@ -1623,10 +1645,17 @@ function openNotepad(nodeId){
     menubar: ["Archivo","Edición","Buscar","Ayuda"],
     body: windowBody,
     w: 560, h: 440,
-    status: null
+    status: `guardado ✓  //  ${new Date(node.updatedAt).toLocaleString()}`,
+    beforeClose: () => {
+      if(saved) return true;
+      if(confirm(`Quieres guardar los cambios en "${node.name}"?\nAceptar = guardar y cerrar. Cancelar = seguir editando.`)){
+        doSave();
+        return true;
+      }
+      return false;
+    }
   });
 
-  // attach statusbar after window creation so we can find and replace it
   const win = document.querySelector(`.win[data-id="${winId}"]`);
   if(win){
     const existingSB = win.querySelector(".statusbar");
@@ -1634,6 +1663,8 @@ function openNotepad(nodeId){
       existingSB.textContent = `guardado ✓  //  ${new Date(node.updatedAt).toLocaleString()}`;
       existingSB.id = "np-status-" + nodeId;
     }
+    win.dataset.notepadNodeId = nodeId;
+    win.dataset.dirty = "0";
   }
 
   function updateStatus(){
@@ -1648,14 +1679,12 @@ function openNotepad(nodeId){
         sb.style.color = "var(--amber)";
       }
     }
+    const hostWin = document.querySelector(`.win[data-id="${winId}"]`);
+    if(hostWin) hostWin.dataset.dirty = saved ? "0" : "1";
   }
 
   textarea.addEventListener("input", () => {
-    if(textarea.value !== origContent){
-      saved = false;
-    }else{
-      saved = true;
-    }
+    saved = textarea.value === lastSavedContent;
     updateStatus();
   });
 
@@ -1665,9 +1694,9 @@ function openNotepad(nodeId){
       openError("DISCO_LOCAL lleno", "borra algo o acepta el caos.");
       return;
     }
+    lastSavedContent = textarea.value;
     saved = true;
     AcidAudio.beep();
-    // refresh the node reference's updatedAt for display
     const fresh = UserFS.getNode(nodeId);
     const sb = document.getElementById("np-status-" + nodeId) ||
                document.querySelector(`.win[data-id="${winId}"] .statusbar`);
@@ -1686,26 +1715,6 @@ function openNotepad(nodeId){
       doSave();
     }
   });
-
-  // intercept close to check unsaved changes
-  if(win){
-    const closeBtn = win.querySelector('.tb-btn[data-act="close"]');
-    if(closeBtn){
-      const origClick = closeBtn.onclick;
-      closeBtn.addEventListener("click", function(e){
-        if(!saved){
-          e.stopPropagation();
-          e.preventDefault();
-          if(confirm(`Quieres guardar los cambios en "${node.name}"?`)){
-            doSave();
-            WM.close(winId);
-          }
-          return;
-        }
-        WM.close(winId);
-      }, true);
-    }
-  }
 }
 
 /* =========================================================

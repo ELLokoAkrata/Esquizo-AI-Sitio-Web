@@ -55,14 +55,24 @@ let fps=0, frameCount=0, lastFpsTime=performance.now();
 let feedbackBuf=null, vhsLineBuf=null;
 
 const canvas=document.getElementById('canvas');
-const ctx=canvas.getContext('2d',{willReadFrequently:true});
+const ctx=canvas.getContext('2d');
 canvas.width=W;canvas.height=H;
 const hudEl=document.getElementById('hud');
 const statusEl=document.getElementById('status');
 const fpsFoot=document.getElementById('fpsFoot');
-const offCanvas=document.createElement('canvas');offCanvas.width=W;offCanvas.height=H;
-const offCtx=offCanvas.getContext('2d',{willReadFrequently:true});
+
+// double-buffer: workA → render to B → swap
+const bufA=document.createElement('canvas');bufA.width=W;bufA.height=H;
+const bufB=document.createElement('canvas');bufB.width=W;bufB.height=H;
+const cA=bufA.getContext('2d',{willReadFrequently:true});
+const cB=bufB.getContext('2d');
+let swap=true;
+function workCtx(){return swap?cA:cB;}
+function renderBuf(){return swap?bufB:bufA;}
+function renderCtx(){return swap?cB:cA;}
+
 const video=document.createElement('video');video.playsInline=true;video.muted=true;
+video.width=W;video.height=H;
 
 // ========== CAMERA ==========
 document.getElementById('btnStart').addEventListener('click',async()=>{
@@ -70,7 +80,7 @@ document.getElementById('btnStart').addEventListener('click',async()=>{
     const stream=await navigator.mediaDevices.getUserMedia({video:{width:W,height:H,facingMode:'user'},audio:false});
     video.srcObject=stream;video.play();
     camActive=true;document.getElementById('camPrompt').style.display='none';
-    feedbackBuf=null;loop();
+    feedbackBuf=null;setupLoop();
   }catch(e){
     statusEl.textContent='cámara denegada o no disponible: '+e.message;
   }
@@ -218,67 +228,83 @@ function drawHUD(){
   hudEl.innerHTML=h;
 }
 
-function loop(){
+function setupLoop(){
+  if('requestVideoFrameCallback' in video){
+    video.requestVideoFrameCallback(processFrame);
+  } else {
+    // Safari fallback
+    function rAFloop(){processFrame(performance.now(),{});if(camActive)requestAnimationFrame(rAFloop);}
+    requestAnimationFrame(rAFloop);
+  }
+}
+
+function processFrame(now,metadata){
   if(!camActive) return;
-  requestAnimationFrame(loop);
   frameCount++;
 
-  // reset canvas state EVERY frame
-  offCtx.globalAlpha=1.0;
-  offCtx.globalCompositeOperation='source-over';
-  offCtx.filter='none';
+  const wc=workCtx(), rc=renderCtx(), rbuf=renderBuf();
 
-  // capture fresh frame
-  offCtx.drawImage(video,0,0,W,H);
-  let imgData=offCtx.getImageData(0,0,W,H);
+  // 1. draw fresh video frame to work buffer
+  wc.drawImage(video,0,0,W,H);
 
-  // pixel effects (modify ImageData)
+  // 2. read pixels
+  let imgData=wc.getImageData(0,0,W,H);
+
+  // 3. pixel effects
   if(paltMode) effectPALT(imgData,paltMode);
   if(dithMode) effectDITH(imgData,dithMode);
   if(effectsA[4]) effectKALEIDO(imgData,effectsA[4]*0.5);
   if(effectsB[1]) effectVHS(imgData,effectsB[1]*intensity);
   if(effectsB[4]) effectEDGE(imgData);
-  offCtx.putImageData(imgData,0,0);
 
-  // feedback: draw previous frame with alpha OVER current frame
+  // 4. write to render buffer (clean, never read from)
+  rc.clearRect(0,0,W,H);
+  rc.putImageData(imgData,0,0);
+
+  // 5. feedback: draw previous frame's buffer with alpha
   if(effectsA[1] && feedbackBuf){
-    offCtx.globalAlpha=0.55;
-    offCtx.drawImage(feedbackBuf,0,0,W,H);
-    offCtx.globalAlpha=1.0;
+    rc.globalAlpha=0.55;
+    rc.drawImage(feedbackBuf,0,0,W,H);
+    rc.globalAlpha=1.0;
   }
 
-  // bloom (canvas compositing)
+  // 6. bloom (compositing on render buffer)
   if(effectsA[5]){
-    offCtx.filter='blur(4px)';
-    offCtx.globalCompositeOperation='lighter';
-    offCtx.drawImage(offCanvas,0,0,W,H);
-    offCtx.globalCompositeOperation='source-over';
-    offCtx.filter='none';
+    rc.filter='blur(4px)';
+    rc.globalCompositeOperation='lighter';
+    rc.drawImage(rbuf,0,0,W,H);
+    rc.globalCompositeOperation='source-over';
+    rc.filter='none';
   }
 
-  // CRT emulation
+  // 7. CRT emulation
   if(emulMode){
-    imgData=offCtx.getImageData(0,0,W,H);
+    imgData=rc.getImageData(0,0,W,H);
     effectEMUL(imgData,emulMode);
-    offCtx.putImageData(imgData,0,0);
+    rc.putImageData(imgData,0,0);
   }
 
-  // save feedback buffer AFTER all effects (for next frame)
+  // 8. save feedback buffer
   if(effectsA[1]){
     if(!feedbackBuf||feedbackBuf.width!==W){feedbackBuf=document.createElement('canvas');feedbackBuf.width=W;feedbackBuf.height=H;}
-    feedbackBuf.getContext('2d').drawImage(offCanvas,0,0,W,H);
+    feedbackBuf.getContext('2d').drawImage(rbuf,0,0,W,H);
   }
 
-  // render to visible canvas
-  ctx.drawImage(offCanvas,0,0,canvas.width,canvas.height);
+  // 9. atomic swap to visible canvas
+  ctx.drawImage(rbuf,0,0,canvas.width,canvas.height);
+
+  swap=!swap;
 
   // HUD + FPS
   if(frameCount%10===0){
-    const now=performance.now();
-    fps=Math.round(10000/(now-lastFpsTime));
-    lastFpsTime=now;
-    drawHUD();
-    fpsFoot.textContent=fps+' fps';
+    fps=Math.round(1000000/(performance.now()-lastFpsTime+1));
+    lastFpsTime=performance.now();
+    drawHUD();fpsFoot.textContent=fps+' fps';
+  }
+
+  // next frame
+  if('requestVideoFrameCallback' in video){
+    video.requestVideoFrameCallback(processFrame);
   }
 }
 

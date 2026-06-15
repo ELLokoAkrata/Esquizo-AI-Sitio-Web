@@ -35,9 +35,18 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <div id="status"></div>
 
 <div id="camPrompt">
-  <p>📹 GLITCH.CAM<br>glitch en vivo sobre webcam</p>
-  <button id="btnStart">⯁ ACTIVAR CÁMARA</button>
-  <p style="font-size:10px;margin-top:8px">permite acceso a la cámara para empezar</p>
+  <p style="font-size:28px;margin-bottom:12px">📹</p>
+  <p>GLITCH.CAM</p>
+  <p style="font-size:12px;color:#aaff00;max-width:420px;line-height:1.6">
+    La versión Python (OpenCV) funciona estable.<br>
+    Estamos trabajando en resolver un parpadeo con la cámara en navegador.
+  </p>
+  <p style="font-size:10px;color:var(--dim);margin-top:6px">mientras tanto, usa GLITCH.CAM desde terminal:</p>
+  <code style="font-size:10px;color:var(--amber);background:rgba(0,0,0,.5);padding:4px 10px;display:inline-block;margin:4px 0">
+    cd glitch-cam && python main.py --width 640 --height 360
+  </code>
+  <p style="font-size:10px;color:#444;margin-top:8px">podés probar igual si querés, pero el parpadeo persiste</p>
+  <button id="btnStart" style="opacity:.6">⯁ ACTIVAR CÁMARA (experimental)</button>
 </div>
 
 <div class="foot">

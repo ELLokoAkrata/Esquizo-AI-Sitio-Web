@@ -2,6 +2,102 @@
   "_comment": "Cola de REPRODUCTOR.exe. Agregar tema = bajar (tools/download-music.py) + un objeto en 'tracks'. Más nuevos arriba. 'file' relativo a esta carpeta.",
   "tracks": [
     {
+      "id": "icons-of-filth-used-abused-unamused",
+      "title": "Used Abused Unamused",
+      "artist": "Icons of Filth",
+      "file": "audio/icons-of-filth-used-abused-unamused.mp3"
+    },
+    {
+      "id": "bastard-controlled-in-the-frame",
+      "title": "Controlled in the Frame",
+      "artist": "Bastard",
+      "file": "audio/bastard-controlled-in-the-frame.mp3"
+    },
+    {
+      "id": "state-of-fear-the-sedative",
+      "title": "The Sedative",
+      "artist": "State of Fear",
+      "file": "audio/state-of-fear-the-sedative.mp3"
+    },
+    {
+      "id": "gism-endless-blockades",
+      "title": "Endless Blockades",
+      "artist": "GISM",
+      "file": "audio/gism-endless-blockades.mp3"
+    },
+    {
+      "id": "capitalist-casualties-vaginal-secretions",
+      "title": "Vaginal Secretions",
+      "artist": "Capitalist Casualties",
+      "file": "audio/capitalist-casualties-vaginal-secretions.mp3"
+    },
+    {
+      "id": "dropdead-at-the-cost-of-an-animal",
+      "title": "At the Cost of an Animal",
+      "artist": "Dropdead",
+      "file": "audio/dropdead-at-the-cost-of-an-animal.mp3"
+    },
+    {
+      "id": "martyrdod-elddop",
+      "title": "Elddop",
+      "artist": "Martyrdod",
+      "file": "audio/martyrdod-elddop.mp3"
+    },
+    {
+      "id": "wolfbrigade-in-darkness-you-feel-no-regret",
+      "title": "In Darkness You Feel No Regret",
+      "artist": "Wolfbrigade",
+      "file": "audio/wolfbrigade-in-darkness-you-feel-no-regret.mp3"
+    },
+    {
+      "id": "skitsystem-stigmata",
+      "title": "Stigmata",
+      "artist": "Skitsystem",
+      "file": "audio/skitsystem-stigmata.mp3"
+    },
+    {
+      "id": "from-ashes-rise-reaction",
+      "title": "Reaction",
+      "artist": "From Ashes Rise",
+      "file": "audio/from-ashes-rise-reaction.mp3"
+    },
+    {
+      "id": "tragedy-vengeance",
+      "title": "Vengeance",
+      "artist": "Tragedy",
+      "file": "audio/tragedy-vengeance.mp3"
+    },
+    {
+      "id": "oi-polloi-boot-down-the-door",
+      "title": "Boot Down the Door",
+      "artist": "Oi Polloi",
+      "file": "audio/oi-polloi-boot-down-the-door.mp3"
+    },
+    {
+      "id": "nausea-cybergod",
+      "title": "Cybergod",
+      "artist": "Nausea",
+      "file": "audio/nausea-cybergod.mp3"
+    },
+    {
+      "id": "extreme-noise-terror-false-profit",
+      "title": "False Profit",
+      "artist": "Extreme Noise Terror",
+      "file": "audio/extreme-noise-terror-false-profit.mp3"
+    },
+    {
+      "id": "doom-police-bastard",
+      "title": "Police Bastard",
+      "artist": "Doom",
+      "file": "audio/doom-police-bastard.mp3"
+    },
+    {
+      "id": "aus-rotten-the-system-works-for-them",
+      "title": "The System Works for Them",
+      "artist": "Aus-Rotten",
+      "file": "audio/aus-rotten-the-system-works-for-them.mp3"
+    },
+    {
       "id": "his-hero-is-gone-like-weeds",
       "title": "Like Weeds",
       "artist": "His Hero Is Gone",

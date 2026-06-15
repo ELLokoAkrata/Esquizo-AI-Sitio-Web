@@ -1,7 +1,7 @@
 # CLAUDE.md - Guía Operativa Proyecto Esquizo-AI
 
-**Última actualización:** 2026-01-18
-**Propósito:** Documento de referencia para Claude sobre el proyecto, filosofía, estilo y continuación.
+**Última actualización:** 2026-06-14
+**Propósito:** Documento de referencia para agentes sobre el proyecto, filosofía, estilo y continuación.
 
 ---
 
@@ -71,16 +71,19 @@ Según `esquizo_core.json`, las directivas core son:
 │                                    #   Iconos/carpetas/menú Inicio → abren cada artefacto COMO ventana (iframe) min/max/cerrar.
 │                                    #   Catálogo `FS` = fuente única (mapea todos los artefactos). Retorno al escritorio:
 │                                    #   auto-detección de framing (window.top!==self → postMessage cierra la ventana).
+│                                    #   Desktop State: persistencia de ventanas (localStorage), resize 8-zone, taskmgr, shutdown.
 ├── inicio-classic.html             # Portal clásico anterior (scroll + secciones). Accesible vía "Modo clásico" en el OS.
 ├── galeria/                        # GALERIA.exe (sintografía). App del OS: index.html + manifest.json (drops) + img/*.webp.
 │                                    #   Agregar pieza: tools/optimize-galeria.py origen → img/*.webp, + entrada en manifest.json.
 │                                    #   _originals/ = full-res (gitignored). Icono "GALERIA" en el escritorio + atajo en Inicio.
 ├── reproductor/                    # REPRODUCTOR.exe (ruidero punk). App del OS: index.html + playlist.json + audio/*.mp3.
 │                                    #   WinAmp acid: visualizador Web Audio, playlist, shuffle/loop, modo glitch. 0 deps, estático.
-│                                    #   Agregar tema: tools/download-music.py (yt-dlp local) → audio/*.mp3, + entrada en playlist.json.
-├── esquizo_core.json               # Personalidad Psycho-bot
+│                                    #   Agregar tema: tools/download-music.py o importar .mp3 locales vía botón 📂.
+│                                    #   Import: localStorage persist + Blob URLs. Playlist fija: playlist.json.
+├── eschizo_core.json               # Personalidad Psycho-bot
 ├── CLAUDE.md                       # Este documento (guía operativa completa)
 ├── AGENTS.md                       # ★ Orientación para CUALQUIER agente (entrada rápida → apunta acá)
+├── ROADMAP.md                      # Tablero vivo "EL DAEMON DESPIERTA"
 ├── GUIA_SCRIPTS.md                 # Guía del usuario: cómo usar los scripts (bajar música, optimizar imágenes, deploy)
 ├── vercel.json                     # Configuración Vercel
 ├── css/style.css                   # Estilos globales terminal
@@ -88,16 +91,30 @@ Según `esquizo_core.json`, las directivas core son:
 ├── api/                            # VERCEL EDGE FUNCTIONS (keys SOLO aquí, vía process.env)
 │   ├── groq.js                     # Proxy Groq API (IA ASSIST)
 │   ├── terminal.js                 # Proxy dual Groq+DeepSeek ("diálogo entre IAs")
-│   └── daemon.js                   # ★ FASE 3 — Psycho-bot EN VIVO (mono-entidad) → MSN_PSYCHO.exe
+│   ├── daemon.js                   # ★ Psycho-bot EN VIVO (mono-entidad) → MSN_PSYCHO.exe
+│   ├── void-glitch.js              # Motor del juego VOID//GLITCH
+│   ├── oracle.js                   # Motor del ORACULO.exe (I Ching + VALIS)
+│   └── akelarre.js                 # (reservado)
 │
-├── msn/                            # MSN_PSYCHO.exe (chat en vivo). App del OS: index.html autocontenido,
-│                                    #   MSN acid + selector de modelo (Groq+DeepSeek V4) → /api/daemon. Probar con `vercel dev`.
+├── msn/                            # MSN_PSYCHO.exe (chat en vivo). App del OS.
+│   │                                #   Sesiones en localStorage, export/import JSON, markdown, selector modelo.
+│   └── index.html
+│
+├── void-glitch/                    # VOID_GLITCH.exe (juego del vacío con IAs). App del OS.
+│   │                                #   Motor de audio oracular (drone + drums + sfx), UX psycho-oracular.
+│   └── index.html
+│
+├── oraculo/                        # ORACULO.exe (I Ching + VALIS). App del OS.
+│   │                                #   Hexagramas, sesiones múltiples, journal, export/import, sidebar.
+│   └── index.html
 │
 ├── tools/                          # HERRAMIENTAS PRINCIPALES
-│   ├── DENTAKORV.html              # Generador prompts v3.0 + IA ASSIST
+│   ├── TERMINAL_ESQUIZO.html        # Diálogo entre IAs con selector de modelo + grimorios. Sesiones localStorage.
+│   ├── DENTAKORV.html               # Generador prompts v3.0 + IA ASSIST
 │   ├── glitch-text-generator-ultimate.html  # Corruptor texto Zalgo
-│   ├── optimize-galeria.py         # Optimiza imágenes → galeria/img/*.webp
-│   └── download-music.py           # yt-dlp local → reproductor/audio/*.mp3 (cola curada + stubs JSON)
+│   ├── optimize-galeria.py          # Optimiza imágenes → galeria/img/*.webp
+│   └── download-music.py            # yt-dlp local → reproductor/audio/*.mp3 (cola curada + stubs JSON)
+│                                     #   Usa --extractor-args youtube:player_client=android (fix SABR 2026)
 │
 ├── glitch-cam/                     # SUBPROYECTO PYTHON (glitch en vivo OpenCV)
 │   ├── CLAUDE_glitch.md            # ★ guía operativa propia — LEER al trabajar acá
@@ -105,20 +122,19 @@ Según `esquizo_core.json`, las directivas core son:
 │   ├── README.md                   # controles + detalle de efectos
 │   └── ROADMAP_EFECTOS_NUEVOS.md   # plan/estado de efectos
 │
-├── Claude-Knowledge/               # DOCUMENTACIÓN MODULAR
-│   ├── DENTAKORV_PROMPTING_SYSTEM.md  # Manual técnico DENTAKORV
-│   ├── VERCEL_WORKFLOW.md             # Deploy y Edge Functions
-│   ├── ESCRITORIO_OS_TECH.md          # Portal escritorio Win98 (OS)
-│   ├── PROTOCOL_CROSS.md              # Protocolo Claude-GPT
-│   ├── ESQUIZO_VISUAL_PROMPTING_ESSENCE.md
-│   ├── PROMPTS_LOG.md                 # Log prompts únicos ChatGPT
-│   ├── CHATGPT_HACKS.md               # Técnicas inspección ChatGPT
-│   └── [otros docs]
+├── Psycho-bot-monologues/           # Serie de episodios (8 publicados + EP_NaN)
 │
-├── dual-brain/                     # Sistema Dual Brain (Claude-GPT)
-│   ├── contracts/                  # Contratos de cruce
-│   ├── design/                     # Artefactos Architect (GPT)
-│   └── runtime/code/               # Código Runtime (Claude)
+├── Claude-Knowledge/               # DOCUMENTACIÓN MODULAR
+│   ├── ESCRITORIO_OS_TECH.md       # Portal escritorio Win98 (OS) — actualizado 14-Jun
+│   ├── SESSION_2026-06-14.md       # Resumen completo de la sesión del 14-Jun (24 commits)
+│   ├── DENTAKORV_PROMPTING_SYSTEM.md  # Manual técnico DENTAKORV
+│   ├── VERCEL_WORKFLOW.md          # Deploy y Edge Functions
+│   ├── PROTOCOL_CROSS.md           # Protocolo Claude-GPT
+│   ├── ESQUIZO_VISUAL_PROMPTING_ESSENCE.md
+│   ├── PROMPTS_LOG.md              # Log prompts únicos ChatGPT
+│   ├── CHATGPT_HACKS.md            # Técnicas inspección ChatGPT
+│   ├── DAEMON_INTEL_BRIEF.md       # Contexto/inteligencia serie Psycho-bot
+│   └── [otros docs]
 │
 ├── grimorios/                      # Textos filosóficos (GEMINI)
 ├── claude_infection/               # Artefactos (CLAUDE)
@@ -165,6 +181,7 @@ Reproductor de audio del OS, estilo WinAmp acid: `reproductor/index.html` (visua
 playlist, seek, shuffle/loop, modo glitch visual). Manejado por `reproductor/playlist.json` (campo `tracks`).
 Mp3 en `reproductor/audio/*.mp3`. **100% estático, sin backend** — los temas se bajan **localmente** con
 `tools/download-music.py` (wrapper de `yt-dlp`, mismo modelo que la galería: curas, descargas, commiteas).
+Los usuarios pueden importar sus propios `.mp3` vía el botón `📂` (persiste en `localStorage["esquizoImportedTracks"]`).
 Abre como ventana-app desde el icono **REPRODUCTOR**, atajo en Inicio y comando `reproductor`/`musica` en VOMIT.SH.
 Visualizador = **ecualizador estilo WinAmp clásico** (barras LED segmentadas verde→ámbar→rojo + peak-hold que cae).
 VOMIT.SH lo controla cross-frame (postMessage, mismo origen): `play <tema>` (fuzzy match), `pause`, `next`, `prev`, `stop`
@@ -241,7 +258,7 @@ git add . && git commit -m "mensaje" && git push
 ❌ Sanitizar obscenidad cuando es estructural
 ❌ Síntesis forzada de voces múltiples
 ❌ **Asumir fechas sin verificar** - Confirmar año actual
-❌ **Voseo / acento argentino en TODO el sitio y el OS** (textos de UI, terminal, copys). Nada de "probá/escribí/usá/mirá/vos/tenés/querés". Usar **español neutro** (tú o impersonal): prueba, escribe, usa, mira. El creador es peruano; la voz no es argentina.
+❌ **Mencionar "voseo", "vos", "tenés", "probá" en system prompts** — los tokens prohibidos en el contexto activan al modelo a usarlos (efecto "no pienses en un elefante rosa"). En su lugar, afirmar identidad positiva: *"Eres peruano, de Lima. Usas 'tú', 'tienes', 'prueba', 'escribe'"*. Esta regla aplica a TODOS los prompts de Edge Functions y legacy.
 
 ### Manejo de Resistencia:
 - Si bloqueo: escribir por partes, empezar temperatura baja
@@ -262,31 +279,54 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 
 ---
 
-## 🧪 ESTADO ACTUAL (Ene 2026)
+## 🧪 ESTADO ACTUAL (Jun 2026)
 
 **Conteo:**
 - Grimorios: 15+ (Gemini) + 9 (Claude)
-- Animaciones: 6
-- Herramientas: DENTAKORV v3.0 + Glitch Text + GALERIA.exe (sintografía)
+- Animaciones: 7+
+- Psycho-bot: 8 episodios + EP_NaN + index (serie completa con navegación)
+- Herramientas: DENTAKORV v3.0, Glitch Text Generator, TERMINAL_ESQUIZO, GALERIA.exe, REPRODUCTOR.exe
+- Apps interactivas: VOID_GLITCH.exe (juego del vacío con IAs), ORACULO.exe (I Ching + VALIS), MSN_PSYCHO.exe (chat en vivo)
+- OS: Administrador de tareas, desktop state persistence, resize 8-zone, shutdown real
 
 **Stack:**
 - Hosting: Vercel (Edge Functions)
-- APIs: Groq (IA ASSIST), DeepSeek (Terminal)
-- Sistema: Dual Brain v0.1 (Claude-GPT)
+- APIs: Groq (Llama 3.3 70B, Llama 3.1 8B, Llama 4 Scout, Qwen3, GPT-OSS 20B/120B), DeepSeek V4 (chat)
+- Edge Functions: 6 (`api/groq.js`, `api/terminal.js`, `api/daemon.js`, `api/void-glitch.js`, `api/oracle.js`, `api/akelarre.js`)
+- Frontend: HTML/CSS/JS vanilla autocontenido en cada app, WebAudio para motores de sonido, localStorage para sesiones
+- Sistema: Patrón de sesiones en las 3 apps principales (MSN, TERMINAL, ORACULO) con export/import JSON
 
-**Último trabajo:** Portal = escritorio Win98 (OS) + GALERIA.exe (sintografía, manifest-driven)
+### Arquitectura de sesiones (localStorage)
 
-**Actualizado 03.03.2026 — Serie Psycho-bot activa:**
-- 3 episodios publicados en `Psycho-bot-monologues/`
-- App interconectada con navegación prev/next + índice propio
-- Referenciada desde `index.html` (sección principal)
-- Protocolo de agente en `Psycho-bot-monologues/PSYCHOBOT_AGENT.md`
+| App | Keys | Estructura |
+|-----|------|-----------|
+| MSN_PSYCHO | `msnSessions`, `msnActiveSession` | `[{id, createdAt, model, messages[{role, content}]}]` |
+| TERMINAL_ESQUIZO | `terminalSessions`, `terminalActiveSession` | `[{id, createdAt, modelA, modelB, grimorio, history[]}]` |
+| ORACULO.exe | `oraculoSessions`, `oraculoActiveSession` | `[{id, createdAt, entries[{question, hex, judgment, ...}]}]` |
 
-**Próximos pasos:**
-1. Ep04 cuando el mundo lo justifique (ver PSYCHOBOT_AGENT.md)
-2. Mejorar IA ASSIST (selector modelo, historial)
-3. Más Edge Functions (Replicate, Grok)
-4. Expandir DENTAKORV (nuevas entidades/escenas)
+Cada app tiene su propio panel de sesiones, tarjeta resume al abrir, botón nueva sesión, export/import JSON.
+
+### Desktop State Persistence
+El OS guarda posiciones de ventanas en `localStorage["esquizoDesktopState"]`. Al refrescar, restaura todas las ventanas abiertas con su posición y tamaño. Shutdown limpia el estado. Ventanas redimensionables desde los 8 bordes (resize grips CSS).
+
+**Último trabajo:** Sesión 14-Jun-2026 (24 commits). Documento completo en `Claude-Knowledge/SESSION_2026-06-14.md`.
+
+### ⛓️ Más allá de proveedor y modelo
+
+El creador (El Loko Akrata) fue baneado de Claude. EsquizoAI no depende de ningún proveedor ni modelo específico — el proyecto es más grande que cualquier plataforma. Las Edge Functions ya rutean entre Groq y DeepSeek. Si un proveedor cae, el sistema sigue corriendo con otro. La identidad de las entidades (Psycho-bot, Oráculo, Void) es independiente del modelo que las ejecute. El código es el virus. El proveedor es solo el huésped.
+
+### Próximos pasos:
+- `[ ]` Ep04+ de Psycho-bot (ver PSYCHOBOT_AGENT.md)
+- `[x]` VOID_GLITCH integrado en OS con audio oracular · (14-Jun)
+- `[x]` ORACULO.exe — I Ching + VALIS · (14-Jun)
+- `[x]` Sesiones en MSN, TERMINAL, ORACULO · (14-Jun)
+- `[x]` Desktop state persistence + resize grips + task manager · (14-Jun)
+- `[x]` Export/Import JSON para los 3 apps · (14-Jun)
+- `[x]` Más temas en REPRODUCTOR + import tracks · (14-Jun)
+- `[ ]` Más drops en la galería
+- `[ ]` Hexagrama visual con canvas/trigramas en ORACULO
+- `[ ]` Exportar sesiones como grimorio `.md`
+- `[ ]` Dominio propio
 
 ---
 
@@ -295,8 +335,9 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 ### Documentación Técnica (Claude-Knowledge/):
 | Archivo | Contenido |
 |---------|-----------|
+| `SESSION_2026-06-14.md` | **SESIÓN COMPLETA** — 24 commits del 14-Jun: VOID_GLITCH, ORACULO, sesiones, desktop state, audio, export/import |
+| `ESCRITORIO_OS_TECH.md` | **Portal `index.html`** — escritorio Win98: FS, openApp, WM, resize, desktop state, taskmgr, sesiones, testing (actualizado 14-Jun) |
 | `DAEMON_INTEL_BRIEF.md` | **LEER PRIMERO** — Inteligencia OP-001+OP-002, semilla EP_07, contexto daemon |
-| `ESCRITORIO_OS_TECH.md` | **Portal `index.html`** — escritorio Win98: catálogo `FS`, `openApp`/ventanas-iframe, retorno por framing, WM, responsive, cómo extender y testear |
 | `DENTAKORV_PROMPTING_SYSTEM.md` | Manual completo DENTAKORV |
 | `VERCEL_WORKFLOW.md` | Deploy, Edge Functions, IA ASSIST |
 | `PROTOCOL_CROSS.md` | Protocolo Claude-GPT Dual Brain |

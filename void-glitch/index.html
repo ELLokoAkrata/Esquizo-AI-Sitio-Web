@@ -103,9 +103,11 @@ body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle 
 </div>
 
 <script>
-const API = '/api/void-glitch';
-const LEGACY_DAEMON_API = '/api/daemon';
-const LEGACY_TERMINAL_API = '/api/terminal';
+const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
+const apiBase=p=>DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;
+const API=apiBase('/api/void-glitch');
+const LEGACY_DAEMON_API=apiBase('/api/daemon');
+const LEGACY_TERMINAL_API=apiBase('/api/terminal');
 const MODELS = [
   ['llama-3.3-70b-versatile','Llama 3.3 70B'],
   ['llama-3.1-8b-instant','Llama 3.1 8B'],

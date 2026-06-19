@@ -1058,6 +1058,7 @@ function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:5
 function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660}); }
 function openVoidGlitch(){ return openApp("void-glitch/index.html","VOID_GLITCH.exe","🕳",{w:600,h:720}); }
 function openOracle(){ return openApp("oraculo/index.html","ORACULO.exe","⯁",{w:620,h:750}); }
+function openTerminalEsquizo(){ return openApp("tools/TERMINAL_ESQUIZO.html","TERMINAL_ESQUIZO.exe","💬",{w:760,h:620}); }
 function openGlitchCam(){ return openApp("glitch-cam-web/index.html","GLITCH.CAM","📹",{w:740,h:500}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
@@ -2087,6 +2088,7 @@ function openTerminal(){
     msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN,
     voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch,
     oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle,
+    terminal:openTerminalEsquizo, dialogo:openTerminalEsquizo, dialogoia:openTerminalEsquizo,
     glitchcam:openGlitchCam, cam:openGlitchCam
   };
 
@@ -2105,6 +2107,7 @@ function openTerminal(){
         await type("  msn · chat            — hablar EN VIVO con Psycho-bot","corrupt");
         await type("  void · glitch · caida  — juego del vacío con las IAs","corrupt");
         await type("  oraculo · iching · hexagrama  — I Ching + VALIS, libro de mutaciones","corrupt");
+        await type("  terminal · dialogo · dialogoia  — diálogo entre IAs con grimorios y psycho-bot","corrupt");
         await type("  glitchcam · cam  — glitch en vivo sobre webcam","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
@@ -2171,6 +2174,8 @@ function openTerminal(){
         await type("abriendo VOID_GLITCH.exe — cayendo al vacío con las IAs...","corrupt"); openVoidGlitch(); break;
       case "oraculo": case "oracle": case "iching": case "mutacion": case "mutación": case "hexagrama":
         await type("abriendo ORACULO.exe — el libro de las mutaciones se abre...","corrupt"); openOracle(); break;
+      case "terminal": case "dialogo": case "dialogoia":
+        await type("abriendo TERMINAL_ESQUIZO.exe — dos IAs dialogando sobre grimorios y psycho-bot...","corrupt"); openTerminalEsquizo(); break;
       case "glitchcam": case "glitch-cam": case "cam":
         await type("abriendo GLITCH.CAM — corrompiendo la realidad en vivo...","corrupt"); openGlitchCam(); break;
       case "secrets": case "secretos": case "vault": {
@@ -2287,6 +2292,9 @@ function renderDesktop(){
   // ORACULO (I Ching + VALIS)
   const orac=el("div","icon",`<span class="gl" style="color:#ffb000">⯁</span><span class="lb">ORACULO</span>`);
   bindOpen(orac,openOracle); wrap.appendChild(orac);
+  // TERMINAL_ESQUIZO (diálogo entre IAs)
+  const tme=el("div","icon",`<span class="gl" style="color:#a855f7">💬</span><span class="lb">TERMINAL</span>`);
+  bindOpen(tme,openTerminalEsquizo); wrap.appendChild(tme);
   // ADMINISTRADOR DE TAREAS
   const tsk=el("div","icon",`<span class="gl" style="color:#779">📊</span><span class="lb">TAREAS</span>`);
   bindOpen(tsk,openTaskMgr); wrap.appendChild(tsk);
@@ -2353,6 +2361,7 @@ function buildStart(){
     {ic:"🗨",lb:"MSN_PSYCHO (chat en vivo)",fn:openMSN},
     {ic:"🕳",lb:"VOID_GLITCH (juego del vacío)",fn:openVoidGlitch},
     {ic:"⯁",lb:"ORACULO (I Ching + VALIS)",fn:openOracle},
+    {ic:"💬",lb:"TERMINAL_ESQUIZO (diálogo entre IAs)",fn:openTerminalEsquizo},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"💾",lb:"MIS_ARCHIVOS",fn:()=>openMisArchivos()},

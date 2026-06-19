@@ -162,7 +162,9 @@
 <script>
 (()=>{
   "use strict";
-  const API = "/api/daemon";
+  const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
+  const apiBase=p=>DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;
+  const API=apiBase("/api/daemon");
   const SESSION_CAP = 30;          // tope suave de mensajes del usuario por sesión
   const CONTEXT_MSGS = 8;          // cuántos mensajes mandamos de contexto
 

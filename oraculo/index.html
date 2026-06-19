@@ -130,7 +130,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div class="toast" id="toast"></div>
 
 <script>
-const API = '/api/oracle';
+const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
+const apiBase=p=>DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;
+const API=apiBase('/api/oracle');
 const MODELS = [
   ['llama-3.3-70b-versatile','Llama 3.3 70B'],['llama-3.1-8b-instant','Llama 3.1 8B'],
   ['meta-llama/llama-4-scout-17b-16e-instruct','Llama 4 Scout 17B'],['qwen/qwen3-32b','Qwen 3 32B'],

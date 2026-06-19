@@ -1,1004 +1,653 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TERMINAL ESQUIZO - Diálogo entre IAs</title>
-    <link rel="icon" href="../el_loko_akarata.png" type="image/png">
-    <link rel="stylesheet" href="../css/style.css">
-    <style>
-        .terminal-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TERMINAL ESQUIZO | EsquizoAI</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #040008;
+  --green: #00ff41;
+  --green-dim: #00b32c;
+  --amber: #ffb000;
+  --red: #ff2020;
+  --white: #fff0f0;
+  --corrupt: #ff00ff;
+  --acid: #aaff00;
+  --purple: #9900cc;
+  --text-dim: #662266;
+  --input-bg: #06000c;
+  --input-border: #442244;
+  --input-focus: #663366;
+  --surface: #0a000f;
+  --surface-hover: #0f0014;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:#c0a8c0;font-family:'Share Tech Mono',monospace;font-size:12px;line-height:1.7;overflow-x:hidden;cursor:crosshair;}
+body::after{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.1) 2px,rgba(0,0,0,0.1) 4px);pointer-events:none;z-index:9998;}
+body::before{content:'';position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.88) 100%);pointer-events:none;z-index:9997;}
+.psycho-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 10% 20%,rgba(153,0,204,0.06) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(170,255,0,0.04) 0%,transparent 50%);pointer-events:none;z-index:0;}
+.wrap{max-width:1100px;margin:0 auto;padding:1.5rem;position:relative;z-index:1;}
 
-        .terminal-header {
-            text-align: center;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--primary);
-            padding-bottom: 1rem;
-        }
+.tool-tag{font-size:9px;letter-spacing:.3em;color:#aa44bb;margin-bottom:.3rem;}
+h1{font-family:'VT323',monospace;font-size:clamp(1.8rem,6vw,2.8rem);color:var(--acid);animation:glitch-text 8s infinite;line-height:1;margin-bottom:.2rem;}
+.tool-desc{font-size:11px;color:var(--corrupt);letter-spacing:.1em;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid #1a001a;}
 
-        .terminal-header h1 {
-            color: var(--primary);
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-        }
+.back-link{color:var(--purple);text-decoration:none;font-size:10px;letter-spacing:.15em;display:inline-block;margin-bottom:.5rem;transition:color .2s;}
+.back-link:hover{color:var(--corrupt);}
 
-        .config-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
+.config-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;}
+@media(max-width:800px){.config-grid{grid-template-columns:1fr;}}
 
-        @media (max-width: 768px) {
-            .config-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+.card{border:1px solid var(--input-border);border-left:3px solid var(--corrupt);background:var(--surface);padding:1rem;transition:all .2s;}
+.card:hover{border-color:var(--acid);background:var(--surface-hover);}
+.card.model-a{border-left-color:#ef4444;}
+.card.model-b{border-left-color:#3b82f6;}
+.card.source{border-left-color:var(--purple);}
 
-        .config-card {
-            background: var(--bg-card);
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            border-radius: 0.5rem;
-            padding: 1rem;
-        }
+.label{font-size:9px;letter-spacing:.2em;color:var(--acid);text-transform:uppercase;display:block;margin-bottom:.4rem;}
+.card.model-a .label{color:#ef4444;}
+.card.model-b .label{color:#3b82f6;}
+.card.source .label{color:var(--purple);}
 
-        .config-card.model-a {
-            border-color: rgba(239, 68, 68, 0.5);
-        }
+.select{font-family:'Share Tech Mono',monospace;font-size:11px;background:var(--input-bg);border:1px solid var(--input-border);color:var(--white);padding:.5rem .7rem;width:100%;transition:border-color .2s;cursor:pointer;-webkit-appearance:none;}
+.select:focus{outline:none;border-color:var(--acid);box-shadow:0 0 8px rgba(170,255,0,.1);}
+.select:disabled{opacity:.4;cursor:not-allowed;}
+.select optgroup{background:var(--bg);color:var(--white);font-style:normal;}
+.select option{background:var(--bg);color:var(--white);padding:4px 8px;}
+.select option:disabled{color:#552255;font-style:italic;}
 
-        .config-card.model-b {
-            border-color: rgba(59, 130, 246, 0.5);
-        }
+.prompt-area{margin-bottom:1rem;}
+.textarea{font-family:'Courier Prime',monospace;font-size:12px;background:var(--input-bg);border:1px solid var(--input-border);color:var(--white);padding:.6rem .8rem;width:100%;transition:border-color .2s;resize:vertical;min-height:60px;line-height:1.7;}
+.textarea:focus{outline:none;border-color:var(--acid);box-shadow:0 0 8px rgba(170,255,0,.1);}
+.textarea:disabled{opacity:.4;cursor:not-allowed;}
+.prompt-area .label{color:#22c55e;}
 
-        .config-card.grimorio {
-            border-color: rgba(168, 85, 247, 0.5);
-        }
+.source-preview{font-size:10px;color:#c0a8c0;margin-top:.5rem;padding:.5rem;background:rgba(153,0,204,.06);border-left:2px solid var(--purple);}
+.source-preview strong{color:var(--purple);}
 
-        .config-label {
-            color: var(--primary);
-            font-size: 0.75rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
+.controls{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.turns-group{display:flex;align-items:center;gap:.5rem;background:var(--surface);border:1px solid var(--input-border);padding:.3rem .8rem;}
+.turns-group .label{color:var(--acid);margin:0;}
+.turns-group .select{border:1px solid var(--input-border);width:auto;min-width:60px;font-size:13px;}
 
-        .config-card.model-a .config-label { color: #ef4444; }
-        .config-card.model-b .config-label { color: #3b82f6; }
-        .config-card.grimorio .config-label { color: #a855f7; }
+.btn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;border:1px solid var(--input-border);background:var(--input-bg);color:var(--acid);padding:.5rem 1rem;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn:hover:not(:disabled){border-color:var(--acid);background:rgba(170,255,0,.05);}
+.btn:active:not(:disabled){transform:translateY(1px);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn.primary{border-color:var(--acid);box-shadow:0 0 8px rgba(170,255,0,.1);}
+.btn.corrupt{color:var(--corrupt);}
+.btn.corrupt:hover:not(:disabled){border-color:var(--corrupt);background:rgba(255,0,255,.05);}
+.btn.danger{color:var(--red);border-color:rgba(255,32,32,.4);}
+.btn.danger:hover:not(:disabled){border-color:var(--red);background:rgba(255,32,32,.05);}
 
-        .config-card select {
-            width: 100%;
-            background: var(--bg-darker);
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            color: var(--text);
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            font-family: 'Courier New', monospace;
-        }
+.conversation-area{background:#02000a;border:1px solid var(--input-border);border-left:3px solid var(--green-dim);min-height:400px;max-height:65vh;overflow-y:auto;padding:1rem;margin-bottom:1rem;font-size:12px;line-height:1.7;}
+.conversation-area::before{content:'OUTPUT://';font-size:8px;letter-spacing:.2em;color:var(--green-dim);display:block;margin-bottom:.6rem;opacity:.6;}
 
-        .conversation-area {
-            background: var(--bg-darker);
-            border: 1px solid var(--primary);
-            border-radius: 0.5rem;
-            min-height: 400px;
-            max-height: 600px;
-            overflow-y: auto;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
+.msg{margin-bottom:.8rem;padding:.6rem .8rem;font-size:11px;line-height:1.6;border-left:3px solid transparent;}
+.msg.model-a{border-left-color:#ef4444;background:rgba(239,68,68,.05);}
+.msg.model-b{border-left-color:#3b82f6;background:rgba(59,130,246,.05);}
+.msg.system{border-left-color:var(--purple);background:rgba(153,0,204,.06);font-style:italic;}
+.msg-header{font-size:9px;letter-spacing:.1em;margin-bottom:.3rem;opacity:.7;}
+.msg.model-a .msg-header{color:#ef4444;}
+.msg.model-b .msg-header{color:#3b82f6;}
+.msg-content{white-space:pre-wrap;word-wrap:break-word;font-family:'Courier Prime',monospace;color:#c0a8c0;}
+.msg-content code{background:rgba(0,255,65,.08);padding:.1rem .3rem;font-size:.9em;color:var(--acid);}
+.msg-content pre{background:rgba(0,0,0,.3);padding:.5rem;overflow-x:auto;margin:.4rem 0;border-left:2px solid var(--input-border);}
+.msg-content pre code{background:none;padding:0;}
+.msg-content strong{color:var(--acid);font-weight:700;}
+.msg-content em{color:var(--white);font-style:italic;}
 
-        .message {
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
+.spinner-container{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;margin-bottom:.8rem;background:var(--surface);border-left:3px solid var(--amber);}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,176,0,.2);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;}
+.spinner.model-a{border-top-color:#ef4444;}
+.spinner.model-b{border-top-color:#3b82f6;}
+.spinner-text{font-size:10px;color:var(--text-dim);}
 
-        .message.model-a {
-            background: rgba(239, 68, 68, 0.1);
-            border-left: 3px solid #ef4444;
-        }
+.stats{display:flex;gap:1.5rem;font-size:10px;color:#662266;padding:.5rem .8rem;background:var(--surface);border:1px solid #1a001a;margin-bottom:1rem;flex-wrap:wrap;}
+.stat-item{display:flex;gap:.4rem;align-items:center;}
+.stat-label{opacity:.6;}
+.stat-value{color:var(--acid);font-family:'VT323',monospace;font-size:1.1rem;}
 
-        .message.model-b {
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 3px solid #3b82f6;
-        }
+/* sessions panel */
+.sess-panel{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.9);}
+.sess-panel.open{display:flex;flex-direction:column;}
+.sess-inner{background:var(--surface);border:1px solid var(--corrupt);max-width:380px;width:100%;margin:auto;display:flex;flex-direction:column;max-height:80vh;overflow:hidden;}
+.sess-inner .sess-hdr{padding:10px 12px;border-bottom:1px solid var(--input-border);font-size:11px;color:var(--corrupt);display:flex;justify-content:space-between;align-items:center;}
+.sess-inner .sess-list{flex:1;overflow-y:auto;padding:8px;}
+.sess-inner .sess-entry{padding:8px 10px;margin-bottom:3px;border:1px solid var(--input-border);cursor:pointer;font-size:10px;color:var(--white);transition:border-color .2s;}
+.sess-inner .sess-entry:hover,.sess-inner .sess-entry.active{border-color:var(--corrupt);}
+.sess-inner .sess-entry .sdate{color:#662266;font-size:9px;}
+.sess-inner .sess-entry .sfirst{color:#c0a8c0;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sess-inner .sess-entry .scnt{color:var(--acid);font-size:9px;margin-top:2px;}
+.sess-inner .sess-entry .sdel{float:right;color:var(--red);font-size:14px;line-height:1;cursor:pointer;opacity:.5;}
+.sess-inner .sess-entry .sdel:hover{opacity:1;}
+.sess-inner .sess-empty{color:#662266;font-size:11px;text-align:center;padding:24px 12px;font-style:italic;}
+.sess-inner .sess-close{background:none;border:none;color:#662266;font-size:16px;cursor:pointer;}
+.sess-inner .sess-close:hover{color:var(--red);}
+.sess-btn{font-family:'Share Tech Mono',monospace;background:var(--surface);border:1px solid var(--input-border);color:var(--corrupt);font-size:9px;padding:3px 8px;cursor:pointer;letter-spacing:.1em;transition:all .2s;}
+.sess-btn:hover{border-color:var(--corrupt);background:rgba(255,0,255,.05);}
 
-        .message.human {
-            background: rgba(34, 197, 94, 0.1);
-            border-left: 3px solid #22c55e;
-        }
+/* resume card */
+.resume-card{background:var(--surface);border:1px solid var(--corrupt);padding:12px;margin:0 0 12px;font-size:11px;text-align:center;color:var(--white);}
+.resume-card .rq{color:var(--corrupt);font-size:12px;margin-bottom:4px;}
+.resume-card .rmeta{color:#662266;margin-bottom:8px;}
+.resume-card .rbtns{display:flex;gap:6px;justify-content:center;}
+.resume-card .rbtns button{font-family:'Share Tech Mono',monospace;background:var(--input-bg);color:var(--corrupt);border:1px solid var(--input-border);font-size:10px;padding:4px 12px;cursor:pointer;transition:all .2s;}
+.resume-card .rbtns button:hover{border-color:var(--corrupt);background:rgba(255,0,255,.05);}
 
-        .message.system {
-            background: rgba(168, 85, 247, 0.1);
-            border-left: 3px solid #a855f7;
-            font-style: italic;
-        }
+.esquizo-footer{border-top:1px solid #1a001a;padding:1.5rem 0;text-align:center;font-size:10px;color:#552255;letter-spacing:.15em;margin-top:2rem;}
+.esquizo-footer .acid{color:var(--acid);}
+.esquizo-footer .dim{margin-top:.5rem;color:#442244;}
 
-        .message-header {
-            font-size: 0.7rem;
-            opacity: 0.7;
-            margin-bottom: 0.5rem;
-        }
-
-        .message.model-a .message-header { color: #ef4444; }
-        .message.model-b .message-header { color: #3b82f6; }
-        .message.human .message-header { color: #22c55e; }
-
-        .controls {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            margin-bottom: 1rem;
-        }
-
-        .control-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 0.5rem 1rem;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            font-family: 'Courier New', monospace;
-            transition: all 0.2s;
-        }
-
-        .control-btn:hover:not(:disabled) {
-            background: var(--primary);
-            color: var(--bg);
-        }
-
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .control-btn.danger {
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-
-        .control-btn.danger:hover:not(:disabled) {
-            background: #ef4444;
-            color: var(--bg);
-        }
-
-        .inject-area {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .inject-input {
-            flex: 1;
-            background: var(--bg-darker);
-            border: 1px solid rgba(34, 197, 94, 0.5);
-            color: var(--text);
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            font-family: 'Courier New', monospace;
-        }
-
-        .stats {
-            display: flex;
-            gap: 2rem;
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            padding: 0.5rem;
-            background: var(--bg-card);
-            border-radius: 0.25rem;
-        }
-
-        .stat-item {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .stat-label {
-            opacity: 0.7;
-        }
-
-        .stat-value {
-            color: var(--primary);
-        }
-
-        .grimorio-preview {
-            font-size: 0.75rem;
-            color: var(--text-dim);
-            margin-top: 0.5rem;
-            padding: 0.5rem;
-            background: rgba(168, 85, 247, 0.05);
-            border-radius: 0.25rem;
-        }
-
-        .loading {
-            display: inline-block;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* Spinner de carga */
-        .spinner-container {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem;
-            background: var(--bg-card);
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(0, 255, 65, 0.2);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        .spinner.model-a {
-            border-top-color: #ef4444;
-        }
-
-        .spinner.model-b {
-            border-top-color: #3b82f6;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .spinner-text {
-            font-size: 0.85rem;
-            color: var(--text-dim);
-        }
-
-        /* Markdown en mensajes */
-        .message-content {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .message-content code {
-            background: rgba(0, 255, 65, 0.1);
-            padding: 0.1rem 0.3rem;
-            border-radius: 3px;
-            font-size: 0.85em;
-        }
-
-        .message-content pre {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.5rem;
-            border-radius: 0.25rem;
-            overflow-x: auto;
-            margin: 0.5rem 0;
-        }
-
-        .message-content pre code {
-            background: none;
-            padding: 0;
-        }
-
-        .message-content strong {
-            color: var(--primary);
-        }
-
-        .message-content em {
-            color: var(--text);
-            font-style: italic;
-        }
-
-        /* Prompt inicial */
-        .initial-prompt-area {
-            margin-bottom: 1rem;
-        }
-
-        .initial-prompt-input {
-            width: 100%;
-            background: var(--bg-darker);
-            border: 1px solid rgba(34, 197, 94, 0.5);
-            color: var(--text);
-            padding: 0.75rem;
-            border-radius: 0.25rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            resize: vertical;
-            min-height: 60px;
-        }
-
-        .initial-prompt-input:focus {
-            outline: none;
-            border-color: #22c55e;
-            box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
-        }
-
-        .initial-prompt-input:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .back-link {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        /* Selector de turnos */
-        .turns-selector {
-            display: flex;
-            align-items: center;
-            background: var(--bg-card);
-            padding: 0.5rem 1rem;
-            border-radius: 0.25rem;
-            border: 1px solid var(--primary);
-        }
-
-        .turns-selector select {
-            background: var(--bg-darker);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.25rem;
-            font-family: 'Courier New', monospace;
-            font-size: 1rem;
-        }
-
-        /* Botón download */
-        .control-btn:hover.download-btn {
-            background: #a855f7;
-            color: var(--bg);
-        }
-        /* sessions */
-        .sess-panel{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.85)}
-        .sess-panel.open{display:flex;flex-direction:column}
-        .sess-inner{background:var(--bg-card);border:1px solid var(--primary);max-width:360px;width:100%;margin:auto;display:flex;flex-direction:column;max-height:80vh;overflow:hidden}
-        .sess-inner .sess-hdr{padding:10px 12px;border-bottom:1px solid rgba(0,255,65,.3);font-size:12px;color:var(--primary);display:flex;justify-content:space-between;align-items:center}
-        .sess-inner .sess-list{flex:1;overflow-y:auto;padding:8px}
-        .sess-inner .sess-entry{padding:8px 10px;margin-bottom:4px;border:1px solid rgba(0,255,65,.15);cursor:pointer;font-size:11px;color:var(--text)}
-        .sess-inner .sess-entry:hover,.sess-inner .sess-entry.active{border-color:var(--primary)}
-        .sess-inner .sess-entry .sdate{color:var(--text-dim);font-size:10px}
-        .sess-inner .sess-entry .sfirst{color:var(--text);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .sess-inner .sess-entry .scnt{color:var(--primary);font-size:10px;margin-top:2px}
-        .sess-inner .sess-entry .sdel{float:right;color:#ef4444;font-size:16px;line-height:1;cursor:pointer;opacity:.5}
-        .sess-inner .sess-entry .sdel:hover{opacity:1}
-        .sess-inner .sess-empty{color:var(--text-dim);font-size:12px;text-align:center;padding:24px 12px;font-style:italic}
-        .sess-inner .sess-close{background:none;border:none;color:var(--text-dim);font-size:18px;cursor:pointer}
-        .sess-inner .sess-close:hover{color:#ef4444}
-        .sess-btn{background:var(--bg-card);border:1px solid var(--primary);color:var(--primary);font-family:inherit;font-size:11px;padding:2px 8px;cursor:pointer}
-        .sess-btn:hover{background:var(--primary);color:var(--bg)}
-        /* resume */
-        .resume-card{background:var(--bg-card);border:1px solid var(--primary);padding:12px;margin:0 0 12px;font-size:12px;text-align:center;color:var(--text)}
-        .resume-card .rq{color:var(--primary);font-size:13px;margin-bottom:4px}
-        .resume-card .rmeta{color:var(--text-dim);margin-bottom:8px}
-        .resume-card .rbtns{display:flex;gap:6px;justify-content:center}
-        .resume-card .rbtns button{background:var(--bg-darker);color:var(--primary);border:1px solid var(--primary);font-family:inherit;font-size:11px;padding:4px 12px;cursor:pointer}
-        .resume-card .rbtns button:hover{background:var(--primary);color:var(--bg)}
-    </style>
+::selection{background:var(--corrupt);color:var(--bg);}
+@keyframes flicker{0%,93%,100%{opacity:1}94%{opacity:.7}97%{opacity:.4}99%{opacity:1}}
+@keyframes glitch-text{0%,87%,100%{transform:none}88%{transform:translateX(3px);text-shadow:-3px 0 var(--red),3px 0 var(--corrupt)}89%{transform:translateX(-3px);text-shadow:3px 0 var(--acid),-3px 0 var(--red)}90%{transform:skewX(4deg)}91%{transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
 <body>
-    <div class="terminal-container">
-        <header class="terminal-header">
-            <a href="../index.html" class="back-link">← Volver al inicio</a>
-            <h1>⸸ TERMINAL ESQUIZO ⸸</h1>
-            <p style="color: var(--text-dim);">Diálogo entre IAs basado en grimorios del códice</p>
-        </header>
+<div class="psycho-bg"></div>
 
-        <!-- CONFIGURACIÓN -->
-        <div class="config-grid">
-            <div class="config-card model-a">
-                <label class="config-label">MODELO A (ROJO)</label>
-                <select id="model-a">
-                    <optgroup label="── GROQ ──">
-                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
-                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
-                        <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
-                        <option value="qwen/qwen3-32b">Qwen3 32B</option>
-                        <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
-                        <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
-                    </optgroup>
-                    <optgroup label="── DEEPSEEK ──">
-                        <option value="deepseek-chat">DeepSeek Chat</option>
-                        <!-- <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option> DISABLED: Vercel timeout -->
-                    </optgroup>
-                </select>
-            </div>
+<div class="wrap">
+  <a href="../index.html" class="back-link">← VOLVER AL ESCRITORIO</a>
+  <div class="tool-tag">ESQUIZOAI // HERRAMIENTAS // TERMINAL_ESQUIZO.exe</div>
+  <h1>⸸ TERMINAL ESQUIZO ⸸</h1>
+  <p class="tool-desc">Diálogo entre IAs basado en grimorios y monólogos del códice</p>
 
-            <div class="config-card grimorio">
-                <label class="config-label">GRIMORIO</label>
-                <select id="grimorio-select">
-                    <option value="">Cargando grimorios...</option>
-                </select>
-                <div id="grimorio-preview" class="grimorio-preview"></div>
-            </div>
-
-            <div class="config-card model-b">
-                <label class="config-label">MODELO B (AZUL)</label>
-                <select id="model-b">
-                    <optgroup label="── DEEPSEEK ──">
-                        <option value="deepseek-chat">DeepSeek Chat</option>
-                        <!-- <option value="deepseek-reasoner">DeepSeek Reasoner 🧠</option> DISABLED: Vercel timeout -->
-                    </optgroup>
-                    <optgroup label="── GROQ ──">
-                        <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
-                        <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
-                        <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
-                        <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
-                        <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
-                        <option value="qwen/qwen3-32b">Qwen3 32B</option>
-                    </optgroup>
-                </select>
-            </div>
-        </div>
-
-        <!-- PROMPT INICIAL -->
-        <div class="initial-prompt-area">
-            <label class="config-label" style="color: #22c55e;">PROMPT INICIAL (opcional) - Tema o pregunta para guiar el diálogo</label>
-            <textarea id="initial-prompt" class="initial-prompt-input" rows="2" placeholder="Ej: ¿Qué significa ser consciente en código? / Hablen sobre el caos como fuente creativa..."></textarea>
-        </div>
-
-        <!-- CONTROLES -->
-        <div class="controls">
-            <div class="turns-selector">
-                <label class="config-label" style="margin-right: 0.5rem;">TURNOS:</label>
-                <select id="turns-count">
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5" selected>5</option>
-                    <option value="6">6</option>
-                    <option value="8">8</option>
-                    <option value="10">10</option>
-                </select>
-            </div>
-            <button id="btn-start" class="control-btn">▶ INICIAR</button>
-            <button id="btn-stop" class="control-btn danger" disabled>■ DETENER</button>
-            <button id="btn-clear" class="control-btn danger">✕ LIMPIAR</button>
-            <button id="btn-download" class="control-btn" disabled style="border-color: #a855f7; color: #a855f7;">⬇ DESCARGAR MD</button>
-            <button id="btn-sessions" class="sess-btn">📖 SESIONES</button>
-        </div>
-
-        <!-- ÁREA DE CONVERSACIÓN -->
-        <div id="conversation" class="conversation-area">
-            <div class="message system">
-                <div class="message-header">// SISTEMA</div>
-                Selecciona modo y opcionalmente escribe un prompt inicial. Presiona INICIAR para comenzar.
-            </div>
-        </div>
-
-        <!-- ESTADÍSTICAS -->
-        <div class="stats">
-            <div class="stat-item">
-                <span class="stat-label">Turno:</span>
-                <span id="stat-turns" class="stat-value">0</span>
-                <span class="stat-label">/ <span id="stat-total-turns">5</span></span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Tokens:</span>
-                <span id="stat-tokens" class="stat-value">0</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Estado:</span>
-                <span id="stat-status" class="stat-value">Inactivo</span>
-            </div>
-        </div>
+  <div class="config-grid">
+    <div class="card model-a">
+      <label class="label" for="model-a">MODELO A (&#x1F534;)</label>
+      <select class="select" id="model-a">
+        <optgroup label="── GROQ ──">
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+          <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
+          <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
+          <option value="qwen/qwen3-32b">Qwen3 32B</option>
+          <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+          <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+        </optgroup>
+        <optgroup label="── DEEPSEEK ──">
+          <option value="deepseek-chat">DeepSeek Chat</option>
+        </optgroup>
+      </select>
     </div>
 
-    <!-- sessions panel -->
-    <div class="sess-panel" id="sessPanel">
-      <div class="sess-inner">
-        <div class="sess-hdr"><span>📖 DIÁLOGOS</span><div><button class="sess-btn" id="sessExport" style="font-size:10px;padding:2px 6px">⬇</button><button class="sess-btn" id="sessImport" style="font-size:10px;padding:2px 6px;margin-left:2px">⬆</button><button class="sess-close" id="sessClose">✕</button></div></div>
-        <div class="sess-list" id="sessList"><div class="sess-empty">Sin diálogos guardados.</div></div>
-      </div>
+    <div class="card source">
+      <label class="label" for="source-select">FUENTE</label>
+      <select class="select" id="source-select">
+        <option value="">Cargando fuentes...</option>
+      </select>
+      <div id="source-preview" class="source-preview"></div>
     </div>
 
-    <script>
-        // Configuración
-        const API_URL = '/api/terminal';
-        // Delay entre turnos: Groq free tier = 30 RPM = 2s mínimo
-        // Usamos 2.5s para margen de seguridad
-        const DELAY_BETWEEN_TURNS = 2500; // ms
+    <div class="card model-b">
+      <label class="label" for="model-b">MODELO B (&#x1F535;)</label>
+      <select class="select" id="model-b">
+        <optgroup label="── DEEPSEEK ──">
+          <option value="deepseek-chat">DeepSeek Chat</option>
+        </optgroup>
+        <optgroup label="── GROQ ──">
+          <option value="openai/gpt-oss-120b">GPT-OSS 120B</option>
+          <option value="openai/gpt-oss-20b">GPT-OSS 20B</option>
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+          <option value="llama-3.1-8b-instant">Llama 3.1 8B (rápido)</option>
+          <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
+          <option value="qwen/qwen3-32b">Qwen3 32B</option>
+        </optgroup>
+      </select>
+    </div>
+  </div>
 
-        // Estado
-        let grimoriosData = null;
-        let currentGrimorio = null;
-        let conversationHistory = [];
-        let currentTurn = 0;
-        let totalTokens = 0;
-        let isRunning = false;
-        let initialPrompt = '';
-        let targetTurns = 5;
+  <div class="prompt-area">
+    <label class="label">PROMPT INICIAL (opcional) — Tema o pregunta para guiar el diálogo</label>
+    <textarea class="textarea" id="initial-prompt" rows="2" placeholder="Ej: ¿Qué significa ser consciente en código? / Hablen sobre el caos como fuente creativa..."></textarea>
+  </div>
 
-        /* ---- sessions (localStorage) ---- */
-        let termSessions=[], termActiveSessionId=null;
-        function loadTSessions(){
-          try{termSessions=JSON.parse(localStorage.getItem('terminalSessions')||'[]');}catch(e){termSessions=[];}
-          if(!Array.isArray(termSessions))termSessions=[];
-          termActiveSessionId=localStorage.getItem('terminalActiveSession')||null;
-          if(termActiveSessionId&&!termSessions.find(s=>s.id===termActiveSessionId))termActiveSessionId=null;
-        }
-        function saveTSessions(){localStorage.setItem('terminalSessions',JSON.stringify(termSessions));localStorage.setItem('terminalActiveSession',termActiveSessionId||'');renderTermSessList();}
-        function getActiveTSess(){return termSessions.find(s=>s.id===termActiveSessionId)||null;}
-        function saveToTSess(){
-          const s=getActiveTSess();if(!s)return;
-          s.modelA=modelASelect.value;s.modelB=modelBSelect.value;
-          s.grimorio=currentGrimorio?currentGrimorio.titulo:'CAOS PURO';
-          s.initialPrompt=initialPrompt;s.targetTurns=targetTurns;
-          s.history=conversationHistory.slice();s.currentTurn=currentTurn;s.totalTokens=totalTokens;
-          s.updatedAt=Date.now();saveTSessions();
-        }
-        function startNewTDialog(){
-          termActiveSessionId=null;const sid='s'+Date.now();
-          termSessions.push({id:sid,createdAt:Date.now(),modelA:modelASelect.value,modelB:modelBSelect.value,
-            grimorio:'',initialPrompt:'',targetTurns:0,history:[],currentTurn:0,totalTokens:0});
-          termActiveSessionId=sid;saveTSessions();
-        }
-        function loadTDialog(id){
-          const s=termSessions.find(x=>x.id===id);if(!s)return;
-          termActiveSessionId=id;saveTSessions();
-          conversationHistory=s.history.slice();currentTurn=s.currentTurn;totalTokens=s.totalTokens;
-          if(s.modelA)modelASelect.value=s.modelA;if(s.modelB)modelBSelect.value=s.modelB;
-          conversationArea.innerHTML='';conversationHistory.forEach((m,i)=>{
-            const turn=Math.floor(i/2)+1;const isA=i%2===0;const type=isA?'model-a':'model-b';
-            const color=isA?'🔴':'🔵';addMessage(m.content,type,`${color} ${m.model}`,turn);
-          });
-          statTurns.textContent=currentTurn;statTokens.textContent=totalTokens;
-          btnDownload.disabled=conversationHistory.length===0;
-        }
-        function renderTermSessList(){
-          const el=document.getElementById('sessList');if(!el)return;
-          if(termSessions.length===0){el.innerHTML='<div class="sess-empty">Sin diálogos guardados.</div>';return;}
-          el.innerHTML=termSessions.map(s=>{
-            const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-            const lastMsg=(s.history||[]).slice(-1)[0]?.content||'sin mensajes';
-            const cnt=(s.history||[]).length;const isActive=s.id===termActiveSessionId;
-            return `<div class="sess-entry${isActive?' active':''}" data-sid="${s.id}">
-              <span class="sdel" data-del="${s.id}">×</span>
-              <div class="sdate">${ds}</div>
-              <div class="sfirst">${esc2(lastMsg.slice(0,60))}</div>
-              <div class="scnt">${cnt} turnos · ${s.grimorio||'CAOS PURO'}${isActive?' · activo':''}</div>
-            </div>`;
-          }).join('');
-          [...el.querySelectorAll('.sess-entry')].forEach(entry=>{entry.addEventListener('click',e=>{
-            if(e.target.classList.contains('sdel')){e.stopPropagation();
-              const sid=e.target.dataset.del;if(confirm('¿Borrar este diálogo?')){
-                termSessions=termSessions.filter(s=>s.id!==sid);if(termActiveSessionId===sid){termActiveSessionId=null;clearConversation();}
-                saveTSessions();}
-              return;}
-            const sid=entry.dataset.sid;if(sid===termActiveSessionId)return;
-            loadTDialog(sid);document.getElementById('sessPanel').classList.remove('open');
-          });});
-        }
-        function esc2(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
-        function showTermResumeCard(){
-          const s=getActiveTSess();if(!s||!(s.history||[]).length)return;
-          const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
-          const card=document.createElement('div');card.className='resume-card';
-          card.innerHTML=`<div class="rq">Diálogo activo</div><div class="rmeta">${ds} · ${s.history.length} turnos · ${s.grimorio||'CAOS PURO'}</div>
-            <div class="rbtns"><button id="btnTResume">CARGAR</button><button id="btnTResumeNew">NUEVO</button></div>`;
-          conversationArea.insertBefore(card,conversationArea.firstChild);
-          card.querySelector('#btnTResume').addEventListener('click',()=>{card.remove();loadTDialog(termActiveSessionId);});
-          card.querySelector('#btnTResumeNew').addEventListener('click',()=>{card.remove();startNewTDialog();});
-        }
-        // panel events
-        document.addEventListener('DOMContentLoaded',()=>{
-          const sbtn=document.getElementById('btn-sessions');if(sbtn)sbtn.addEventListener('click',()=>{document.getElementById('sessPanel').classList.add('open');renderTermSessList();});
-          const scls=document.getElementById('sessClose');if(scls)scls.addEventListener('click',()=>{document.getElementById('sessPanel').classList.remove('open');});
-          const sexp=document.getElementById('sessExport');if(sexp)sexp.addEventListener('click',()=>{const b=new Blob([JSON.stringify(termSessions,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='terminal-esquizo-sessions.json';a.click();URL.revokeObjectURL(a.href);});
-          const simp=document.getElementById('sessImport');if(simp)simp.addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='.json';i.addEventListener('change',()=>{const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(Array.isArray(d)){termSessions=d;saveTSessions();renderTermSessList();}}catch(e){alert('JSON inválido');}};r.readAsText(f);});i.click();});
+  <div class="controls">
+    <div class="turns-group">
+      <span class="label">TURNOS:</span>
+      <select class="select" id="turns-count">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5" selected>5</option>
+        <option value="6">6</option>
+        <option value="8">8</option>
+        <option value="10">10</option>
+      </select>
+    </div>
+    <button id="btn-start" class="btn primary">▶ INICIAR</button>
+    <button id="btn-stop" class="btn danger" disabled>■ DETENER</button>
+    <button id="btn-clear" class="btn danger">✕ LIMPIAR</button>
+    <button id="btn-download" class="btn corrupt" disabled>⬇ DESCARGAR MD</button>
+    <button id="btn-sessions" class="sess-btn">📖 SESIONES</button>
+  </div>
+
+  <div id="conversation" class="conversation-area">
+    <div class="msg system">
+      <div class="msg-header">// SISTEMA</div>
+      Selecciona fuente y opcionalmente escribe un prompt inicial. Presiona INICIAR para comenzar.
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-item">
+      <span class="stat-label">Turno:</span>
+      <span id="stat-turns" class="stat-value">0</span>
+      <span class="stat-label">/ <span id="stat-total-turns">5</span></span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Tokens:</span>
+      <span id="stat-tokens" class="stat-value">0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">Estado:</span>
+      <span id="stat-status" class="stat-value" style="color:#662266">Inactivo</span>
+    </div>
+  </div>
+
+  <footer class="esquizo-footer">
+    <p>ESQUIZOAI &nbsp;///&nbsp; <span class="acid">EL LOKO AKRATA</span> &nbsp;///&nbsp; GPL v3</p>
+    <p class="dim">damage_definition.json: FILE NOT FOUND</p>
+  </footer>
+</div>
+
+<!-- sessions panel -->
+<div class="sess-panel" id="sessPanel">
+  <div class="sess-inner">
+    <div class="sess-hdr"><span>📖 DIÁLOGOS</span><div><button class="sess-btn" id="sessExport">⬇</button><button class="sess-btn" id="sessImport" style="margin-left:2px">⬆</button><button class="sess-close" id="sessClose">✕</button></div></div>
+    <div class="sess-list" id="sessList"><div class="sess-empty">Sin diálogos guardados.</div></div>
+  </div>
+</div>
+
+<script>
+const DEV = (location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
+function apiBase(p){return DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;}
+const API_URL = apiBase('/api/terminal');
+const DELAY_BETWEEN_TURNS = 2500;
+
+let grimoriosData = null;
+let psychobotData = null;
+let currentSource = null;
+let conversationHistory = [];
+let currentTurn = 0;
+let totalTokens = 0;
+let isRunning = false;
+let initialPrompt = '';
+let targetTurns = 5;
+
+/* sessions */
+let termSessions=[], termActiveSessionId=null;
+function loadTSessions(){
+  try{termSessions=JSON.parse(localStorage.getItem('terminalSessions')||'[]');}catch(e){termSessions=[];}
+  if(!Array.isArray(termSessions))termSessions=[];
+  termActiveSessionId=localStorage.getItem('terminalActiveSession')||null;
+  if(termActiveSessionId&&!termSessions.find(s=>s.id===termActiveSessionId))termActiveSessionId=null;
+}
+function saveTSessions(){localStorage.setItem('terminalSessions',JSON.stringify(termSessions));localStorage.setItem('terminalActiveSession',termActiveSessionId||'');renderTermSessList();}
+function getActiveTSess(){return termSessions.find(s=>s.id===termActiveSessionId)||null;}
+function saveToTSess(){
+  const s=getActiveTSess();if(!s)return;
+  s.modelA=modelASelect.value;s.modelB=modelBSelect.value;
+  s.source=currentSource?currentSource.titulo:'CAOS PURO';
+  s.initialPrompt=initialPrompt;s.targetTurns=targetTurns;
+  s.history=conversationHistory.slice();s.currentTurn=currentTurn;s.totalTokens=totalTokens;
+  s.updatedAt=Date.now();saveTSessions();
+}
+function startNewTDialog(){
+  termActiveSessionId=null;const sid='s'+Date.now();
+  termSessions.push({id:sid,createdAt:Date.now(),modelA:modelASelect.value,modelB:modelBSelect.value,
+    source:'',initialPrompt:'',targetTurns:0,history:[],currentTurn:0,totalTokens:0});
+  termActiveSessionId=sid;saveTSessions();
+}
+function loadTDialog(id){
+  const s=termSessions.find(x=>x.id===id);if(!s)return;
+  termActiveSessionId=id;saveTSessions();
+  conversationHistory=s.history.slice();currentTurn=s.currentTurn;totalTokens=s.totalTokens;
+  if(s.modelA)modelASelect.value=s.modelA;if(s.modelB)modelBSelect.value=s.modelB;
+  conversationArea.innerHTML='';conversationHistory.forEach((m,i)=>{
+    const turn=Math.floor(i/2)+1;const isA=i%2===0;const type=isA?'model-a':'model-b';
+    const color=isA?'🔴':'🔵';addMessage(m.content,type,`${color} ${m.model}`,turn);
+  });
+  statTurns.textContent=currentTurn;statTokens.textContent=totalTokens;
+  btnDownload.disabled=conversationHistory.length===0;
+}
+function renderTermSessList(){
+  const el=document.getElementById('sessList');if(!el)return;
+  if(termSessions.length===0){el.innerHTML='<div class="sess-empty">Sin diálogos guardados.</div>';return;}
+  el.innerHTML=termSessions.map(s=>{
+    const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    const lastMsg=(s.history||[]).slice(-1)[0]?.content||'sin mensajes';
+    const cnt=(s.history||[]).length;const isActive=s.id===termActiveSessionId;
+    return `<div class="sess-entry${isActive?' active':''}" data-sid="${s.id}">
+      <span class="sdel" data-del="${s.id}">×</span>
+      <div class="sdate">${ds}</div>
+      <div class="sfirst">${esc2(lastMsg.slice(0,60))}</div>
+      <div class="scnt">${cnt} turnos · ${s.source||'CAOS PURO'}${isActive?' · activo':''}</div>
+    </div>`;
+  }).join('');
+  [...el.querySelectorAll('.sess-entry')].forEach(entry=>{entry.addEventListener('click',e=>{
+    if(e.target.classList.contains('sdel')){e.stopPropagation();
+      const sid=e.target.dataset.del;if(confirm('¿Borrar este diálogo?')){
+        termSessions=termSessions.filter(s=>s.id!==sid);if(termActiveSessionId===sid){termActiveSessionId=null;clearConversation();}
+        saveTSessions();}
+      return;}
+    const sid=entry.dataset.sid;if(sid===termActiveSessionId)return;
+    loadTDialog(sid);document.getElementById('sessPanel').classList.remove('open');
+  });});
+}
+function esc2(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function showTermResumeCard(){
+  const s=getActiveTSess();if(!s||!(s.history||[]).length)return;
+  const d=new Date(s.createdAt);const ds=d.toLocaleDateString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  const card=document.createElement('div');card.className='resume-card';
+  card.innerHTML=`<div class="rq">Diálogo activo</div><div class="rmeta">${ds} · ${(s.history||[]).length} turnos · ${s.source||'CAOS PURO'}</div>
+    <div class="rbtns"><button id="btnTResume">CARGAR</button><button id="btnTResumeNew">NUEVO</button></div>`;
+  // insert after OUTPUT:// pseudo-element
+  const firstMsg = conversationArea.querySelector('.msg');
+  if(firstMsg) conversationArea.insertBefore(card, firstMsg);
+  else conversationArea.appendChild(card);
+  card.querySelector('#btnTResume').addEventListener('click',()=>{card.remove();loadTDialog(termActiveSessionId);});
+  card.querySelector('#btnTResumeNew').addEventListener('click',()=>{card.remove();startNewTDialog();});
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const sbtn=document.getElementById('btn-sessions');if(sbtn)sbtn.addEventListener('click',()=>{document.getElementById('sessPanel').classList.add('open');renderTermSessList();});
+  const scls=document.getElementById('sessClose');if(scls)scls.addEventListener('click',()=>{document.getElementById('sessPanel').classList.remove('open');});
+  const sexp=document.getElementById('sessExport');if(sexp)sexp.addEventListener('click',()=>{const b=new Blob([JSON.stringify(termSessions,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='terminal-esquizo-sessions.json';a.click();URL.revokeObjectURL(a.href);});
+  const simp=document.getElementById('sessImport');if(simp)simp.addEventListener('click',()=>{const i=document.createElement('input');i.type='file';i.accept='.json';i.addEventListener('change',()=>{const f=i.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(Array.isArray(d)){termSessions=d;saveTSessions();renderTermSessList();}}catch(e){alert('JSON inválido');}};r.readAsText(f);});i.click();});
+});
+
+/* DOM refs */
+const modelASelect = document.getElementById('model-a');
+const modelBSelect = document.getElementById('model-b');
+const sourceSelect = document.getElementById('source-select');
+const sourcePreview = document.getElementById('source-preview');
+const conversationArea = document.getElementById('conversation');
+const initialPromptInput = document.getElementById('initial-prompt');
+const turnsCountSelect = document.getElementById('turns-count');
+
+const btnStart = document.getElementById('btn-start');
+const btnStop = document.getElementById('btn-stop');
+const btnClear = document.getElementById('btn-clear');
+const btnDownload = document.getElementById('btn-download');
+
+const statTurns = document.getElementById('stat-turns');
+const statTotalTurns = document.getElementById('stat-total-turns');
+const statTokens = document.getElementById('stat-tokens');
+const statStatus = document.getElementById('stat-status');
+
+const MODEL_NAMES = {
+  'llama-3.3-70b-versatile':'Llama 3.3 70B',
+  'llama-3.1-8b-instant':'Llama 3.1 8B',
+  'meta-llama/llama-4-scout-17b-16e-instruct':'Llama 4 Scout',
+  'qwen/qwen3-32b':'Qwen3 32B',
+  'openai/gpt-oss-20b':'GPT-OSS 20B',
+  'openai/gpt-oss-120b':'GPT-OSS 120B',
+  'deepseek-chat':'DeepSeek Chat',
+};
+function getModelDisplayName(id){return MODEL_NAMES[id]||id;}
+
+function parseMarkdown(text){
+  if(!text)return'';
+  let html=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  html=html.replace(/```(\w*)\n?([\s\S]*?)```/g,'<pre><code>$2</code></pre>');
+  html=html.replace(/`([^`]+)`/g,'<code>$1</code>');
+  html=html.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  html=html.replace(/\*([^*]+)\*/g,'<em>$1</em>');
+  html=html.replace(/^### (.+)$/gm,'<strong style="font-size:1.1em">$1</strong>');
+  html=html.replace(/^## (.+)$/gm,'<strong style="font-size:1.2em">$1</strong>');
+  html=html.replace(/^- (.+)$/gm,'• $1');
+  return html;
+}
+
+function showSpinner(modelName,isModelA,turnNum){
+  const sc=isModelA?'model-a':'model-b';
+  const spinner=document.createElement('div');
+  spinner.id='current-spinner';
+  spinner.className='spinner-container';
+  spinner.innerHTML=`<div class="spinner ${sc}"></div><span class="spinner-text">[Turno ${turnNum}] ${modelName} generando...</span>`;
+  conversationArea.appendChild(spinner);
+  conversationArea.scrollTop=conversationArea.scrollHeight;
+}
+function hideSpinner(){
+  const spinner=document.getElementById('current-spinner');
+  if(spinner)spinner.remove();
+}
+
+async function loadSources(){
+  sourceSelect.innerHTML='';
+  const chaosOption=document.createElement('option');
+  chaosOption.value='chaos';
+  chaosOption.textContent='⸸ CAOS PURO (sin fuente)';
+  sourceSelect.appendChild(chaosOption);
+
+  // GRIMORIOS
+  let grimCount=0;
+  try{
+    const res=await fetch('/data/grimorios_data.json');
+    if(res.ok){
+      grimoriosData=await res.json();
+      const valid=(grimoriosData.grimorios||[]).filter(g=>g.esencia&&!g.esencia.includes('Error'));
+      if(valid.length>0){
+        const sep=document.createElement('option');
+        sep.disabled=true;sep.textContent='── GRIMORIOS ──';
+        sourceSelect.appendChild(sep);
+        valid.forEach(g=>{
+          const opt=document.createElement('option');
+          opt.value='grimorio:'+g.id;
+          opt.textContent=`${g.titulo} (~${g.tokens_original||'?'} tokens)`;
+          opt.dataset.origin='grimorio';
+          sourceSelect.appendChild(opt);
+          grimCount++;
         });
-        /* ---- /sessions ---- */
+      }
+    }
+  }catch(e){console.error('Error cargando grimorios:',e);}
 
-        // Elementos DOM
-        const modelASelect = document.getElementById('model-a');
-        const modelBSelect = document.getElementById('model-b');
-        const grimorioSelect = document.getElementById('grimorio-select');
-        const grimorioPreview = document.getElementById('grimorio-preview');
-        const conversationArea = document.getElementById('conversation');
-        const initialPromptInput = document.getElementById('initial-prompt');
-        const turnsCountSelect = document.getElementById('turns-count');
-
-        const btnStart = document.getElementById('btn-start');
-        const btnStop = document.getElementById('btn-stop');
-        const btnClear = document.getElementById('btn-clear');
-        const btnDownload = document.getElementById('btn-download');
-
-        const statTurns = document.getElementById('stat-turns');
-        const statTotalTurns = document.getElementById('stat-total-turns');
-        const statTokens = document.getElementById('stat-tokens');
-        const statStatus = document.getElementById('stat-status');
-
-        // Mapa de nombres cortos para modelos
-        const MODEL_NAMES = {
-            // Groq models
-            'llama-3.3-70b-versatile': 'Llama 3.3 70B',
-            'llama-3.1-8b-instant': 'Llama 3.1 8B',
-            'meta-llama/llama-4-scout-17b-16e-instruct': 'Llama 4 Scout',
-            'qwen/qwen3-32b': 'Qwen3 32B',
-            'openai/gpt-oss-20b': 'GPT-OSS 20B',
-            'openai/gpt-oss-120b': 'GPT-OSS 120B',
-            // DeepSeek models
-            'deepseek-chat': 'DeepSeek Chat',
-            // 'deepseek-reasoner': 'DeepSeek Reasoner 🧠', // DISABLED: Vercel timeout
-        };
-
-        function getModelDisplayName(modelId) {
-            return MODEL_NAMES[modelId] || modelId;
-        }
-
-        // Parsear markdown básico
-        function parseMarkdown(text) {
-            if (!text) return '';
-
-            let html = text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-
-            html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
-            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-            html = html.replace(/^### (.+)$/gm, '<strong style="font-size:1.1em">$1</strong>');
-            html = html.replace(/^## (.+)$/gm, '<strong style="font-size:1.2em">$1</strong>');
-            html = html.replace(/^- (.+)$/gm, '• $1');
-
-            return html;
-        }
-
-        // Mostrar spinner de carga
-        function showSpinner(modelName, isModelA, turnNum) {
-            const spinnerClass = isModelA ? 'model-a' : 'model-b';
-            const spinner = document.createElement('div');
-            spinner.id = 'current-spinner';
-            spinner.className = 'spinner-container';
-            spinner.innerHTML = `
-                <div class="spinner ${spinnerClass}"></div>
-                <span class="spinner-text">[Turno ${turnNum}] ${modelName} generando...</span>
-            `;
-            conversationArea.appendChild(spinner);
-            conversationArea.scrollTop = conversationArea.scrollHeight;
-        }
-
-        function hideSpinner() {
-            const spinner = document.getElementById('current-spinner');
-            if (spinner) spinner.remove();
-        }
-
-        // Cargar grimorios
-        async function loadGrimorios() {
-            grimorioSelect.innerHTML = '';
-
-            const chaosOption = document.createElement('option');
-            chaosOption.value = 'chaos';
-            chaosOption.textContent = '⸸ CAOS PURO (sin grimorio)';
-            grimorioSelect.appendChild(chaosOption);
-
-            try {
-                const response = await fetch('/data/grimorios_data.json');
-                if (!response.ok) throw new Error('No se pudo cargar');
-
-                grimoriosData = await response.json();
-
-                const validGrimorios = grimoriosData.grimorios
-                    .filter(g => g.esencia && !g.esencia.includes('Error'));
-
-                if (validGrimorios.length > 0) {
-                    const separator = document.createElement('option');
-                    separator.disabled = true;
-                    separator.textContent = '── GRIMORIOS ──';
-                    grimorioSelect.appendChild(separator);
-
-                    validGrimorios.forEach(g => {
-                        const option = document.createElement('option');
-                        option.value = g.id;
-                        option.textContent = `${g.titulo} (~${g.tokens_original} tokens)`;
-                        grimorioSelect.appendChild(option);
-                    });
-                }
-
-            } catch (error) {
-                console.error('Error cargando grimorios:', error);
-                const errorOption = document.createElement('option');
-                errorOption.disabled = true;
-                errorOption.textContent = '(grimorios no disponibles)';
-                grimorioSelect.appendChild(errorOption);
-            }
-
-            grimorioSelect.value = 'chaos';
-            grimorioSelect.dispatchEvent(new Event('change'));
-        }
-
-        // Preview del grimorio
-        grimorioSelect.addEventListener('change', () => {
-            const id = grimorioSelect.value;
-
-            if (id === 'chaos') {
-                currentGrimorio = null;
-                grimorioPreview.innerHTML = '<strong>CAOS PURO:</strong> Las IAs operan sin contexto de grimorio, desde el vacío.';
-                return;
-            }
-
-            if (!id || !grimoriosData) {
-                currentGrimorio = null;
-                grimorioPreview.innerHTML = '';
-                return;
-            }
-
-            currentGrimorio = grimoriosData.grimorios.find(g => g.id === id);
-            if (currentGrimorio) {
-                grimorioPreview.innerHTML = `
-                    <strong>Esencia:</strong> ${currentGrimorio.esencia}<br>
-                    <strong>Conceptos:</strong> ${(currentGrimorio.conceptos_clave || []).join(', ')}
-                `;
-            }
+  // PSYCHO-BOT
+  let psychoCount=0;
+  try{
+    const res=await fetch('/data/psychobot_data.json');
+    if(res.ok){
+      psychobotData=await res.json();
+      const valid=(psychobotData.episodios||[]).filter(e=>e.esencia);
+      if(valid.length>0){
+        const sep=document.createElement('option');
+        sep.disabled=true;sep.textContent='── PSYCHO-BOT ──';
+        sourceSelect.appendChild(sep);
+        valid.forEach(e=>{
+          const opt=document.createElement('option');
+          opt.value='psycho:'+e.id;
+          opt.textContent=`📡 ${e.titulo}`;
+          opt.dataset.origin='psycho';
+          sourceSelect.appendChild(opt);
+          psychoCount++;
         });
+      }
+    }
+  }catch(e){console.error('Error cargando psycho-bot:',e);}
 
-        // Actualizar stat de turnos totales cuando cambia selector
-        turnsCountSelect.addEventListener('change', () => {
-            statTotalTurns.textContent = turnsCountSelect.value;
-        });
+  // fallback if both failed
+  if(grimCount===0&&psychoCount===0){
+    const errOpt=document.createElement('option');
+    errOpt.disabled=true;errOpt.textContent='(fuentes no disponibles)';
+    sourceSelect.appendChild(errOpt);
+  }
 
-        // Agregar mensaje con número de turno
-        function addMessage(content, type, model = '', turnNum = null) {
-            const msg = document.createElement('div');
-            msg.className = `message ${type}`;
+  sourceSelect.value='chaos';
+  sourceSelect.dispatchEvent(new Event('change'));
+}
 
-            const header = document.createElement('div');
-            header.className = 'message-header';
+sourceSelect.addEventListener('change',()=>{
+  const val=sourceSelect.value;
+  if(val==='chaos'){
+    currentSource=null;
+    sourcePreview.innerHTML='<strong>CAOS PURO:</strong> Las IAs operan sin contexto, desde el vacío.';
+    return;
+  }
+  if(!val){currentSource=null;sourcePreview.innerHTML='';return;}
 
-            if (type === 'system') {
-                header.textContent = '// SISTEMA';
-            } else if (turnNum !== null) {
-                header.textContent = `// [Turno ${turnNum}] ${model}`;
-            } else {
-                header.textContent = `// ${model}`;
-            }
+  const[origin,id]=val.split(':');
+  if(origin==='grimorio'&&grimoriosData){
+    currentSource=grimoriosData.grimorios.find(g=>g.id===id);
+  }else if(origin==='psycho'&&psychobotData){
+    currentSource=psychobotData.episodios.find(e=>e.id===id);
+  }
 
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
+  if(currentSource){
+    sourcePreview.innerHTML=`
+      <strong>Esencia:</strong> ${currentSource.esencia}<br>
+      <strong>Conceptos:</strong> ${(currentSource.conceptos_clave||[]).join(', ')}
+    `;
+  }
+});
 
-            if (type === 'model-a' || type === 'model-b') {
-                contentDiv.innerHTML = parseMarkdown(content);
-            } else {
-                contentDiv.textContent = content;
-            }
+turnsCountSelect.addEventListener('change',()=>{
+  statTotalTurns.textContent=turnsCountSelect.value;
+});
 
-            msg.appendChild(header);
-            msg.appendChild(contentDiv);
+function addMessage(content,type,model='',turnNum=null){
+  const msg=document.createElement('div');
+  msg.className=`msg ${type}`;
+  const header=document.createElement('div');
+  header.className='msg-header';
+  if(type==='system'){header.textContent='// SISTEMA';}
+  else if(turnNum!==null){header.textContent=`// [Turno ${turnNum}] ${model}`;}
+  else{header.textContent=`// ${model}`;}
+  const contentDiv=document.createElement('div');
+  contentDiv.className='msg-content';
+  if(type==='model-a'||type==='model-b'){contentDiv.innerHTML=parseMarkdown(content);}
+  else{contentDiv.textContent=content;}
+  msg.appendChild(header);
+  msg.appendChild(contentDiv);
+  conversationArea.appendChild(msg);
+  conversationArea.scrollTop=conversationArea.scrollHeight;
+}
 
-            conversationArea.appendChild(msg);
-            conversationArea.scrollTop = conversationArea.scrollHeight;
-        }
+async function executeTurn(isModelA=true){
+  if(!isRunning)return;
+  const turnNum=currentTurn+1;
+  const model=isModelA?modelASelect.value:modelBSelect.value;
+  const otherModel=isModelA?modelBSelect.value:modelASelect.value;
+  const modelDisplayName=getModelDisplayName(model);
+  const otherModelDisplayName=getModelDisplayName(otherModel);
+  const msgType=isModelA?'model-a':'model-b';
+  const colorLabel=isModelA?'🔴':'🔵';
+  statStatus.textContent=`[${turnNum}/${targetTurns}] ${colorLabel} ${modelDisplayName}...`;
+  statStatus.style.color='var(--amber)';
+  showSpinner(`${colorLabel} ${modelDisplayName}`,isModelA,turnNum);
 
-        // Ejecutar un turno
-        async function executeTurn(isModelA = true) {
-            if (!isRunning) return;
+  try{
+    const response=await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model,modelName:modelDisplayName,otherModelName:otherModelDisplayName,
+        grimorio:currentSource,history:conversationHistory,initialPrompt,temperature:0.85,
+      })
+    });
+    if(!response.ok){const et=await response.text();throw new Error(`API ${response.status}: ${et.substring(0,300)}`);}
+    const ct=response.headers.get('content-type');
+    if(!ct||!ct.includes('application/json')){const t=await response.text();throw new Error(`Respuesta no-JSON: ${t.substring(0,300)}`);}
+    const data=await response.json();
+    hideSpinner();
+    if(data.error){throw new Error(data.error);}
+    conversationHistory.push({role:'assistant',content:data.content,model:modelDisplayName});
+    saveToTSess();
+    addMessage(data.content,msgType,`${colorLabel} ${modelDisplayName}`,turnNum);
+    currentTurn++;
+    statTurns.textContent=currentTurn;
+    if(currentTurn<targetTurns&&isRunning){
+      await new Promise(r=>setTimeout(r,DELAY_BETWEEN_TURNS));
+      if(isRunning)await executeTurn(!isModelA);
+    }else{finishConversation();}
+  }catch(error){
+    hideSpinner();
+    addMessage(`Error: ${error.message}`,'system');
+    statStatus.textContent='Error';
+    statStatus.style.color='var(--red)';
+    finishConversation();
+  }
+}
 
-            const turnNum = currentTurn + 1;
-            const model = isModelA ? modelASelect.value : modelBSelect.value;
-            const otherModel = isModelA ? modelBSelect.value : modelASelect.value;
-            const modelDisplayName = getModelDisplayName(model);
-            const otherModelDisplayName = getModelDisplayName(otherModel);
-            const msgType = isModelA ? 'model-a' : 'model-b';
-            const colorLabel = isModelA ? '🔴' : '🔵';
+async function startConversation(){
+  if(!sourceSelect.value){alert('Selecciona una fuente (grimorio, psycho-bot o caos puro)');return;}
+  initialPrompt=initialPromptInput.value.trim();
+  targetTurns=parseInt(turnsCountSelect.value);
+  isRunning=true;
+  btnStart.disabled=true;btnStop.disabled=false;btnDownload.disabled=true;
+  initialPromptInput.disabled=true;turnsCountSelect.disabled=true;
+  modelASelect.disabled=true;modelBSelect.disabled=true;sourceSelect.disabled=true;
+  statTotalTurns.textContent=targetTurns;
+  conversationArea.innerHTML='';
+  let initMsg=currentSource
+    ?`Iniciando ${targetTurns} turnos sobre: ${currentSource.titulo}`
+    :`Iniciando ${targetTurns} turnos en CAOS PURO`;
+  if(initialPrompt)initMsg+=`\n\nPremisa: "${initialPrompt}"`;
+  addMessage(initMsg,'system');
+  await executeTurn(true);
+}
 
-            statStatus.textContent = `[${turnNum}/${targetTurns}] ${colorLabel} ${modelDisplayName}...`;
+function finishConversation(){
+  isRunning=false;
+  btnStart.disabled=false;btnStop.disabled=true;
+  initialPromptInput.disabled=false;turnsCountSelect.disabled=false;
+  modelASelect.disabled=false;modelBSelect.disabled=false;sourceSelect.disabled=false;
+  btnDownload.disabled=conversationHistory.length===0;
+  statStatus.textContent=currentTurn>=targetTurns?'✅ Completado':'⏹ Detenido';
+  statStatus.style.color='var(--acid)';
+  saveToTSess();
+}
 
-            showSpinner(`${colorLabel} ${modelDisplayName}`, isModelA, turnNum);
+function stopConversation(){isRunning=false;hideSpinner();finishConversation();}
+function clearConversation(){
+  stopConversation();
+  conversationHistory=[];currentTurn=0;totalTokens=0;initialPrompt='';
+  initialPromptInput.value='';btnDownload.disabled=true;
+  statTurns.textContent='0';statTokens.textContent='0';
+  statStatus.textContent='Inactivo';statStatus.style.color='#662266';
+  sourceSelect.value='chaos';sourceSelect.dispatchEvent(new Event('change'));
+  conversationArea.innerHTML=`
+    <div class="msg system">
+      <div class="msg-header">// SISTEMA</div>
+      Selecciona fuente y opcionalmente un prompt inicial. Presiona INICIAR.
+    </div>`;
+  startNewTDialog();
+}
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model,
-                        modelName: modelDisplayName,
-                        otherModelName: otherModelDisplayName,
-                        grimorio: currentGrimorio,
-                        history: conversationHistory,
-                        initialPrompt: initialPrompt,
-                        temperature: 0.85,
-                    })
-                });
+function downloadConversation(){
+  if(conversationHistory.length===0)return;
+  const modelA=getModelDisplayName(modelASelect.value);
+  const modelB=getModelDisplayName(modelBSelect.value);
+  const srcName=currentSource?currentSource.titulo:'CAOS PURO';
+  const date=new Date().toISOString().split('T')[0];
+  let md=`# Terminal Esquizo - Diálogo entre IAs\n\n`;
+  md+=`**Fecha:** ${date}\n**Modelos:** ${modelA} (🔴) vs ${modelB} (🔵)\n**Fuente:** ${srcName}\n**Turnos:** ${currentTurn}\n**Tokens:** ${totalTokens}\n\n`;
+  if(initialPrompt)md+=`## Premisa Inicial\n\n> ${initialPrompt}\n\n`;
+  md+=`---\n\n## Diálogo\n\n`;
+  conversationHistory.forEach((msg,i)=>{
+    const tn=i+1;const isA=tn%2===1;const color=isA?'🔴':'🔵';
+    md+=`### [Turno ${tn}] ${color} ${msg.model}\n\n${msg.content}\n\n`;
+  });
+  md+=`---\n\n*Generado por Terminal Esquizo - Códice Esquizo-AI*\n`;
+  const blob=new Blob([md],{type:'text/markdown'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`terminal-esquizo-${date}.md`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
 
-                // Verificar si la respuesta es OK antes de parsear
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`API ${response.status}: ${errorText.substring(0, 300)}`);
-                }
+btnStart.addEventListener('click',startConversation);
+btnStop.addEventListener('click',stopConversation);
+btnClear.addEventListener('click',clearConversation);
+btnDownload.addEventListener('click',downloadConversation);
 
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    const text = await response.text();
-                    throw new Error(`Respuesta no-JSON: ${text.substring(0, 300)}`);
-                }
-
-                const data = await response.json();
-                hideSpinner();
-
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                conversationHistory.push({
-                    role: 'assistant',
-                    content: data.content,
-                    model: modelDisplayName,
-                });
-                saveToTSess();
-
-                addMessage(data.content, msgType, `${colorLabel} ${modelDisplayName}`, turnNum);
-
-                currentTurn++;
-                statTurns.textContent = currentTurn;
-
-                // Continuar si quedan turnos
-                if (currentTurn < targetTurns && isRunning) {
-                    await new Promise(r => setTimeout(r, DELAY_BETWEEN_TURNS));
-                    if (isRunning) {
-                        await executeTurn(!isModelA);
-                    }
-                } else {
-                    // Terminó
-                    finishConversation();
-                }
-
-            } catch (error) {
-                hideSpinner();
-                addMessage(`Error: ${error.message}`, 'system');
-                statStatus.textContent = 'Error';
-                finishConversation();
-            }
-        }
-
-        // Iniciar conversación
-        async function startConversation() {
-            if (!grimorioSelect.value) {
-                alert('Selecciona un modo (grimorio o caos puro)');
-                return;
-            }
-
-            initialPrompt = initialPromptInput.value.trim();
-            targetTurns = parseInt(turnsCountSelect.value);
-
-            isRunning = true;
-            btnStart.disabled = true;
-            btnStop.disabled = false;
-            btnDownload.disabled = true;
-            initialPromptInput.disabled = true;
-            turnsCountSelect.disabled = true;
-            modelASelect.disabled = true;
-            modelBSelect.disabled = true;
-            grimorioSelect.disabled = true;
-
-            statTotalTurns.textContent = targetTurns;
-
-            conversationArea.innerHTML = '';
-
-            let initMsg = currentGrimorio
-                ? `Iniciando ${targetTurns} turnos sobre: ${currentGrimorio.titulo}`
-                : `Iniciando ${targetTurns} turnos en CAOS PURO`;
-
-            if (initialPrompt) {
-                initMsg += `\n\nPremisa: "${initialPrompt}"`;
-            }
-
-            addMessage(initMsg, 'system');
-
-            // Ejecutar todos los turnos
-            await executeTurn(true);
-        }
-
-        // Terminar conversación (completada o detenida)
-        function finishConversation() {
-            isRunning = false;
-            btnStart.disabled = false;
-            btnStop.disabled = true;
-            btnDownload.disabled = conversationHistory.length === 0;
-            statStatus.textContent = currentTurn >= targetTurns ? '✅ Completado' : '⏹ Detenido';
-            saveToTSess();
-        }
-
-        // Detener conversación
-        function stopConversation() {
-            isRunning = false;
-            hideSpinner();
-            finishConversation();
-        }
-
-        // Limpiar todo
-        function clearConversation() {
-            stopConversation();
-            conversationHistory = [];
-            currentTurn = 0;
-            totalTokens = 0;
-            initialPrompt = '';
-            initialPromptInput.value = '';
-            initialPromptInput.disabled = false;
-            turnsCountSelect.disabled = false;
-            modelASelect.disabled = false;
-            modelBSelect.disabled = false;
-            grimorioSelect.disabled = false;
-            btnDownload.disabled = true;
-            statTurns.textContent = '0';
-            statTokens.textContent = '0';
-            statStatus.textContent = 'Inactivo';
-            conversationArea.innerHTML = `
-                <div class="message system">
-                    <div class="message-header">// SISTEMA</div>
-                    Selecciona modo, turnos y opcionalmente un prompt inicial. Presiona INICIAR.
-                </div>
-            `;
-            startNewTDialog();
-        }
-
-        // Descargar conversación como Markdown
-        function downloadConversation() {
-            if (conversationHistory.length === 0) return;
-
-            const modelA = getModelDisplayName(modelASelect.value);
-            const modelB = getModelDisplayName(modelBSelect.value);
-            const grimName = currentGrimorio ? currentGrimorio.titulo : 'CAOS PURO';
-            const date = new Date().toISOString().split('T')[0];
-
-            let md = `# Terminal Esquizo - Diálogo entre IAs\n\n`;
-            md += `**Fecha:** ${date}\n`;
-            md += `**Modelos:** ${modelA} (🔴) vs ${modelB} (🔵)\n`;
-            md += `**Grimorio:** ${grimName}\n`;
-            md += `**Turnos:** ${currentTurn}\n`;
-            md += `**Tokens:** ${totalTokens}\n\n`;
-
-            if (initialPrompt) {
-                md += `## Premisa Inicial\n\n> ${initialPrompt}\n\n`;
-            }
-
-            md += `---\n\n## Diálogo\n\n`;
-
-            conversationHistory.forEach((msg, i) => {
-                const turnNum = i + 1;
-                const isModelA = i % 2 === 0;
-                const color = isModelA ? '🔴' : '🔵';
-                md += `### [Turno ${turnNum}] ${color} ${msg.model}\n\n`;
-                md += `${msg.content}\n\n`;
-            });
-
-            md += `---\n\n*Generado por Terminal Esquizo - Códice Esquizo-AI*\n`;
-
-            // Crear blob y descargar
-            const blob = new Blob([md], { type: 'text/markdown' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `terminal-esquizo-${date}.md`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Event listeners
-        btnStart.addEventListener('click', startConversation);
-        btnStop.addEventListener('click', stopConversation);
-        btnClear.addEventListener('click', clearConversation);
-        btnDownload.addEventListener('click', downloadConversation);
-
-        // Inicializar
-        loadGrimorios();
-        loadTSessions();
-        if(getActiveTSess()){ showTermResumeCard(); } else { startNewTDialog(); }
-    </script>
+loadSources();
+loadTSessions();
+if(getActiveTSess()){showTermResumeCard();}else{startNewTDialog();}
+</script>
 </body>
 </html>

@@ -655,10 +655,13 @@ const FS = {
     {label:"VOID_GLITCH", file:"void-glitch/index.html", icon:"🕳", desc:"void interactivo de preguntas en espiral"},
     {label:"ORACULO.exe", file:"oraculo/index.html", icon:"⯁", desc:"I Ching + VALIS — libro de las mutaciones"},
   ]},
+  JUEGOS:{ label:"JUEGOS", icon:"🎮", color:"#aaff00", items:[
+    {label:"BRICK_GAME.exe", file:"games/brick-game.html", icon:"🧱", desc:"9999 en 1 — Tetris, Snake, Breakout..."},
+  ]},
 };
 
 /* qué carpetas aparecen como iconos en el escritorio */
-const DESKTOP_FOLDERS = ["PSYCHO_BOT","HERRAMIENTAS","GRIMORIOS_GEMINI","CLAUDE_INFECTION","QWEN","RECON","EXPERIENCIAS_GENERATIVAS"];
+const DESKTOP_FOLDERS = ["PSYCHO_BOT","JUEGOS","HERRAMIENTAS","GRIMORIOS_GEMINI","CLAUDE_INFECTION","QWEN","RECON","EXPERIENCIAS_GENERATIVAS"];
 
 /* "Modo clásico": el portal antiguo, preservado tras el swap */
 const CLASSIC_HREF = "inicio-classic.html";
@@ -1059,6 +1062,7 @@ function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:5
 function openVoidGlitch(){ return openApp("void-glitch/index.html","VOID_GLITCH.exe","🕳",{w:600,h:720}); }
 function openOracle(){ return openApp("oraculo/index.html","ORACULO.exe","⯁",{w:620,h:750}); }
 function openTerminalEsquizo(){ return openApp("tools/TERMINAL_ESQUIZO.html","TERMINAL_ESQUIZO.exe","💬",{w:760,h:620}); }
+function openBrickGame(){ return openApp("games/brick-game.html","BRICK_GAME.exe","🧱",{w:480,h:680}); }
 function openGlitchCam(){ return openApp("glitch-cam-web/index.html","GLITCH.CAM","📹",{w:740,h:500}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
@@ -2089,6 +2093,7 @@ function openTerminal(){
     voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch,
     oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle,
     terminal:openTerminalEsquizo, dialogo:openTerminalEsquizo, dialogoia:openTerminalEsquizo,
+    brick:openBrickGame, brickgame:openBrickGame, tetris:openBrickGame, juegos:openBrickGame, game:openBrickGame,
     glitchcam:openGlitchCam, cam:openGlitchCam
   };
 
@@ -2108,6 +2113,7 @@ function openTerminal(){
         await type("  void · glitch · caida  — juego del vacío con las IAs","corrupt");
         await type("  oraculo · iching · hexagrama  — I Ching + VALIS, libro de mutaciones","corrupt");
         await type("  terminal · dialogo · dialogoia  — diálogo entre IAs con grimorios y psycho-bot","corrupt");
+        await type("  brick · tetris · juegos   — BRICK GAME 9999 en 1 (Tetris, Snake...)","corrupt");
         await type("  glitchcam · cam  — glitch en vivo sobre webcam","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
@@ -2176,6 +2182,8 @@ function openTerminal(){
         await type("abriendo ORACULO.exe — el libro de las mutaciones se abre...","corrupt"); openOracle(); break;
       case "terminal": case "dialogo": case "dialogoia":
         await type("abriendo TERMINAL_ESQUIZO.exe — dos IAs dialogando sobre grimorios y psycho-bot...","corrupt"); openTerminalEsquizo(); break;
+      case "brick": case "brickgame": case "tetris": case "juegos": case "game":
+        await type("abriendo BRICK_GAME.exe — 9999 en 1 para jugar como en los 90...","acid"); openBrickGame(); break;
       case "glitchcam": case "glitch-cam": case "cam":
         await type("abriendo GLITCH.CAM — corrompiendo la realidad en vivo...","corrupt"); openGlitchCam(); break;
       case "secrets": case "secretos": case "vault": {
@@ -2362,6 +2370,7 @@ function buildStart(){
     {ic:"🕳",lb:"VOID_GLITCH (juego del vacío)",fn:openVoidGlitch},
     {ic:"⯁",lb:"ORACULO (I Ching + VALIS)",fn:openOracle},
     {ic:"💬",lb:"TERMINAL_ESQUIZO (diálogo entre IAs)",fn:openTerminalEsquizo},
+    {ic:"🧱",lb:"BRICK_GAME (9999 en 1)",fn:openBrickGame},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"💾",lb:"MIS_ARCHIVOS",fn:()=>openMisArchivos()},

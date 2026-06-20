@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRICK GAME 9999 IN 1 | EsquizoAI</title>
+<style>
+:root{--bg:#040008;--acid:#aaff00;--corrupt:#ff00ff;--purple:#9900cc;--green:#00ff41;--green-dim:#00b32c;--red:#ff2020;--amber:#ffb000;--white:#fff0f0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Share Tech Mono',monospace;overflow:hidden;user-select:none;-webkit-user-select:none}
+.console{
+  position:relative;
+  width:min(420px,95vw);
+  background:linear-gradient(180deg,#7a7a7a 0%,#5a5a5a 15%,#4a4a4a 50%,#3a3a3a 85%,#2a2a2a 100%);
+  border-radius:18px 18px 24px 24px;
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,.15),
+    inset 0 -4px 8px rgba(0,0,0,.3),
+    0 8px 32px rgba(0,0,0,.6),
+    0 2px 8px rgba(0,0,0,.4);
+  padding:10px 14px 14px;
+  border:2px solid #3a3a3a;
+}
+.console::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+  border-radius:18px 18px 0 0;pointer-events:none;
+}
+.screen-frame{
+  background:#1a1a1a;
+  border-radius:8px;
+  padding:6px;
+  margin-bottom:8px;
+  border:3px solid #2a2a2a;
+  box-shadow:inset 0 2px 8px rgba(0,0,0,.7);
+  position:relative;
+}
+.screen-bezel{
+  background:#0a0f0a;
+  border-radius:3px;
+  padding:4px;
+  border:2px solid #1a1a1a;
+  display:flex;
+  justify-content:center;
+}
+.screen-area{
+  position:relative;
+  aspect-ratio:1/2;
+  max-height:260px;
+  background:#1a2a1a;
+  border-radius:2px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  box-shadow:inset 0 0 20px rgba(0,0,0,.5);
+}
+canvas{
+  image-rendering:pixelated;
+  image-rendering:crisp-edges;
+  width:100%;height:100%;
+}
+.screen-label{
+  text-align:center;font-size:7px;letter-spacing:.3em;color:#2a4a2a;
+  margin-top:2px;font-family:'Share Tech Mono',monospace;
+}
+.screen-info{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:2px 6px;margin-bottom:1px;
+  font-size:7px;color:#1a3a1a;letter-spacing:.15em;font-family:'Share Tech Mono',monospace;
+}
+.brand-row{
+  text-align:center;font-size:10px;letter-spacing:.4em;color:#3a5a3a;
+  margin-bottom:2px;font-family:'Share Tech Mono',monospace;
+}
+.game-label{
+  text-align:center;font-size:6px;letter-spacing:.2em;color:#2a4a2a;
+  font-family:'Share Tech Mono',monospace;
+}
+.controls-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:8px;padding:0 4px;
+}
+.btn-group{display:flex;gap:5px;align-items:center}
+.btn{
+  border:none;cursor:pointer;border-radius:50%;
+  box-shadow:0 3px 0 #222,0 5px 10px rgba(0,0,0,.4);
+  transition:all .05s;position:relative;
+  font-family:'Share Tech Mono',monospace;display:flex;
+  align-items:center;justify-content:center;
+}
+.btn:active,.btn.pressed{transform:translateY(3px);box-shadow:0 1px 0 #222,0 2px 4px rgba(0,0,0,.4)}
+.btn-dpad{
+  width:30px;height:30px;background:linear-gradient(180deg,#e04040,#a02020);
+  font-size:12px;color:#ffcccc;
+}
+.btn-rot{
+  width:38px;height:38px;background:linear-gradient(180deg,#4080e0,#2050a0);
+  font-size:9px;color:#ccddff;letter-spacing:.1em;border-radius:9px;
+}
+.btn-func{
+  width:38px;height:18px;background:linear-gradient(180deg,#e0c040,#a08020);
+  border-radius:5px;font-size:6px;color:#332200;letter-spacing:.1em;
+}
+.btn-func.red{background:linear-gradient(180deg,#e06060,#a03030);color:#ffdddd}
+.btn-func.green{background:linear-gradient(180deg,#60c060,#308030);color:#ddffdd}
+.btn-func.blue{background:linear-gradient(180deg,#4060c0,#203080);color:#ddeeff}
+.bottom-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-top:4px;padding:0 4px;
+}
+.middle-panel{display:flex;flex-direction:column;align-items:center;gap:4px}
+.model-label{
+  text-align:center;font-size:7px;letter-spacing:.15em;color:#555;
+  font-family:'Share Tech Mono',monospace;margin-top:3px;
+}
+.model-label span{color:#888}
+</style>
+</head>
+<body>
+
+<div class="console" id="console">
+  <!-- PANTALLA LCD -->
+  <div class="screen-frame">
+    <div class="screen-info">
+      <span id="infoScore">SCORE:0000</span>
+      <span id="infoSpeed">SPD:1</span>
+    </div>
+    <div class="screen-bezel">
+      <div class="screen-area" id="screenArea">
+        <canvas id="lcd"></canvas>
+      </div>
+    </div>
+    <div class="screen-label">9999 IN 1</div>
+    <div class="brand-row">BRICK GAME</div>
+    <div class="game-label" id="gameLabel">TETRIS</div>
+  </div>
+
+  <!-- D-PAD + ROT -->
+  <div class="controls-row">
+    <div class="btn-group">
+      <button class="btn btn-dpad" id="btnLeft" title="Izquierda">◀</button>
+      <button class="btn btn-dpad" id="btnRight" title="Derecha">▶</button>
+    </div>
+    <div class="middle-panel">
+      <button class="btn btn-rot" id="btnRotate" title="Rotar">ROT</button>
+    </div>
+    <button class="btn btn-dpad" id="btnDown" title="Bajar" style="font-size:18px">▼</button>
+  </div>
+
+  <!-- BOTONES ABAJO -->
+  <div class="bottom-row">
+    <button class="btn btn-func green" id="btnSound">SOUND</button>
+    <button class="btn btn-func blue" id="btnGameA">GAME A</button>
+    <button class="btn btn-func blue" id="btnGameB">GAME B</button>
+    <button class="btn btn-func red" id="btnReset">RESET</button>
+  </div>
+
+  <div class="model-label">ESQUIZOAI <span>///</span> BRICK <span>9999</span> IN 1</div>
+</div>
+
+<script>
+// ═══════════ AUDIO ═══════════
+let audioCtx=null, muted=false;
+function ac(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+function beep(freq,dur,vol=.06,type='square'){
+  if(muted)return;
+  try{const c=ac();const o=c.createOscillator();const g=c.createGain();
+    o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(vol,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+dur);
+  }catch(e){}
+}
+function sfxMove(){beep(200,.04,.04)}
+function sfxRotate(){beep(300,.06,.05)}
+function sfxDrop(){beep(80,.1,.08,'triangle')}
+function sfxLine(n){beep(400+n*80,.12,.07);setTimeout(()=>beep(500+n*80,.12,.06),80);if(n>1)setTimeout(()=>beep(600+n*80,.15,.08),160)}
+function sfxEat(){beep(500,.06,.06);setTimeout(()=>beep(700,.08,.05),60)}
+function sfxGameOver(){beep(200,.15,.06);setTimeout(()=>beep(150,.15,.06),150);setTimeout(()=>beep(100,.25,.05),300);setTimeout(()=>beep(60,.4,.04),500)}
+
+// ═══════════ CANVAS LCD ═══════════
+const canvas=document.getElementById('lcd');
+const ctx=canvas.getContext('2d');
+const COLS=10,ROWS=20,CELL=16;
+canvas.width=COLS*CELL;canvas.height=ROWS*CELL;
+
+const LCD_BG='#1a2a1a';
+const LCD_ON='#3a6a3a';
+const LCD_BRIGHT='#4a8a4a';
+const LCD_DIM='#2a4a2a';
+const LCD_GHOST='#253a25';
+const LCD_SNAKE='#4a8a4a';
+const LCD_FOOD='#5aaa5a';
+const LCD_HEAD='#6aca6a';
+
+// ═══════════ ESTADO COMPARTIDO ═══════════
+let score=0,gameOver=false,lastTime=0;
+let gameIdx=0; // 0=tetris, 1=snake
+
+// ═══════════ TETRIS ═══════════
+const TETROMINOES={
+  I:{shape:[[1,1,1,1]]},
+  O:{shape:[[1,1],[1,1]]},
+  T:{shape:[[0,1,0],[1,1,1]]},
+  S:{shape:[[0,1,1],[1,1,0]]},
+  Z:{shape:[[1,1,0],[0,1,1]]},
+  J:{shape:[[1,0,0],[1,1,1]]},
+  L:{shape:[[0,0,1],[1,1,1]]}
+};
+const PIECES=['I','O','T','S','Z','J','L'];
+const WALL_KICKS={normal:[[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],I:[[0,0],[-2,0],[1,0],[-2,-1],[1,2]]};
+const MAX_LOCK_MOVES=15;
+
+let tGrid=[],tPiece='',tX=0,tY=0,tRot=0,tGhostY=0;
+let tLines=0,tLevel=1,tDropTimer=0,tLockTimer=0,tLockMoves=0;
+
+function tNewGrid(){tGrid=Array.from({length:ROWS},()=>Array(COLS).fill(0))}
+function tShape(type,rot){let s=TETROMINOES[type].shape;for(let r=0;r<rot;r++)s=s[0].map((_,i)=>s.map(row=>row[i]).reverse());return s}
+function tCollides(shape,px,py){for(let y=0;y<shape.length;y++)for(let x=0;x<shape[y].length;x++){if(!shape[y][x])continue;const nx=px+x,ny=py+y;if(nx<0||nx>=COLS||ny>=ROWS||(ny>=0&&tGrid[ny][nx]))return true}return false}
+function tLock(){
+  const s=tShape(tPiece,tRot);
+  for(let y=0;y<s.length;y++)for(let x=0;x<s[y].length;x++){if(!s[y][x])continue;const ny=tY+y;if(ny<0){tGameOver();return}tGrid[ny][tX+x]=1}
+  let cleared=0;
+  for(let y=ROWS-1;y>=0;y--){if(tGrid[y].every(c=>c)){tGrid.splice(y,1);tGrid.unshift(Array(COLS).fill(0));cleared++;y++}}
+  if(cleared>0){tLines+=cleared;score+=[0,100,300,500,800][cleared]*tLevel;tLevel=Math.floor(tLines/10)+1;sfxLine(cleared);updateHUD()}
+  tSpawn()
+}
+function tSpawn(){tPiece=PIECES[Math.floor(Math.random()*PIECES.length)];tRot=0;const s=tShape(tPiece,tRot);tX=Math.floor((COLS-s[0].length)/2);tY=-1;tLockMoves=0;tCalcGhost();if(tCollides(s,tX,tY))tGameOver()}
+function tCalcGhost(){tGhostY=tY;const s=tShape(tPiece,tRot);while(!tCollides(s,tX,tGhostY+1))tGhostY++}
+function tHardDrop(){tY=tGhostY;sfxDrop();tLock()}
+function tSoftDrop(){if(!tCollides(tShape(tPiece,tRot),tX,tY+1)){tY++;sfxMove()}}
+function tMove(dx){if(!tCollides(tShape(tPiece,tRot),tX+dx,tY)){tX+=dx;sfxMove();tCalcGhost();tLockMoves++}}
+function tRotate(dr){const nr=(tRot+dr+4)%4;const kicks=tPiece==='I'?WALL_KICKS.I:WALL_KICKS.normal;const s=tShape(tPiece,nr);for(const[kx,ky] of kicks){if(!tCollides(s,tX+kx,tY-ky)){tRot=nr;tX+=kx;tY-=ky;sfxRotate();tCalcGhost();tLockMoves++;return}}}
+function tGameOver(){gameOver=true;sfxGameOver()}
+function tReset(){tNewGrid();tLines=0;tLevel=1;tDropTimer=0;tLockTimer=0;tLockMoves=0;gameOver=false;score=0;tSpawn();updateHUD()}
+
+function tDraw(){
+  for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(tGrid[y][x]){ctx.fillStyle=LCD_DIM;ctx.fillRect(x*CELL+1,y*CELL+1,CELL-2,CELL-2)}
+  if(!gameOver&&tPiece){const s=tShape(tPiece,tRot);ctx.fillStyle=LCD_GHOST;for(let y=0;y<s.length;y++)for(let x=0;x<s[y].length;x++)if(s[y][x])ctx.fillRect((tX+x)*CELL+1,(tGhostY+y)*CELL+1,CELL-2,CELL-2);
+    ctx.fillStyle=LCD_BRIGHT;for(let y=0;y<s.length;y++)for(let x=0;x<s[y].length;x++)if(s[y][x])ctx.fillRect((tX+x)*CELL+1,(tY+y)*CELL+1,CELL-2,CELL-2)}
+}
+function tLoop(dt){
+  tDropTimer+=dt;const interval=Math.max(50,800-(tLevel-1)*70);
+  if(tDropTimer>=interval){tDropTimer=0;const s=tShape(tPiece,tRot);if(!tCollides(s,tX,tY+1)){tY++;tLockMoves=0}else tLockTimer+=interval;tCalcGhost()}
+  if(tLockMoves>=MAX_LOCK_MOVES||tLockTimer>500){tLock();tDropTimer=0;tLockTimer=0}
+}
+function tHandleKey(key){
+  switch(key){case 'left':tMove(-1);break;case 'right':tMove(1);break;case 'up':tRotate(1);break;case 'down':tSoftDrop();break;case 'action':tHardDrop();break}
+}
+
+// ═══════════ SNAKE ═══════════
+let sBody=[],sDir={x:1,y:0},sNextDir={x:1,y:0},sFood={x:0,y:0};
+let sTimer=0,sLen=3,sReady=800; // 800ms grace period before snake starts moving
+
+function sReset(){
+  sBody=[{x:5,y:5},{x:4,y:5},{x:3,y:5}];sDir={x:1,y:0};sNextDir={x:1,y:0};
+  sTimer=0;sLen=3;sReady=800;gameOver=false;score=0;spawnFood();updateHUD()
+}
+function spawnFood(){
+  const occupied=new Set(sBody.map(p=>p.y*COLS+p.x));
+  const free=[];for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++)if(!occupied.has(y*COLS+x))free.push({x,y});
+  if(free.length>0)sFood=free[Math.floor(Math.random()*free.length)];else sWin()
+}
+function sWin(){gameOver=true;sfxEat()} // snake filled grid = win
+function sMove(){
+  sDir=sNextDir;
+  const head={x:sBody[0].x+sDir.x,y:sBody[0].y+sDir.y};
+  if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS||sBody.some(p=>p.x===head.x&&p.y===head.y)){gameOver=true;sfxGameOver();return false}
+  sBody.unshift(head);
+  if(head.x===sFood.x&&head.y===sFood.y){score+=10;sLen++;sfxEat();spawnFood();updateHUD();return true}
+  sBody.pop();return false
+}
+function sLoop(dt){
+  if(sReady>0){sReady-=dt;return} // grace period: no movement yet
+  sTimer+=dt;const interval=Math.max(60,180-(sLen-3)*5);
+  if(sTimer>=interval){sTimer=0;if(sMove())sTimer=-200}
+}
+function sHandleKey(key){
+  const d=sDir;
+  if(key==='left'&&d.x!==1){sNextDir={x:-1,y:0}}
+  else if(key==='right'&&d.x!==-1){sNextDir={x:1,y:0}}
+  else if(key==='up'&&d.y!==1){sNextDir={x:0,y:-1}}
+  else if(key==='down'&&d.y!==-1){sNextDir={x:0,y:1}}
+  else if(key==='action'){sNextDir=sDir;sMove()} // turbo
+}
+function sDraw(){
+  for(let i=0;i<sBody.length;i++){const p=sBody[i];ctx.fillStyle=i===0?LCD_HEAD:LCD_SNAKE;ctx.fillRect(p.x*CELL+1,p.y*CELL+1,CELL-2,CELL-2)}
+  // food blink
+  if(Math.floor(Date.now()/300)%2){ctx.fillStyle=LCD_FOOD;ctx.fillRect(sFood.x*CELL+2,sFood.y*CELL+2,CELL-4,CELL-4)}
+}
+
+// ═══════════ BREAKOUT ═══════════
+let bBricks=[],bPadX=4,bBall={x:4,y:16,vx:.25,vy:-.35},bLives=3,bLaunched=false;
+const B_PAD_W=4,B_ROWS=4;
+
+function bReset(){
+  bBricks=[];for(let r=0;r<B_ROWS;r++)for(let c=0;c<COLS;c++)if(c%2===r%2)bBricks.push({x:c,y:r+1,hp:1});
+  bPadX=Math.floor(COLS/2)-1;bBall={x:Math.floor(COLS/2),y:14,vx:.25,vy:-.35};bLives=3;bLaunched=false;
+  gameOver=false;score=0;updateHUD()
+}
+function bLaunch(){if(!bLaunched){bLaunched=true;bBall={x:Math.floor(bPadX+B_PAD_W/2),y:14,vx:.2*(Math.random()>.5?1:-1),vy:-.35}}}
+function bLoop(dt){
+  if(!bLaunched){bBall.x=Math.floor(COLS/2);return}
+  bBall.x+=bBall.vx*(dt/16);bBall.y+=bBall.vy*(dt/16);
+  // walls
+  if(bBall.x<0){bBall.x=0;bBall.vx*=-1;beep(600,.03,.03)}
+  if(bBall.x>=COLS-1){bBall.x=COLS-1;bBall.vx*=-1;beep(600,.03,.03)}
+  if(bBall.y<0){bBall.y=0;bBall.vy*=-1;beep(600,.03,.03)}
+  // bottom = lose life
+  if(bBall.y>=ROWS){
+    bLives--;bLaunched=false;
+    if(bLives<=0){gameOver=true;sfxGameOver()}else{beep(100,.15,.04,'triangle')}
+    updateHUD();return
+  }
+  // paddle bounce
+  if(bBall.y>=ROWS-3&&bBall.y<=ROWS-2&&bBall.x>=bPadX&&bBall.x<bPadX+B_PAD_W&&bBall.vy>0){
+    bBall.y=ROWS-3;bBall.vy*=-1;
+    const hitX=(bBall.x-bPadX)/B_PAD_W; // 0..1 where on the paddle
+    bBall.vx=(hitX-.5)*1.2; // steer
+    if(Math.abs(bBall.vx)<.15)bBall.vx=.15*(bBall.vx>=0?1:-1);
+    const speed=Math.sqrt(bBall.vx*bBall.vx+bBall.vy*bBall.vy);
+    bBall.vx/=speed;bBall.vy/=speed;
+    bBall.vx*=.5;bBall.vy*=.5; // constant speed
+    beep(400,.05,.04);
+  }
+  // brick collision
+  for(let i=bBricks.length-1;i>=0;i--){
+    const bk=bBricks[i];
+    if(bBall.x>=bk.x&&bBall.x<bk.x+1&&bBall.y>=bk.y&&bBall.y<bk.y+1){
+      bBricks.splice(i,1);bBall.vy*=-1;score+=10;
+      sfxMove();updateHUD();
+      if(bBricks.length===0){score+=100;bResetBricks();updateHUD()}
+      break
+    }
+  }
+}
+function bResetBricks(){bBricks=[];for(let r=0;r<B_ROWS;r++)for(let c=0;c<COLS;c++)if(c%2===r%2)bBricks.push({x:c,y:r+1,hp:1});bLaunched=false}
+function bHandleKey(key){
+  if(key==='left'){bPadX=Math.max(0,bPadX-1);if(!bLaunched)bBall.x=Math.floor(bPadX+B_PAD_W/2)}
+  else if(key==='right'){bPadX=Math.min(COLS-B_PAD_W,bPadX+1);if(!bLaunched)bBall.x=Math.floor(bPadX+B_PAD_W/2)}
+  else if(key==='up'||key==='action')bLaunch()
+}
+function bDraw(){
+  // paddle (3 cells wide)
+  ctx.fillStyle=LCD_BRIGHT;
+  for(let x=0;x<B_PAD_W;x++)ctx.fillRect((bPadX+x)*CELL+1,(ROWS-2)*CELL+1,CELL-2,CELL-2);
+  // bricks
+  for(const bk of bBricks){ctx.fillStyle=LCD_DIM;ctx.fillRect(bk.x*CELL+1,bk.y*CELL+1,CELL-2,CELL-2)}
+  // ball
+  ctx.fillStyle=LCD_BRIGHT;ctx.fillRect(Math.round(bBall.x)*CELL+2,Math.round(bBall.y)*CELL+2,CELL-4,CELL-4);
+  // lives
+  if(bLives<=3){ctx.fillStyle=LCD_ON;for(let i=0;i<bLives;i++)ctx.fillRect(i*5+4,ROWS*CELL-4,4,3)}
+  if(!bLaunched&&!gameOver){ctx.fillStyle=LCD_DIM;ctx.font='6px "Share Tech Mono"';ctx.textAlign='center';ctx.fillText('PRESS ↑',COLS*CELL/2,10*CELL);ctx.textAlign='start'}
+}
+
+// ═══════════ RACING ═══════════
+const R_LANES=[1,4,7];
+let rLane=1,rObstacles=[],rTimer=0,rDist=0,rReady=2000;
+
+function rReset(){
+  rLane=1;rObstacles=[];rTimer=0;rDist=0;rReady=2000;gameOver=false;score=0;updateHUD()
+}
+function rSpawnObs(){
+  const lane=Math.floor(Math.random()*3);
+  rObstacles.push({x:R_LANES[lane],y:0,w:2})
+}
+function rLoop(dt){
+  if(rReady>0){rReady-=dt;rTimer=0;return}
+  rTimer+=dt;const interval=Math.max(150,800-rDist*2);
+  if(rTimer>=interval&&rObstacles.length<6){rTimer=0;rSpawnObs();rDist++;score=rDist;updateHUD()}
+  // move obstacles down
+  const speed=.06;
+  for(const o of rObstacles)o.y+=speed*(dt/16);
+  // remove offscreen
+  rObstacles=rObstacles.filter(o=>o.y<ROWS);
+  // collision: car at (R_LANES[rLane], ROWS-3) 2x2
+  const cx=R_LANES[rLane],cy=ROWS-3;
+  for(const o of rObstacles){
+    if(o.y+1>=cy&&o.y<=cy+1&&o.x+o.w>cx&&o.x<cx+2){
+      gameOver=true;sfxGameOver();return
+    }
+  }
+}
+function rHandleKey(key){
+  if(key==='left')rLane=Math.max(0,rLane-1);
+  else if(key==='right')rLane=Math.min(2,rLane+1)
+}
+function rDraw(){
+  const carY=ROWS-3;
+  // road markers
+  ctx.fillStyle=LCD_DIM;
+  for(let y=0;y<ROWS;y+=3){ctx.fillRect(3*CELL+5,y*CELL+3,2,6);ctx.fillRect(6*CELL+5,y*CELL+3,2,6)}
+  // obstacles
+  ctx.fillStyle=LCD_BRIGHT;
+  for(const o of rObstacles)ctx.fillRect(Math.floor(o.x)*CELL+1,Math.floor(o.y)*CELL+1,o.w*CELL-2,CELL-2);
+  // car
+  ctx.fillStyle=LCD_HEAD;
+  ctx.fillRect((R_LANES[rLane])*CELL+1,carY*CELL+1,2*CELL-2,2*CELL-2);
+  if(rReady>0){ctx.fillStyle=LCD_DIM;ctx.font='6px "Share Tech Mono"';ctx.textAlign='center';ctx.fillText('RACING',COLS*CELL/2,10*CELL);ctx.textAlign='start'}
+}
+
+// ═══════════ GAME SWITCHER ═══════════
+const GAMES=[
+  {id:'tetris',label:'TETRIS',reset:tReset,loop:tLoop,draw:tDraw,handleKey:tHandleKey},
+  {id:'snake',label:'SNAKE',reset:sReset,loop:sLoop,draw:sDraw,handleKey:sHandleKey},
+  {id:'breakout',label:'BREAKOUT',reset:bReset,loop:bLoop,draw:bDraw,handleKey:bHandleKey},
+  {id:'racing',label:'RACING',reset:rReset,loop:rLoop,draw:rDraw,handleKey:rHandleKey}
+];
+function switchGame(dir){gameIdx=(gameIdx+dir+GAMES.length)%GAMES.length;document.getElementById('gameLabel').textContent=GAMES[gameIdx].label;lastTime=performance.now();GAMES[gameIdx].reset()}
+
+// ═══════════ RENDER + HUD ═══════════
+function updateHUD(){
+  document.getElementById('infoScore').textContent='SCORE:'+String(score).padStart(4,'0');
+  document.getElementById('infoSpeed').textContent=
+    gameIdx===0?'SPD:'+tLevel:gameIdx===1?'LEN:'+sLen:gameIdx===2?'♥:'+bLives:'KM:'+rDist;
+}
+function draw(){
+  ctx.fillStyle=LCD_BG;ctx.fillRect(0,0,COLS*CELL,ROWS*CELL);
+  GAMES[gameIdx].draw();
+  // grid lines
+  ctx.strokeStyle='#1a2a1a';ctx.lineWidth=.5;
+  for(let x=0;x<=COLS;x++){ctx.beginPath();ctx.moveTo(x*CELL,0);ctx.lineTo(x*CELL,ROWS*CELL);ctx.stroke()}
+  for(let y=0;y<=ROWS;y++){ctx.beginPath();ctx.moveTo(0,y*CELL);ctx.lineTo(COLS*CELL,y*CELL);ctx.stroke()}
+  if(gameOver){
+    ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,COLS*CELL,ROWS*CELL);
+    ctx.fillStyle='#3a6a3a';ctx.font='bold 14px "Share Tech Mono"';ctx.textAlign='center';
+    ctx.fillText('GAME',COLS*CELL/2,ROWS*CELL/2-8);ctx.fillText('OVER',COLS*CELL/2,ROWS*CELL/2+10);
+    ctx.textAlign='start';
+  }
+}
+
+// ═══════════ GAME LOOP ═══════════
+function loop(time){
+  if(!gameOver){const dt=time-lastTime;lastTime=time;GAMES[gameIdx].loop(Math.min(dt,200))}
+  if(!lastTime||gameOver)lastTime=time;
+  draw();requestAnimationFrame(loop);
+}
+
+// ═══════════ KEYBOARD ═══════════
+document.addEventListener('keydown',e=>{
+  if(gameOver){if(e.key==='r'||e.key==='R'){GAMES[gameIdx].reset();return}}
+  let key=null;
+  switch(e.key){case'ArrowLeft':case'a':key='left';break;case'ArrowRight':case'd':key='right';break;case'ArrowUp':case'w':key='up';break;case'ArrowDown':case's':key='down';break;case' ':key='action';break;case'm':muted=!muted;break;case'r':GAMES[gameIdx].reset();break}
+  if(key){e.preventDefault();GAMES[gameIdx].handleKey(key)}
+});
+
+// ═══════════ TOUCH / MOUSE BUTTONS ═══════════
+['btnLeft','btnRight','btnDown','btnRotate','btnSound','btnGameA','btnGameB','btnReset'].forEach(id=>{
+  const el=document.getElementById(id);if(!el)return;
+  el.addEventListener('mousedown',()=>el.classList.add('pressed'));
+  el.addEventListener('mouseup',()=>el.classList.remove('pressed'));
+  el.addEventListener('mouseleave',()=>el.classList.remove('pressed'));
+  el.addEventListener('touchstart',e=>{e.preventDefault();el.classList.add('pressed')});
+  el.addEventListener('touchend',()=>el.classList.remove('pressed'));
+});
+document.getElementById('btnLeft').addEventListener('click',()=>{if(!gameOver)GAMES[gameIdx].handleKey('left')});
+document.getElementById('btnRight').addEventListener('click',()=>{if(!gameOver)GAMES[gameIdx].handleKey('right')});
+document.getElementById('btnDown').addEventListener('click',()=>{if(!gameOver)GAMES[gameIdx].handleKey('down')});
+document.getElementById('btnRotate').addEventListener('click',()=>{if(!gameOver)GAMES[gameIdx].handleKey('up')});
+document.getElementById('btnSound').addEventListener('click',()=>{muted=!muted});
+document.getElementById('btnReset').addEventListener('click',()=>GAMES[gameIdx].reset());
+document.getElementById('btnGameA').addEventListener('click',()=>switchGame(-1));
+document.getElementById('btnGameB').addEventListener('click',()=>switchGame(1));
+
+// ═══════════ START ═══════════
+tNewGrid();tReset();requestAnimationFrame(loop);
+</script>
+</body>
+</html>

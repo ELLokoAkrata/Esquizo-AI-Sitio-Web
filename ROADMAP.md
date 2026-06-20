@@ -6,7 +6,7 @@
 >
 > Leyenda: `[x]` hecho y desplegado · `[~]` en progreso · `[ ]` pendiente
 >
-> **Última actualización:** 2026-06-14
+> **Última actualización:** 2026-06-19
 
 ---
 
@@ -69,13 +69,14 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
       cap de sesión 30 (cliente), throttle (send deshabilitado mientras responde), recorte de inputs largos
 - [x] (NO usa EsquizoAI-land — privado; solo el proxy público `api/daemon.js`)
 - [x] `.gitignore` endurecido (`.env*`, `.vercel`) para no filtrar keys locales
-- [ ] **Probar la IA en vivo** con `vercel dev` (local) y/o tras deploy; **setear `DEEPSEEK_API_KEY` (y confirmar `GROQ_API_KEY`) en Vercel** (Prod+Preview+Dev)
+- [~] **Probar la IA en vivo** — `apiBase()` en los 4 frontends (MSN, ORACULO, VOID_GLITCH, TERMINAL) redirige automáticamente a la API de producción Vercel cuando se corre en `127.0.0.1:8099` (python server). Las keys ya están en Vercel o falta confirmar `DEEPSEEK_API_KEY`.
 - [x] Verificado el frontend en navegador (render, selector, zumbido, manejo de "sin backend"); docs + memoria
 
 > Hecho: `api/daemon.js` (mono-entidad, V4, guardas) + `msn/index.html` (UI MSN acid) + integración en el OS (icono,
-> Inicio, FS HERRAMIENTAS, comandos VOMIT.SH `msn`/`chat`/`psycho`). **Falta lo que depende de tus keys:** probar la
-> respuesta real (`vercel dev` o deploy) y cargar `DEEPSEEK_API_KEY` en Vercel. DeepSeek viejo (`deepseek-chat`) se
-> depreca el 24/07/2026 pero sigue válido; mapea al modo no-thinking de `deepseek-v4-flash`.
+> Inicio, FS HERRAMIENTAS, comandos VOMIT.SH `msn`/`chat`/`psycho`). **`apiBase()` en todos los frontends IA** permite
+> probar las APIs en vivo desde `python -m http.server 8099` sin `vercel dev` — redirige a producción automáticamente.
+> Falta confirmar `DEEPSEEK_API_KEY` en Vercel si se quiere usar DeepSeek (Modelo B en TERMINAL, etc.).
+> DeepSeek viejo (`deepseek-chat`) se depreca el 24/07/2026 pero sigue válido; mapea al modo no-thinking de `deepseek-v4-flash`.
 
 ---
 
@@ -99,6 +100,9 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 - [x] Más comandos en VOMIT.SH (14-Jun: `void`, `glitch`, `caida`, `oraculo`, `iching`, `hexagrama`, `mutacion`)
 - [x] VOID_GLITCH integrado en el OS (escritorio, Inicio, VOMIT.SH) + audio oracular + UX psycho-oracular · commits `c8f2ef0`→`154b67f`
 - [x] ORACULO.exe — I Ching + VALIS, motor de hexagramas con IA, journal, sesión contextual · commit `78bfd08`→`66f9048`
+- [x] TERMINAL_ESQUIZO.exe — dual source (grimorios + 11 episodios Psycho-Bot), rediseño estético `esquizoai-products`, icono en escritorio + Inicio + VOMIT.SH (`terminal`|`dialogo`|`dialogoia`) · commit `e4245b2`
+- [x] `apiBase()` — los 4 frontends IA (MSN, ORACULO, VOID_GLITCH, TERMINAL) detectan `127.0.0.1:8099` y usan la API de producción Vercel; en cualquier otro entorno usan rutas relativas · commit `e4245b2`
+- [x] BRICK_GAME.exe (Fase 1 — Tetris) — consola física CSS + pantalla LCD (Canvas) + audio beeps + controles touch/teclado + integración OS (icono 🎮, VOMIT.SH `brick|tetris|juegos`, Inicio)
 
 ---
 

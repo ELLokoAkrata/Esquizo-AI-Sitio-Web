@@ -1,0 +1,98 @@
+[
+  {
+    "id": "doomed",
+    "name": "DOOMED // every day is halloween",
+    "url": "https://somafm.com/doomed256.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Dark industrial/ambient — SomaFM Doomed"
+  },
+  {
+    "id": "darkzone",
+    "name": "THE DARK ZONE // staring into the abyss",
+    "url": "https://somafm.com/darkzone256.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Deep ambient for the void — SomaFM"
+  },
+  {
+    "id": "dronezone",
+    "name": "DRONE ZONE // textures for the sick",
+    "url": "https://somafm.com/dronezone256.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Atmospheric textures, minimal beats — SomaFM"
+  },
+  {
+    "id": "sf1033",
+    "name": "SF 10-33 // police scanner + ambient",
+    "url": "https://somafm.com/sf1033130.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Ambient mezclado con radio policial en vivo"
+  },
+  {
+    "id": "deepspaceone",
+    "name": "DEEP SPACE ONE // void transmission",
+    "url": "https://somafm.com/deepspaceone130.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Deep ambient, experimental, space music — SomaFM"
+  },
+  {
+    "id": "metal",
+    "name": "METAL DETECTOR // black doom sludge",
+    "url": "https://somafm.com/metal130.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Black, doom, sludge, thrash, industrial — SomaFM"
+  },
+  {
+    "id": "defcon",
+    "name": "DEF CON RADIO // music for hacking",
+    "url": "https://somafm.com/defcon256.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Music for hacking — DEF CON year-round"
+  },
+  {
+    "id": "vaporwaves",
+    "name": "VAPORWAVES // all vaporwave all the time",
+    "url": "https://somafm.com/vaporwaves130.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Vaporwave aesthetic 24/7 — SomaFM"
+  },
+  {
+    "id": "secretagent",
+    "name": "SECRET AGENT // spy noir soundtrack",
+    "url": "https://somafm.com/secretagent130.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "Soundtrack for spies, PIs and dangerous lives"
+  },
+  {
+    "id": "scanner",
+    "name": "SF POLICE SCANNER // live feed",
+    "url": "https://somafm.com/scanner130.pls",
+    "type": "audio",
+    "group": "AUDIO OSCURO",
+    "desc": "San Francisco police scanner — en vivo"
+  },
+  {
+    "id": "mux_test",
+    "name": "SEÑAL_TEST_MUX",
+    "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
+    "type": "video",
+    "group": "VIDEO TEST",
+    "desc": "Stream HLS de prueba — glitchéalo"
+  },
+  {
+    "id": "akamai_test",
+    "name": "SEÑAL_TEST_AKAMAI",
+    "url": "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
+    "type": "video",
+    "group": "VIDEO TEST",
+    "desc": "Stream HLS Akamai — corrupción pura"
+  }
+]

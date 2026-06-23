@@ -644,7 +644,7 @@ const FS = {
   RECON:{ label:"RECON", icon:"🔍", color:"#ff2020", items:[
     {label:"RECON-01_API_ONPE", file:"recon/onpe-api/index.html", icon:"🔍", desc:"cartografía API electoral"},
   ]},
-  EXPERIENCIAS_GENERATIVAS:{ label:"EXPERIENCIAS_GENERATIVAS", icon:"📺", color:"#00ff41", items:[
+  EXPERIENCIAS_GENERATIVAS:{ label:"EXPERIENCIAS_GENERATIVAS", icon:"🌀", color:"#00ff41", items:[
     {label:"CAOS_Y_COMPLEJIDAD", file:"animaciones/CAOS_Y_COMPLEJIDAD.html", icon:"🌐"},
     {label:"ESPIRAL_PSICODELICO", file:"animaciones/ESPIRAL_PSICODELICO_sin_sonido.html", icon:"🌀"},
     {label:"ESPIRAL_PSI_v0.2_audio", file:"animaciones/ESPIRAL_PSICODELICO_v0.2.html", icon:"🌀"},
@@ -1064,6 +1064,7 @@ function openOracle(){ return openApp("oraculo/index.html","ORACULO.exe","⯁",{
 function openTerminalEsquizo(){ return openApp("tools/TERMINAL_ESQUIZO.html","TERMINAL_ESQUIZO.exe","💬",{w:760,h:620}); }
 function openBrickGame(){ return openApp("games/brick-game.html","BRICK_GAME.exe","🧱",{w:480,h:680}); }
 function openGlitchCam(){ return openApp("glitch-cam-web/index.html","GLITCH.CAM","📹",{w:740,h:500}); }
+function openIPTV(){ return openApp("iptv/index.html","FREE_RADIO.exe","📻",{w:860,h:640}); }
 function repFrame(){ const w=document.querySelector('.win[data-id="'+REP_ID+'"]'); return w?w.querySelector(".app-frame"):null; }
 function playerSend(action,query){
   let f=repFrame(), justOpened=false;
@@ -2094,7 +2095,8 @@ function openTerminal(){
     oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle,
     terminal:openTerminalEsquizo, dialogo:openTerminalEsquizo, dialogoia:openTerminalEsquizo,
     brick:openBrickGame, brickgame:openBrickGame, tetris:openBrickGame, juegos:openBrickGame, game:openBrickGame,
-    glitchcam:openGlitchCam, cam:openGlitchCam
+    glitchcam:openGlitchCam, cam:openGlitchCam,
+    iptv:openIPTV, tv:openIPTV, glitchtv:openIPTV, television:openIPTV, radio:openIPTV, freeradio:openIPTV
   };
 
   async function dispatch(raw){
@@ -2115,6 +2117,7 @@ function openTerminal(){
         await type("  terminal · dialogo · dialogoia  — diálogo entre IAs con grimorios y psycho-bot","corrupt");
         await type("  brick · tetris · juegos   — BRICK GAME 9999 en 1 (Tetris, Snake...)","corrupt");
         await type("  glitchcam · cam  — glitch en vivo sobre webcam","corrupt");
+        await type("  iptv · tv · glitchtv · radio  — radio libre con glitch en tiempo real","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
         await type("  whoami · date · uptime · clear · sudo · shutdown","acid");
         break;
@@ -2186,6 +2189,8 @@ function openTerminal(){
         await type("abriendo BRICK_GAME.exe — 9999 en 1 para jugar como en los 90...","acid"); openBrickGame(); break;
       case "glitchcam": case "glitch-cam": case "cam":
         await type("abriendo GLITCH.CAM — corrompiendo la realidad en vivo...","corrupt"); openGlitchCam(); break;
+      case "iptv": case "tv": case "glitchtv": case "television": case "televisión": case "radio": case "freeradio":
+        await type("abriendo FREE_RADIO.exe — sintonizando la señal corrupta...","corrupt"); openIPTV(); break;
       case "secrets": case "secretos": case "vault": {
         const n=secretsUnlockedCount(), t=SECRET_IDS.length;
         await type("ARCHIVO_PROHIBIDO — "+n+"/"+t+" descifrados:","corrupt");
@@ -2309,6 +2314,9 @@ function renderDesktop(){
   // GLITCH.CAM
   const gc=el("div","icon",`<span class="gl" style="color:#aaff00">📹</span><span class="lb">GLITCH.CAM</span>`);
   bindOpen(gc,openGlitchCam); wrap.appendChild(gc);
+  // FREE_RADIO
+  const iptv=el("div","icon",`<span class="gl" style="color:#ff00ff">📻</span><span class="lb">FREE_RADIO</span>`);
+  bindOpen(iptv,openIPTV); wrap.appendChild(iptv);
   // VOMIT.SH — terminal del sistema
   const term=el("div","icon",`<span class="gl" style="color:var(--green)">›_</span><span class="lb">VOMIT.SH</span>`);
   bindOpen(term,openTerminal); wrap.appendChild(term);
@@ -2380,6 +2388,7 @@ function buildStart(){
     {ic:"⊞",lb:"Modo clásico",fn:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞")},
     {ic:"📊",lb:"Administrador de tareas",fn:openTaskMgr},
     {ic:"📹",lb:"GLITCH.CAM (glitch en vivo)",fn:openGlitchCam},
+    {ic:"📻",lb:"FREE_RADIO (señal corrupta)",fn:openIPTV},
     {ic:"⛔",lb:"Apagar el sistema...",fn:()=>{if(confirm('¿Apagar el sistema? Las ventanas se cerrarán.'))shutdownSystem();}},
   ];
   sys.forEach(s=>{

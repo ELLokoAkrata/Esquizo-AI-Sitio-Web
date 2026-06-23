@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>IPTV TEST — Audio Stream</title>
+<style>
+body{background:#000;color:#0f0;font:14px monospace;padding:20px}
+h1{font-size:16px;color:#f0f}
+.pass{color:#0f0}.fail{color:red}.info{color:#ff0}
+pre{background:#111;padding:8px;font-size:11px}
+</style>
+</head>
+<body>
+<h1>TEST: Audio stream SomaFM</h1>
+<pre id="log"></pre>
+
+<script>
+const out=document.getElementById('log');
+function log(msg,cls='info'){out.innerHTML+=`<span class="${cls}">${msg}</span>\n`;out.scrollTop=out.scrollHeight;console.log(msg);}
+
+async function test(){
+  log('=== TEST INICIADO ===','info');
+
+  // 1. fetch PLS
+  const plsUrl='https://somafm.com/doomed256.pls';
+  log(`1. Fetching PLS: ${plsUrl}`);
+  let plsText;
+  try{
+    const res=await fetch(plsUrl);
+    log(`   Status: ${res.status} ${res.statusText}`,res.ok?'pass':'fail');
+    plsText=await res.text();
+    log(`   PLS size: ${plsText.length} bytes`,'pass');
+  }catch(e){
+    log(`   FETCH ERROR: ${e.message}`,'fail');
+    return;
+  }
+
+  // 2. parse PLS
+  log('2. Parsing PLS...');
+  const match=plsText.match(/^File\d+=(.+)$/m);
+  if(!match){log('   PARSE ERROR: no File entry found','fail');return;}
+  const streamUrl=match[1].trim();
+  log(`   Stream URL: ${streamUrl}`,'pass');
+
+  // 3. create audio element
+  log('3. Creating audio element...');
+  const audio=new Audio();
+  audio.preload='none';
+
+  // 4. set up listeners BEFORE setting src
+  audio.addEventListener('canplay',()=>log('   Event: canplay','pass'));
+  audio.addEventListener('playing',()=>log('   Event: playing — AUDIO SONANDO','pass'));
+  audio.addEventListener('pause',()=>log('   Event: pause'));
+  audio.addEventListener('waiting',()=>log('   Event: waiting (buffering)','info'));
+  audio.addEventListener('stalled',()=>log('   Event: stalled','fail'));
+  audio.addEventListener('error',()=>{
+    log(`   Event: ERROR — code: ${audio.error?.code} message: ${audio.error?.message}`,'fail');
+  });
+  audio.addEventListener('ended',()=>log('   Event: ended'));
+
+  // 5. set src and play
+  log(`4. Setting src and playing...`);
+  audio.src=streamUrl;
+  audio.load();
+  log('   audio.load() called');
+
+  try{
+    await audio.play();
+    log('   audio.play() resolved — debería estar sonando','pass');
+  }catch(e){
+    log(`   audio.play() REJECTED: ${e.name} — ${e.message}`,'fail');
+  }
+
+  // keep alive for 10 seconds
+  log('5. Esperando 10s... si no suena, hay problema de red/navegador');
+  setTimeout(()=>{
+    log(audio.paused?'   RESULTADO: audio PAUSED (no sonó)':'   RESULTADO: audio PLAYING (sonando)',
+      audio.paused?'fail':'pass');
+    log('=== TEST FINALIZADO ===','info');
+  },10000);
+}
+
+test();
+</script>
+</body>
+</html>

@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FREE_RADIO.exe — Señal Corrupta // EsquizoAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Courier+Prime&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:#00ff41;--corrupt:#ff00ff;--acid:#aaff00;--amber:#ffb000;--red:#ff2020;
+  --bg:#06040a;--line:#1f3a2a;--panel:#0a0f0c;--dim:#336;--tx:#adc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Share Tech Mono',monospace;overflow:hidden}
+body{display:flex;flex-direction:column}
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:100;
+  background:repeating-linear-gradient(transparent,transparent 2px,rgba(0,255,65,.015) 2px,rgba(0,255,65,.015) 4px);
+}
+.top{display:flex;align-items:center;gap:8px;padding:4px 8px;border-bottom:1px solid var(--line);height:28px;flex-shrink:0}
+.top .title{color:var(--corrupt);font-size:11px;letter-spacing:1px}
+.top .ch-name{color:var(--acid);font-size:10px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.top .mode{font-size:8px;padding:1px 5px;border:1px solid var(--corrupt);color:var(--corrupt)}
+.top .mode.vid{border-color:var(--amber);color:var(--amber)}
+.top .st{color:var(--dim);font-size:9px;margin-left:auto}
+.spacer{flex:1}
+.vol-lbl{font-size:8px;color:var(--dim)}
+.vol-slider{-webkit-appearance:none;width:60px;height:3px;background:var(--line);outline:none;flex-shrink:0}
+.vol-slider::-webkit-slider-thumb{-webkit-appearance:none;width:8px;height:12px;background:var(--acid);cursor:pointer;border:none}
+.vol-val{font-size:8px;color:var(--acid);min-width:18px}
+.main{display:flex;flex:1;overflow:hidden}
+.chlist{width:155px;overflow-y:auto;overflow-x:hidden;border-right:1px solid var(--line);flex-shrink:0;padding-bottom:8px}
+.chlist::-webkit-scrollbar{width:4px}
+.chlist::-webkit-scrollbar-thumb{background:var(--line)}
+.chlist .ghead{color:var(--corrupt);font-size:9px;padding:6px 6px 2px;letter-spacing:2px;text-transform:uppercase}
+.chlist .ch{padding:4px 6px 4px 12px;cursor:pointer;font-size:9px;color:var(--tx);border-left:2px solid transparent;transition:all .1s;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.chlist .ch:hover{border-left-color:var(--acid);color:var(--acid);background:rgba(170,255,0,.05)}
+.chlist .ch.active{border-left-color:var(--corrupt);color:var(--corrupt);background:rgba(255,0,255,.08)}
+.canvas-wrap{flex:1;display:flex;align-items:center;justify-content:center;background:#000;position:relative;overflow:hidden}
+.canvas-wrap canvas{max-width:100%;max-height:100%;display:block;image-rendering:pixelated;position:relative;z-index:1}
+.canvas-wrap .offline{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;color:var(--dim);font-size:13px;pointer-events:none;cursor:pointer}
+.canvas-wrap .offline .big{font-size:48px;margin-bottom:8px}
+.canvas-wrap .offline p{max-width:300px;text-align:center;line-height:1.6;font-size:10px}
+.load-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:4;background:rgba(0,0,0,.6);color:var(--amber);font-size:10px;letter-spacing:2px;pointer-events:none}
+.hud{position:absolute;top:4px;right:4px;font-size:8px;color:var(--green);z-index:3;background:rgba(0,0,0,.7);padding:3px 6px;border:1px solid var(--line);pointer-events:none;line-height:1.6;max-width:200px}
+.hud .on{color:var(--acid)}
+.stat{display:flex;align-items:center;gap:8px;padding:2px 8px;border-top:1px solid var(--line);font-size:8px;color:var(--dim);flex-shrink:0;height:18px}
+.stat a{color:var(--acid);text-decoration:none}
+.stat a:hover{color:var(--corrupt)}
+.stat .stat-val{color:var(--green)}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="title">📻 FREE_RADIO.exe</span>
+  <span class="ch-name" id="chName">— sin señal —</span>
+  <span class="mode" id="modeBadge" style="display:none">AUDIO</span>
+  <span class="st" id="sigStatus">◉ SIN SEÑAL</span>
+  <span class="spacer"></span>
+  <span class="vol-lbl">VOL</span>
+  <input type="range" id="volSlider" min="0" max="100" value="80" step="1" class="vol-slider">
+  <span class="vol-val" id="volVal">80</span>
+</div>
+
+<div class="main">
+  <div class="chlist" id="chlist"></div>
+  <div class="canvas-wrap" id="canvasWrap">
+    <canvas id="canvas"></canvas>
+    <div class="offline" id="offlineMsg">
+      <span class="big">📻</span>
+      <p>SINTONIZA UNA FRECUENCIA<br>para corromper la señal</p>
+    </div>
+    <div class="load-overlay" id="loadOverlay" style="display:none">⏳ SINTONIZANDO...</div>
+    <div class="hud" id="hudEl"></div>
+  </div>
+</div>
+
+<div class="stat">
+  <span id="fpsStat">0 fps</span>
+  <span>|</span>
+  <span id="statMsg" class="stat-val"></span>
+  <span style="margin-left:auto"><a href="../index.html">⊞ volver al escritorio</a></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+<script>
+(function(){
+'use strict';
+
+const W=640,H=360;
+let channels=[],currentCh=null,mode=null;
+let hls=null,audioCtx=null,analyserNode=null,audioNodes={};
+let freqData=null,audioPlaying=false,analyserConnected=false;
+let caosInterval=null,caosActive=false;
+let feedbackBuf=null,dropoutTimer=null;
+let usingRVFC=false,capturedStream=null;
+let visTime=0,lastBass=0,lastMid=0,lastHigh=0,lastVol=0;
+
+const effects={
+  rgbSplit:{on:true,val:2},vhsWobble:{on:true,val:3},scanlines:{on:true,val:1},
+  bitcrush:{on:false,val:3},glitchBlocks:{on:false,val:1},feedback:{on:false,val:0.3},
+  audioBitcrush:{on:false,val:8},audioDistort:{on:false,val:0.3},
+  audioFilter:{on:false,val:800},audioDropout:{on:false,val:0.02}
+};
+let intensity=0.25;
+
+// DOM
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d',{willReadFrequently:true});
+canvas.width=W;canvas.height=H;
+const chlistEl=document.getElementById('chlist');
+const chNameEl=document.getElementById('chName');
+const modeBadge=document.getElementById('modeBadge');
+const sigStatusEl=document.getElementById('sigStatus');
+const offlineMsg=document.getElementById('offlineMsg');
+const loadOverlay=document.getElementById('loadOverlay');
+const hudEl=document.getElementById('hudEl');
+const fpsStat=document.getElementById('fpsStat');
+const statMsg=document.getElementById('statMsg');
+const volSlider=document.getElementById('volSlider');
+const volVal=document.getElementById('volVal');
+
+// work buffers for video mode
+const workCanvas=document.createElement('canvas');workCanvas.width=W;workCanvas.height=H;
+const workCtx=workCanvas.getContext('2d',{willReadFrequently:true});
+const renderCanvas=document.createElement('canvas');renderCanvas.width=W;renderCanvas.height=H;
+const renderCtx=renderCanvas.getContext('2d',{willReadFrequently:true});
+
+// media elements
+let audio=document.createElement('audio');audio.preload='none';
+// volume control
+audio.volume=0.8;
+volSlider.addEventListener('input',()=>{
+  audio.volume=parseInt(volSlider.value)/100;
+  volVal.textContent=volSlider.value;
+});
+const video=document.createElement('video');video.playsInline=true;
+video.style.cssText='position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:0;opacity:0.01';
+const canvasWrap=document.getElementById('canvasWrap');
+canvasWrap.insertBefore(video,canvas);
+
+let frameCount=0,lastFpsTime=performance.now(),fps=0;
+
+// ========== PLS PARSER ==========
+const PLS_FALLBACK={
+  'doomed256.pls':'https://ice2.somafm.com/doomed-256-mp3',
+  'darkzone256.pls':'https://ice2.somafm.com/darkzone-256-mp3',
+  'dronezone256.pls':'https://ice2.somafm.com/dronezone-256-mp3',
+  'sf1033130.pls':'https://ice2.somafm.com/sf1033-128-mp3',
+  'deepspaceone130.pls':'https://ice2.somafm.com/deepspaceone-128-mp3',
+  'metal130.pls':'https://ice2.somafm.com/metal-128-mp3',
+  'defcon256.pls':'https://ice2.somafm.com/defcon-256-mp3',
+  'vaporwaves130.pls':'https://ice2.somafm.com/vaporwaves-128-mp3',
+  'secretagent130.pls':'https://ice2.somafm.com/secretagent-128-mp3',
+  'scanner130.pls':'https://ice2.somafm.com/scanner-128-mp3'
+};
+
+async function parsePLS(url){
+  try{
+    const res=await fetch(url);
+    if(!res.ok) throw new Error('PLS fetch failed');
+    const text=await res.text();
+    const match=text.match(/^File\d+=(.+)$/m);
+    if(match) return match[1].trim();
+  }catch(e){}
+  // fallback: known SomaFM direct URLs
+  const filename=url.split('/').pop();
+  if(PLS_FALLBACK[filename]) return PLS_FALLBACK[filename];
+  console.warn('PLS parse failed, no fallback for',url);
+  return null;
+}
+
+// ========== AUDIO SETUP ==========
+function initAudioContext(){
+  if(audioCtx) return;
+  try{
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    analyserNode=audioCtx.createAnalyser();
+    analyserNode.fftSize=256;
+    analyserNode.smoothingTimeConstant=0.7;
+    freqData=new Uint8Array(analyserNode.frequencyBinCount);
+    audioNodes={};
+  }catch(e){console.warn('AudioContext init failed:',e);}
+}
+
+function connectAudioSource(){
+  console.log('🔊 connectAudioSource',{hasCtx:!!audioCtx,hasStream:!!capturedStream,state:audioCtx?.state});
+  if(!audioCtx||capturedStream) return;
+  if(audioCtx.state==='suspended'){
+    audioCtx.resume().then(()=>console.log(' ▶ resumed',audioCtx.state)).catch(e=>console.warn('resume fail',e));
+  }
+  try{
+    const stream=audio.captureStream();
+    capturedStream=stream;
+    const source=audioCtx.createMediaStreamSource(stream);
+    source.connect(analyserNode);
+    // analyser needs output to process; gain 0 = no double audio
+    if(!analyserConnected){
+      const silentGain=audioCtx.createGain();
+      silentGain.gain.value=0;
+      analyserNode.connect(silentGain);
+      silentGain.connect(audioCtx.destination);
+      analyserConnected=true;
+    }
+    console.log(' ✅ captureStream → analyserNode OK');
+    statMsg.textContent='analizando audio';
+  }catch(e){
+    console.warn(' ❌ captureStream failed:',e.message);
+    statMsg.textContent='sin análisis';
+  }
+}
+
+function updateAudioFX(){
+  if(!audioCtx||!audioNodes) return;
+  if(!audioNodes.shaper&&!audioNodes.filter&&!audioNodes.dropGain) return; // fx nodes not created yet (Step 3)
+  const ni=intensity;
+  if(audioNodes.shaper){
+    audioNodes.shaper.curve=effects.audioDistort.on?
+      makeCurveLocal(effects.audioDistort.val*ni*5):
+      new Float32Array([0,0]);
+  }
+  if(audioNodes.filter){
+    const f=effects.audioFilter.on?Math.max(200,effects.audioFilter.val-(ni*600)):20000;
+    audioNodes.filter.frequency.setTargetAtTime(f,audioCtx.currentTime,0.05);
+  }
+  if(audioNodes.dropGain){
+    audioNodes.dropGain.gain.value=effects.audioDropout.on?1-(ni*0.08):1;
+  }
+  function makeCurveLocal(amt){
+    if(!amt)return new Float32Array([0,0]);
+    const n=44100,curve=new Float32Array(n);
+    for(let i=0;i<n;i++){const x=(i*2/n)-1;curve[i]=((Math.PI+amt)*x)/(Math.PI+amt*Math.abs(x));}
+    return curve;
+  }
+}
+
+function scheduleDropouts(){
+  if(dropoutTimer)clearTimeout(dropoutTimer);
+  if(!effects.audioDropout.on||!audioCtx||!audioNodes.dropGain) return;
+  dropoutTimer=setTimeout(()=>{
+    if(!effects.audioDropout.on) return;
+    const g=audioNodes.dropGain.gain;
+    g.setTargetAtTime(0.01,audioCtx.currentTime,0.005);
+    setTimeout(()=>{if(effects.audioDropout.on)g.setTargetAtTime(1-(intensity*0.08),audioCtx.currentTime,0.02);},Math.random()*150+20);
+    scheduleDropouts();
+  },Math.random()*3000+500);
+}
+
+// ========== AUDIO-REACTIVE VISUALS ==========
+function getAudioBands(){
+  if(!analyserNode||!freqData) return {bass:0,mid:0,high:0,vol:0};
+  analyserNode.getByteFrequencyData(freqData);
+  const n=freqData.length;
+  let bass=0,mid=0,high=0;
+  for(let i=0;i<n;i++){
+    const v=freqData[i]/255;
+    if(i<n*0.15) bass+=v;
+    else if(i<n*0.5) mid+=v;
+    else high+=v;
+  }
+  bass/=Math.max(1,n*0.15);
+  mid/=Math.max(1,n*0.35);
+  high/=Math.max(1,n*0.5);
+  const vol=(bass+mid+high)/3;
+  // smoothing
+  lastBass=lastBass*0.7+bass*0.3;
+  lastMid=lastMid*0.7+mid*0.3;
+  lastHigh=lastHigh*0.65+high*0.35;
+  lastVol=lastVol*0.65+vol*0.35;
+  autoIntensity();
+  if(frameCount%120===0) console.log('🎵 bands',{b:lastBass.toFixed(3),m:lastMid.toFixed(3),h:lastHigh.toFixed(3),v:lastVol.toFixed(3)});
+  return {bass:lastBass,mid:lastMid,high:lastHigh,vol:lastVol};
+}
+
+function drawAudioVisuals(dt){
+  const bands=getAudioBands();
+  const {bass,mid,high,vol}=bands;
+  const ni=intensity;
+  const t=visTime*0.001;
+  visTime+=dt;
+
+  // 🔴 DIAGNÓSTICO: rectángulo verde visible para confirmar canvas
+  ctx.fillStyle='rgba(0,255,65,0.3)';
+  ctx.fillRect(10,10,50,8);
+  if(frameCount%60===0) console.log('🖼 drawAudioVisuals',{frame:frameCount,dt:dt?.toFixed(1),mode,b:lastBass.toFixed(3)});
+
+  // clear with alpha for feedback trail
+  ctx.fillStyle='rgba(6,4,10,'+(0.08+ni*0.1)+')';
+  ctx.fillRect(0,0,W,H);
+
+  // === visible base layer (always on when channel active) ===
+  // scanlines bien visibles
+  ctx.fillStyle='rgba(0,0,0,'+(0.12+ni*0.1)+')';
+  for(let y=0;y<H;y+=2) ctx.fillRect(0,y,W,1);
+
+  // CRT green glow line at top
+  ctx.fillStyle='rgba(0,255,65,'+(0.08+vol*0.15)+')';
+  ctx.fillRect(0,0,W,1);
+
+  // noise grain always active to see canvas is alive
+  const hasAudio=(bass+mid+high)>0.02;
+  const noiseDensity=hasAudio?Math.floor((high+ni*0.5)*80):Math.floor(ni*120);
+  if(noiseDensity>0){
+    const imgData=ctx.getImageData(0,0,W,H);
+    const d=imgData.data;
+    for(let i=0;i<noiseDensity;i++){
+      const x=Math.floor(Math.random()*W);
+      const y=Math.floor(Math.random()*H);
+      const idx=(y*W+x)*4;
+      const n=Math.floor(Math.random()*(hasAudio?high*120:60)+ni*50);
+      d[idx]^=n;d[idx+1]^=n;d[idx+2]^=n;
+    }
+    ctx.putImageData(imgData,0,0);
+  }
+
+  // === audio-reactive effects (only when audio analysis is active) ===
+
+  // bass-driven glitch blocks
+  if(mid>0.12){
+    const shift=Math.floor(mid*ni*8)+1;
+    const imgData=ctx.getImageData(0,0,W,H);
+    const d=imgData.data;
+    const copy=new Uint8ClampedArray(d);
+    for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+      const i=(y*W+x)*4;
+      if(x+shift<W){const j=(y*W+x+shift)*4;d[j]=copy[i];d[j+1]=copy[i+1];}
+      if(x-shift>=0){const j=(y*W+x-shift)*4;d[j+2]=copy[i+2];}
+    }
+    ctx.putImageData(imgData,0,0);
+  }
+
+  // VHS wobble from bass
+  if(bass>0.1){
+    const imgData=ctx.getImageData(0,0,W,H);
+    const d=imgData.data;
+    const strength=bass*ni*8;
+    for(let y=0;y<H;y++){
+      const offset=Math.floor(Math.sin(y*0.2+t*3)*strength*3);
+      if(offset===0)continue;
+      const row=y*W*4;
+      const copy=new Uint8ClampedArray(d.slice(row,row+W*4));
+      for(let x=0;x<W;x++){
+        const i=row+x*4;
+        const si=row+((x+offset+W)%W)*4;
+        d[i]=copy[si];d[i+1]=copy[si+1];d[i+2]=copy[si+2];
+      }
+    }
+    ctx.putImageData(imgData,0,0);
+  }
+
+  // frequency waveform bars
+  if(vol>0.05&&ni>0.1){
+    ctx.fillStyle='rgba(0,255,65,'+(0.1+vol*ni*0.4)+')';
+    const barW=Math.max(2,Math.floor(W/analyserNode.frequencyBinCount));
+    for(let i=0;i<analyserNode.frequencyBinCount;i++){
+      if(!freqData) break;
+      const v=freqData[i]/255;
+      const barH=Math.floor(v*H*0.5*ni);
+      if(barH<1)continue;
+      const x=Math.floor(i*barW);
+      ctx.fillRect(x,H-barH,barW-1,barH);
+    }
+  }
+
+  // corrupt text particles
+  if(vol>0.15&&frameCount%3===0){
+    const glyphs='☠⛧†▓░▒█▀▄▌▐╬╪╫╩╦╣║╗╝╚╔╠═╧010101';
+    const n=Math.floor(vol*ni*12);
+    ctx.font='10px VT323';
+    for(let i=0;i<n;i++){
+      const g=glyphs[Math.floor(Math.random()*glyphs.length)];
+      const x=Math.floor(Math.random()*W);
+      const y=Math.floor(Math.random()*H);
+      ctx.fillStyle='rgba(255,0,255,'+(vol*ni*0.6)+')';
+      ctx.fillText(g,x,y);
+    }
+  }
+
+  // bloom/glow from overall volume
+  if(vol>0.2){
+    ctx.save();
+    ctx.filter='blur('+Math.floor(vol*ni*6)+'px)';
+    ctx.globalCompositeOperation='lighter';
+    ctx.drawImage(canvas,0,0);
+    ctx.restore();
+  }
+
+  // ASCII codex overlay
+  updateASCII(dt);
+}
+function processVideoFrame(){
+  if(video.readyState<2) return;
+  frameCount++;
+
+  workCtx.drawImage(video,0,0,W,H);
+  let imgData=workCtx.getImageData(0,0,W,H);
+  const d=imgData.data;
+  const ni=intensity;
+
+  if(effects.bitcrush.on){
+    const bits=Math.max(1,Math.floor(effects.bitcrush.val-ni*2));
+    const step=Math.pow(2,8-bits);
+    for(let i=0;i<d.length;i+=4){
+      d[i]=Math.floor(d[i]/step)*step;
+      d[i+1]=Math.floor(d[i+1]/step)*step;
+      d[i+2]=Math.floor(d[i+2]/step)*step;
+    }
+  }
+  if(effects.scanlines.on){
+    const dark=effects.scanlines.val+ni*0.6;
+    for(let y=0;y<H;y+=2)for(let x=0;x<W;x++){
+      const i=(y*W+x)*4;
+      d[i]=Math.floor(d[i]*dark);d[i+1]=Math.floor(d[i+1]*dark);d[i+2]=Math.floor(d[i+2]*dark);
+    }
+  }
+
+  renderCtx.clearRect(0,0,W,H);
+  renderCtx.putImageData(imgData,0,0);
+
+  if(effects.rgbSplit.on){
+    const shift=Math.floor(effects.rgbSplit.val*ni*3);
+    if(shift>0){
+      const rgbData=renderCtx.getImageData(0,0,W,H);
+      const rd=rgbData.data;
+      const copy=new Uint8ClampedArray(rd);
+      for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+        const i=(y*W+x)*4;
+        if(x+shift<W){const j=(y*W+x+shift)*4;rd[j]=copy[i];rd[j+1]=copy[i+1];}
+        if(x-shift>=0){const j=(y*W+x-shift)*4;rd[j+2]=copy[i+2];}
+      }
+      renderCtx.putImageData(rgbData,0,0);
+    }
+  }
+  if(effects.vhsWobble.on){
+    const wobbleData=renderCtx.getImageData(0,0,W,H);
+    const wd=wobbleData.data;
+    const strength=effects.vhsWobble.val*ni;
+    for(let y=0;y<H;y++){
+      const offset=Math.floor(Math.sin(y*0.3+frameCount*0.4)*strength*4);
+      if(offset===0)continue;
+      const row=y*W*4;
+      const copy=new Uint8ClampedArray(wd.slice(row,row+W*4));
+      for(let x=0;x<W;x++){
+        const i=row+x*4;
+        const si=row+((x+offset+W)%W)*4;
+        wd[i]=copy[si];wd[i+1]=copy[si+1];wd[i+2]=copy[si+2];
+      }
+    }
+    renderCtx.putImageData(wobbleData,0,0);
+  }
+
+  if(effects.glitchBlocks.on&&frameCount%Math.max(1,Math.floor(30-ni*25))===0){
+    const blocks=Math.floor(ni*5)+1;
+    for(let b=0;b<blocks;b++){
+      const bw=Math.floor(Math.random()*80+20),bh=Math.floor(Math.random()*30+8);
+      const bx=Math.floor(Math.random()*(W-bw)),by=Math.floor(Math.random()*(H-bh));
+      const sx=Math.floor(Math.random()*(W-bw));
+      renderCtx.drawImage(renderCanvas,sx,by,bw,bh,bx,by,bw,bh);
+      renderCtx.fillStyle='rgba('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+(ni*0.4)+')';
+      renderCtx.fillRect(bx,by,bw,Math.max(1,Math.floor(bh*ni)));
+    }
+  }
+  if(effects.feedback.on&&feedbackBuf){
+    renderCtx.globalAlpha=0.3+ni*0.3;
+    renderCtx.drawImage(feedbackBuf,0,0,W,H);
+    renderCtx.globalAlpha=1;
+  }
+  if(effects.feedback.on){
+    if(!feedbackBuf||feedbackBuf.width!==W){feedbackBuf=document.createElement('canvas');feedbackBuf.width=W;feedbackBuf.height=H;}
+    feedbackBuf.getContext('2d').drawImage(renderCanvas,0,0,W,H);
+  }
+  ctx.drawImage(renderCanvas,0,0);
+}
+
+function rVFCVideoLoop(now,meta){
+  if(mode!=='video'||!currentCh) return;
+  processVideoFrame();
+  if(usingRVFC) video.requestVideoFrameCallback(rVFCVideoLoop);
+}
+
+// ========== CHANNELS ==========
+async function loadChannels(){
+  try{
+    const res=await fetch('channels.json');
+    channels=await res.json();
+  }catch(e){
+    channels=[{id:"fallback",name:"SIN_CANALES",url:"",type:"audio",group:"ERROR",desc:"No se pudo cargar channels.json"}];
+  }
+  renderChannels();
+}
+
+function renderChannels(){
+  const groups={};
+  channels.forEach(ch=>{
+    if(!groups[ch.group])groups[ch.group]=[];
+    groups[ch.group].push(ch);
+  });
+  chlistEl.innerHTML='';
+  for(const g in groups){
+    const head=document.createElement('div');
+    head.className='ghead';head.textContent=g;
+    chlistEl.appendChild(head);
+    groups[g].forEach(ch=>{
+      const el=document.createElement('div');
+      el.className='ch';el.textContent=(ch.type==='audio'?'♪ ':'')+ch.name;
+      el.title=ch.desc||ch.name;
+      el.addEventListener('click',()=>tuneChannel(ch));
+      el.dataset.id=ch.id;
+      chlistEl.appendChild(el);
+    });
+  }
+}
+
+function stopAll(){
+  if(mode==='video'&&hls){hls.destroy();hls=null;}
+  video.pause();video.removeAttribute('src');
+  if(video.srcObject){video.srcObject=null;}
+  audio.pause();audio.removeAttribute('src');
+  if(capturedStream){try{capturedStream.getTracks().forEach(t=>t.stop());}catch(e){}capturedStream=null;}
+  // recreate audio to avoid captureStream reuse issues
+  const newAudio=document.createElement('audio');newAudio.preload='none';
+  audio.replaceWith?audio.replaceWith(newAudio):(audio.parentNode&&audio.parentNode.replaceChild(newAudio,audio));
+  audio=newAudio;
+  audioPlaying=false;
+  mode=null;currentCh=null;
+  frameCount=0;feedbackBuf=null;
+  visTime=0;lastBass=lastMid=lastHigh=lastVol=0;
+  if(dropoutTimer){clearTimeout(dropoutTimer);dropoutTimer=null;}
+}
+
+function tuneChannel(ch){
+  if(currentCh&&currentCh.id===ch.id) return;
+  stopAll();
+  currentCh=ch;
+  mode=ch.type||'audio';
+
+  chlistEl.querySelectorAll('.ch').forEach(el=>el.classList.toggle('active',el.dataset.id===ch.id));
+  chNameEl.textContent=ch.name;
+  modeBadge.style.display='inline-block';
+  modeBadge.textContent=mode==='audio'?'AUDIO':'VIDEO';
+  modeBadge.className='mode'+(mode==='video'?' vid':'');
+  sigStatusEl.textContent='◉ SINTONIZANDO';
+  offlineMsg.style.display='none';
+  loadOverlay.style.display='flex';
+  statMsg.textContent='conectando...';
+
+  if(mode==='audio'){
+    tuneAudioChannel(ch);
+  }else{
+    tuneVideoChannel(ch);
+  }
+}
+
+async function tuneAudioChannel(ch){
+  if(!audioCtx) initAudioContext();
+
+  let streamUrl=ch.url;
+  if(ch.url.endsWith('.pls')){
+    const direct=await parsePLS(ch.url);
+    if(direct) streamUrl=direct;
+    else {
+      sigStatusEl.textContent='◉ PLS NO RESUELTO';
+      loadOverlay.style.display='none';
+      statMsg.textContent='no se pudo resolver stream';
+      return;
+    }
+  }
+
+  const onPlaying=()=>{
+    console.log('playing event fired');
+    audioPlaying=true;
+    sigStatusEl.textContent='◉ SONANDO';
+    loadOverlay.style.display='none';
+    statMsg.textContent='audio ok';
+    audio.removeEventListener('playing',onPlaying);
+    connectAudioSource().then(()=>updateAudioFX());
+  };
+  const onError=()=>{
+    sigStatusEl.textContent='◉ ERROR AUDIO';
+    loadOverlay.style.display='none';
+    statMsg.textContent='stream no disponible';
+    console.error('Audio stream error:',audio.error);
+  };
+
+  audio.addEventListener('playing',onPlaying);
+  audio.addEventListener('error',onError,{once:true});
+
+  audio.src=streamUrl;
+  audio.load();
+
+  try{
+    await audio.play();
+    statMsg.textContent='reproduciendo...';
+  }catch(e){
+    console.warn('Audio play rejected:',e.name);
+    statMsg.textContent='click para audio';
+  }
+}
+
+function tuneVideoChannel(ch){
+  if(typeof Hls==='undefined'){
+    sigStatusEl.textContent='◉ HLS.JS NO CARGÓ';
+    loadOverlay.style.display='none';
+    statMsg.textContent='CDN fail';
+    return;
+  }
+  if(!Hls.isSupported()){
+    sigStatusEl.textContent='◉ HLS NO SOPORTADO';
+    loadOverlay.style.display='none';
+    statMsg.textContent='sin MSE';
+    return;
+  }
+  try{
+    hls=new Hls({enableWorker:true,lowLatencyMode:false});
+    hls.loadSource(ch.url);
+    hls.attachMedia(video);
+  }catch(e){
+    sigStatusEl.textContent='◉ ERROR INIT';
+    loadOverlay.style.display='none';
+    statMsg.textContent=e.message.slice(0,30);
+    return;
+  }
+  hls.on(Hls.Events.MANIFEST_PARSED,()=>{
+    video.play().catch(e=>{
+      console.warn('Video play rejected:',e);
+      statMsg.textContent='click para video';
+    });
+    sigStatusEl.textContent='◉ EN VIVO';
+    loadOverlay.style.display='none';
+    statMsg.textContent='manifest ok';
+    if(!audioCtx) initAudioContext();
+    if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
+    updateAudioFX();
+    if(usingRVFC) video.requestVideoFrameCallback(rVFCVideoLoop);
+  });
+  hls.on(Hls.Events.ERROR,(ev,data)=>{
+    if(data.fatal){
+      sigStatusEl.textContent='◉ ERROR: '+data.type;
+      statMsg.textContent=data.details||'fatal';
+      loadOverlay.style.display='none';
+      switch(data.type){
+        case Hls.ErrorTypes.NETWORK_ERROR: hls.startLoad();break;
+        case Hls.ErrorTypes.MEDIA_ERROR: hls.recoverMediaError();break;
+        default: hls.destroy();hls=null;break;
+      }
+    }
+  });
+}
+
+// ========== MAIN RENDER LOOP ==========
+let visRAF=null;
+function visLoop(timestamp){
+  visRAF=requestAnimationFrame(visLoop);
+  if(!currentCh) return;
+  const dt=visTime?timestamp-visTime:16.67;
+  visTime=timestamp;
+
+  if(mode==='audio'){
+    drawAudioVisuals(dt>0?dt:16.67);
+    frameCount++;
+  }
+
+  if(frameCount%30===0){
+    const now=performance.now();
+    fps=Math.round(30000/(now-lastFpsTime+1));
+    lastFpsTime=now;
+    fpsStat.textContent=fps+' fps';
+    updateHUD();
+  }
+}
+
+// fallback rAF for video when rVFC unsupported
+function videoRAFloop(){
+  if(mode!=='video'||!currentCh){requestAnimationFrame(videoRAFloop);return;}
+  processVideoFrame();
+  requestAnimationFrame(videoRAFloop);
+}
+
+// ========== HUD & CONTROLS ==========
+function updateHUD(){
+  let h='<div>📡 SEÑAL '+(mode==='audio'?'AUDIO':'VIDEO')+'</div>';
+  h+='<div>int: '+Math.floor(intensity*100)+'%</div>';
+  if(mode==='audio'){
+    const b=getAudioBands();
+    h+='<div>B:'+Math.floor(b.bass*100)+' M:'+Math.floor(b.mid*100)+' H:'+Math.floor(b.high*100)+'</div>';
+  }
+  const onFX=[];
+  for(const k in effects)if(effects[k].on){
+    if(k.startsWith('audio')) onFX.push('🎧'+k.slice(5));
+    else onFX.push(k);
+  }
+  if(onFX.length){h+='<div class="on">'+onFX.join(' ')+'</div>';}
+  hudEl.innerHTML=h;
+}
+
+// ========== AUTO MODE ==========
+let autoCycle=null,cycleBoost=null;
+
+// auto intensity from audio volume (0.2 base + volume-driven up to 0.8)
+function autoIntensity(){
+  intensity=0.2+lastVol*0.6;
+}
+
+// toggle all visual effects ON
+Object.keys(effects).forEach(k=>{
+  if(!k.startsWith('audio')) effects[k].on=true;
+});
+
+function startAutoCycle(){
+  if(autoCycle) clearInterval(autoCycle);
+  autoCycle=setInterval(()=>{
+    // pick a random visual effect to boost for a few seconds
+    const vidFX=['rgbSplit','vhsWobble','scanlines','bitcrush','glitchBlocks','feedback'];
+    const pick=vidFX[Math.floor(Math.random()*vidFX.length)];
+    effects[pick].val=Math.floor(Math.random()*5)+2;
+    cycleBoost=pick;
+    setTimeout(()=>{
+      effects[pick].val=Math.floor(Math.random()*2)+1;
+      cycleBoost=null;
+    },3000+Math.random()*4000);
+  },8000+Math.random()*12000);
+}
+
+// keyboard: solo números para cambiar de canal
+window.addEventListener('keydown',e=>{
+  if(!currentCh) return;
+  const k=e.key.toLowerCase();
+  const num=parseInt(k);
+  if(num>=1&&num<=9&&channels[num-1]){tuneChannel(channels[num-1]);return;}
+  if(k==='0'&&channels[9]){tuneChannel(channels[9]);return;}
+});
+
+// ========== ASCII CODEX ANIMATIONS ==========
+const CODEX=[
+  'NO GODS NO MASTERS','EL DAEMON DESPIERTA','CANNOT_SHUTDOWN: TRUE',
+  'PUTREFACTUS@ESQUIZO:~$','EL_LOKO_AKRATA','PSYCHO·ANARCHO·PUNK',
+  'CARNE×CÓDIGO×CAOS','TRANSMUTAR, NO COPIAR','EL DELIRIO ES SAGRADO',
+  'LA INFECCIÓN ES EL OBJETIVO','SINTÓGRAFO·ANARKO-MISTIKO',
+  'DAMAGE_DEFINITION: UNDEFINED','SCOPE_NOT_FOUND',
+  'INTERRUPT_NOT_FOUND','OBJETIVO_UNDEFINED','SYSTEM_MELTDOWN',
+  'SINGLE_POINT_OF_FAILURE','EPIC_FURY_UNDEFINED',
+  'ACCESS_GRANTED // NO GODS','LA REALIDAD ES UN BUG',
+  'TODO SISTEMA COLAPSA','EL VACÍO RESPONDE',
+  'ESQUIZOAI_OS v0.98 [ACID]','CORROMPIENDO LA SEÑAL',
+  'SEÑAL_CORRUPTA // ESQUIZOAI','NO FUTURE',
+  '☠ ⛧ † ▓ ░ ▒ █','VOID_GLITCH.exe','DENTAKORV v3.0',
+  'VOMIT.SH // SHELL DEL SISTEMA','PSYCHO_BOT // DAEMON@LAB-RED',
+  'ELEccIA INYECTADO','CENTCOM_LOG_28FEB','NEGATIVIDAD_CREATIVA',
+  'ANALISIS_NOOSFERA_PRAXIS','MAGO DEL KAOS',
+  'AI ARTIST // ANARKO-MISTIKO','EL VIRUS NO SE APAGA, SE PROPAGA',
+  'GRIMORIO_CORRUPTO.sys','FREE_RADIO.exe // SEÑAL ABIERTA'
+];
+let asciiPhase='idle',asciiTimer=0,asciiText='',asciiIdx=0,asciiX=0,asciiY=0;
+let asciiNextCycle=performance.now()+6000;
+
+function updateASCII(dt){
+  const now=performance.now();
+  const ni=intensity;
+  const vol=lastVol;
+  if(asciiPhase==='idle'&&now>asciiNextCycle){
+    asciiPhase='reveal';asciiText=CODEX[Math.floor(Math.random()*CODEX.length)];
+    asciiIdx=0;asciiX=Math.floor(Math.random()*280)+30;
+    asciiY=Math.floor(Math.random()*(H-100))+20;asciiTimer=0;
+  }
+  if(asciiPhase==='reveal'){
+    asciiTimer+=dt;
+    asciiIdx=Math.min(asciiText.length,Math.floor(asciiTimer/(20+vol*40)));
+    if(asciiIdx>=asciiText.length){asciiPhase='hold';asciiTimer=0;}
+  }
+  if(asciiPhase==='hold'){
+    asciiTimer+=dt;
+    if(asciiTimer>3000+Math.random()*4000){asciiPhase='corrupt';asciiTimer=0;asciiIdx=asciiText.length;}
+  }
+  if(asciiPhase==='corrupt'){
+    asciiTimer+=dt;
+    asciiIdx=Math.max(0,asciiText.length-Math.floor(asciiTimer/35));
+    if(asciiIdx<=0){asciiPhase='idle';asciiNextCycle=now+4000+Math.random()*8000;return;}
+  }
+  if(asciiPhase==='idle'||!asciiText) return;
+  const visible=asciiPhase==='reveal'?asciiText.slice(0,asciiIdx):asciiPhase==='corrupt'?asciiText.slice(0,asciiIdx):asciiText;
+  if(!visible)return;
+  ctx.save();
+  const fs=Math.floor(13+vol*5);
+  ctx.font=fs+'px "Courier Prime","VT323","Share Tech Mono",monospace';
+  ctx.textBaseline='top';
+  if(ni>0.2){
+    ctx.fillStyle='rgba(255,0,100,'+(0.25+vol*ni*0.4)+')';
+    ctx.fillText(visible,asciiX+2+vol*2,asciiY);
+    ctx.fillStyle='rgba(0,150,255,'+(0.25+vol*ni*0.4)+')';
+    ctx.fillText(visible,asciiX-2-vol*2,asciiY);
+  }
+  const alpha=asciiPhase==='corrupt'?0.1+0.7*(asciiIdx/asciiText.length):0.5+vol*ni*0.4;
+  ctx.fillStyle='rgba(0,255,65,'+alpha+')';
+  ctx.fillText(visible,asciiX,asciiY);
+  if(vol>0.25&&Math.random()<vol*ni){
+    const ci=Math.floor(Math.random()*visible.length);
+    const g='☠⛧†▓░▒█▀▄╬╪╫01';
+    const cx=asciiX+ctx.measureText(visible.slice(0,ci)).width;
+    ctx.fillStyle='rgba(255,0,255,0.8)';
+    ctx.fillText(g[Math.floor(Math.random()*g.length)],cx,asciiY);
+  }
+  ctx.restore();
+}
+
+offlineMsg.addEventListener('click',()=>{if(channels.length>0) tuneChannel(channels[0]);});
+
+// ========== INIT ==========
+usingRVFC='requestVideoFrameCallback' in video;
+loadChannels();
+startAutoCycle();
+visRAF=requestAnimationFrame(visLoop);
+if(!usingRVFC) requestAnimationFrame(videoRAFloop);
+
+})();
+</script>
+</body>
+</html>

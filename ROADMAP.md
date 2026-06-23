@@ -6,7 +6,7 @@
 >
 > Leyenda: `[x]` hecho y desplegado · `[~]` en progreso · `[ ]` pendiente
 >
-> **Última actualización:** 2026-06-19
+> **Última actualización:** 2026-06-20
 
 ---
 
@@ -88,6 +88,22 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 - [ ] **Meta / OG tags** en `index.html` (preview con cráneo + tagline al compartir)
 - [ ] Definir branding/copy de las tarjetas y la transmisión
 - [ ] Verificado + docs + memoria
+
+---
+
+## 📻 FASE 5 — FREE RADIO (radio libre con corrupción en tiempo real)
+**Estado: 🔶 EN DESARROLLO** · riesgo medio · costo cero de API · dependencia: hls.js (CDN)
+> **MVP**: reproductor IPTV con glitch progresivo en video (Canvas2D) y audio (Web Audio API).
+> **Audio-reactivo**: canales SomaFM con glitch visual generativo que reacciona a frecuencias de audio.
+> Fases posteriores: modo aleatorio → glitch conceptual reactivo al contenido → control vía Psycho-bot.
+
+- [x] **`iptv/index.html`** — app autocontenida: dual mode (audio + video). Modo audio: AnalyserNode → visuals glitch reactivos (bass=bloques, mid=RGB shift, high=noise, waveform, glitch text). Modo video: HLS.js + Canvas2D glitch pipeline (RGB split, VHS, scanlines, bitcrush, feedback). PLS parser con fallback para SomaFM.
+- [x] **`iptv/channels.json`** — 10 canales audio SomaFM (Doomed, Dark Zone, Drone Zone, SF 10-33, Deep Space One, Metal Detector, DEF CON, Vaporwaves, Secret Agent, Police Scanner) + 2 video test
+- [x] **Integración OS** — icono `📺 IPTV_GLITCH.exe` en escritorio + Inicio + VOMIT.SH (`iptv`) + función `openIPTV()`
+- [x] Controles de glitch: sliders intensidad, toggles por efecto (visuales y audio), botón CAOS (random), RESET
+- [ ] Verificado en navegador (sin errores) + docs + memoria
+- [ ] CORS proxy (`api/radio-proxy.js`) para análisis de audio en producción (Vercel HTTPS)
+- [ ] Importar .m3u externo para canales propios
 
 ---
 

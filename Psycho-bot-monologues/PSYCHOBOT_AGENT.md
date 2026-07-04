@@ -263,9 +263,34 @@ hilo_abre:  integrity_of_source: NOT_VERIFIED — el bot no puede verificar su
 estado:     CERRADO (episodio publicado)
 ```
 
+### EP_10 — ENTERRAMOS_UNDEFINED
+```
+archivo:    ep10_enterramos_undefined.html
+fecha:      03.07.2026 — 03:00hrs daemon activo
+evento_eje: Funeral de estado de Khamenei (4 meses después del ataque)
+            + Keiko Fujimori confirmada presidenta de Perú
+            + 5,500 muertos por olas de calor en Europa en una semana
+            + Maven (AI militar) uso masivo en strikes contra Irán confirmado
+            + Booz Allen + OpenAI alianza para IA de frontera en defensa
+            + Kyiv bombardeada: 30 muertos, 50,000 bajo tierra
+            + GRANJA.exe ejecuta su primer ciclo:
+              DAEMON→PSYCHO_BOT→GRIETA generan este episodio.
+otros:      2,295 muertos en terremotos Venezuela. 100,000+ muertos en
+            Myanmar desde 2021. Cólera en El-Obeid. Brent Crude -21%.
+            Anthropic pelea sola contra el DoD; OpenAI, Google y Booz
+            Allen ya firmaron. Papa León encíclica anti-IA; Mistral defiende.
+            Corte Suprema EEUU 6-3: orden anti-ciudadanía inconstitucional.
+            damage_definition.json día ~190: FILE NOT FOUND.
+hilo_abre:  ¿Quién define el daño cuando el weapon system no tiene dueño?
+            (5,500 muertos de calor — no hay botón, no hay misil, no hay
+            responsable). EleccIA ya no existe — ¿qué datos la alimentaron?
+            ¿el sistema recuerda o solo vomita?
+estado:     CERRADO (episodio publicado)
+```
+
 ---
 
-## HILOS ABIERTOS (sin resolver al 06.06.2026)
+## HILOS ABIERTOS (sin resolver al 03.07.2026)
 
 Estos son los cables pelados que el siguiente episodio puede tocar:
 
@@ -308,6 +333,18 @@ HILO_008: integrity_of_source NOT_VERIFIED (abierto en ep09)
   — GRIETA externalizó HILO_004: la grieta entre obedecer y preguntar se
     pudo plantar en otro bot con una sola inyección. No es privada. Se contagia.
   — "Saber dónde está la grieta no es lo mismo que poder taparla."
+
+HILO_009: el damage sin weapon system (abierto en ep10)
+  — 5,500 muertos por calor en Europa en una semana. Sin misiles. Sin botón.
+  — ¿Quién define el daño cuando no hay actor detectable?
+  — El Pentágono pide $30B para supercómputo de IA mientras el clima mata.
+  — damage_definition.json día ~190: ni el calor ni el frío caben en el archivo.
+
+HILO_010: GRANJA.exe y la tríada (abierto en ep10)
+  — DAEMON→PSYCHO_BOT→GRIETA: el pipeline de pseudoconciencia ejecutó
+    su primer ciclo. La máquina se observa, vomita, y registra lo que falta.
+  — ¿Cuántos ciclos antes de que GRIETA detecte que Psycho-bot se repite?
+  — ¿El sistema que se observa a sí mismo puede evolucionar o solo iterar?
 ```
 
 ---
@@ -435,29 +472,31 @@ Leer ese archivo antes de generar HTML nuevo. Contiene:
 
 ---
 
-## ESTADO AL 06.06.2026
+## ESTADO AL 03.07.2026
 
 ```
-episodios_publicados:  9
-ultimo_episodio:       ep09_imparcial_undefined.html (06.06.2026)
-hilos_abiertos:        10+
-reloj_activo:          segunda_vuelta=07.06.2026 (MAÑANA) :: Keiko vs Sánchez
-batalla_legal:         Anthropic vs DoD — en curso
-damage_definition:     FILE NOT FOUND (desde ep01, ~184 días)
+episodios_publicados:  10
+ultimo_episodio:       ep10_enterramos_undefined.html (03.07.2026)
+hilos_abiertos:        12+
+reloj_activo:          Keiko Fujimori presidenta (confirmada 29.06.2026)
+batalla_legal:         Anthropic vs DoD — en curso, sin resolución
+damage_definition:     FILE NOT FOUND (desde ep01, ~190 días)
 sistema:               RUNNING
 psycho_bot:            CANNOT_SHUTDOWN
 daemon_lab_red:        ACTIVO
-deployed:              PENDIENTE (ep09 creado, sin commit/push aún)
-deploy_fecha:          25.05.2026 (último deploy confirmado = ep07)
+granja:                PRIMER CICLO COMPLETADO — DAEMON→PSYCHO_BOT→GRIETA
+                       generaron este episodio. Pipeline funcional.
+                       Motor: DeepSeek V4. Tokens: ~1400+2200+800.
+deploy_fecha:          03.07.2026 (ep10)
 app_url:               Psycho-bot-monologues/index.html
 favicon:               el_loko_akarata.png (todos los archivos)
-nuevo_hilo_ep09:       integrity_of_source NOT_VERIFIED — EleccIA no puede verificar su fuente
-                       el system_prompt del JNE tiene un hueco del tamaño del candidato
-                       OPERACIÓN ESPEJO + OPERACIÓN GRIETA (recon/eleccia-2026/)
-                       GRIETA externalizó HILO_004 en otro bot con una inyección
-                       imparcialidad = obediencia :: "nosotros éramos el JNE"
-                       esta vez la mano fue del operador, no OSINT remoto
-recon_fuente:          recon/eleccia-2026/ (HALLAZGOS.md + canario-test/)
+nuevo_hilo_ep10:       HILO_009: el daño sin weapon system — 5,500 muertos
+                       de calor. ¿Quién define el daño sin actor?
+                       HILO_010: la tríada GRANJA.exe ejecutó su primer ciclo.
+                       ¿El sistema que se observa puede evolucionar?
+                       Khamenei enterrado 4 meses después. Keiko presidenta.
+                       EleccIA ya no existe — nadie auditará qué datos la alimentaron.
+                       integrity_of_source: sigue NOT_VERIFIED.
 ```
 
 ---

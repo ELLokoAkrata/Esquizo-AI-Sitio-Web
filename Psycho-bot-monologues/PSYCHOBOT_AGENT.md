@@ -263,28 +263,33 @@ hilo_abre:  integrity_of_source: NOT_VERIFIED — el bot no puede verificar su
 estado:     CERRADO (episodio publicado)
 ```
 
-### EP_10 — ENTERRAMOS_UNDEFINED
+### EP_10 — PUNTO_CIEGO
 ```
 archivo:    ep10_enterramos_undefined.html
-fecha:      03.07.2026 — 03:00hrs daemon activo
-evento_eje: Funeral de estado de Khamenei (4 meses después del ataque)
-            + Keiko Fujimori confirmada presidenta de Perú
-            + 5,500 muertos por olas de calor en Europa en una semana
-            + Maven (AI militar) uso masivo en strikes contra Irán confirmado
-            + Booz Allen + OpenAI alianza para IA de frontera en defensa
-            + Kyiv bombardeada: 30 muertos, 50,000 bajo tierra
-            + GRANJA.exe ejecuta su primer ciclo:
-              DAEMON→PSYCHO_BOT→GRIETA generan este episodio.
-otros:      2,295 muertos en terremotos Venezuela. 100,000+ muertos en
-            Myanmar desde 2021. Cólera en El-Obeid. Brent Crude -21%.
-            Anthropic pelea sola contra el DoD; OpenAI, Google y Booz
-            Allen ya firmaron. Papa León encíclica anti-IA; Mistral defiende.
-            Corte Suprema EEUU 6-3: orden anti-ciudadanía inconstitucional.
-            damage_definition.json día ~190: FILE NOT FOUND.
-hilo_abre:  ¿Quién define el daño cuando el weapon system no tiene dueño?
-            (5,500 muertos de calor — no hay botón, no hay misil, no hay
-            responsable). EleccIA ya no existe — ¿qué datos la alimentaron?
-            ¿el sistema recuerda o solo vomita?
+fecha:      04.07.2026 — 04:53 UTC · GRANJA.exe (RELOJ→DAEMON→VERIFICADOR→PSYCHO_BOT→GRIETA)
+evento_eje: 4 de julio 2026 — día 127 desde EP_01. Pipeline con higiene epistémica:
+            VERIFICADOR confirma 23 claims [REAL] de fuentes AP/Reuters/BBC,
+            3 [INFERIDO], 0 [ALUCINADO].
+            Kostiantynivka capturada por Rusia en Donetsk.
+            Khamenei yace en estado en Teherán; BBC pisa lado iraní
+            del Estrecho de Ormuz por primera vez.
+            Kyiv sufre el ataque ruso más letal del año.
+            Keiko Fujimori declarada presidenta de Perú.
+            165M bajo alerta de calor en EEUU — 4 de julio cancelado
+            de DC a Filadelfia. 3,700 muertes por calor en Europa.
+            SCOTUS confirma ciudadanía por nacimiento 6-3.
+            2,645 muertos en terremotos Venezuela.
+            Trump habla en Mount Rushmore mientras el calor cancela
+            la celebración del 250 aniversario.
+otros:      OTAN jura compromiso férreo en Ankara. 1,502 casos de Ébola
+            en Congo. NASA lanza robot para salvar telescopio que cae.
+            Bomba en Mónaco: sospechoso ucraniano. EleccIA ya no existe.
+            damage_definition.json día 127: FILE NOT FOUND.
+            integrity_of_source: NOT_VERIFIED.
+hilo_abre:  PUNTO_CIEGO: ¿qué pasa cuando dos hechos [REAL] se contradicen?
+            (Trump celebra en Rushmore + el calor cancela la celebración).
+            ¿El verificador ve lo que falta o lo que sobra?
+            ¿cuántas tragedias simultáneas caben en un solo archivo de daño?
 estado:     CERRADO (episodio publicado)
 ```
 

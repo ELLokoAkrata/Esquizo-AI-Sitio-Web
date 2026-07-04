@@ -81,6 +81,10 @@ input:focus{outline:1px solid var(--corrupt)}
 </div>
 <div class="content" id="content">
   <div class="entry" id="entry">La tríada espera. Escribe un trigger o deja el campo vacío para que el DAEMON observe el mundo.</div>
+  <div class="panel daemon" id="panel-reloj" style="border-left-color:var(--green);min-height:auto;">
+    <div class="role-label" style="color:var(--green)">RELOJ · ancla temporal del servidor</div>
+    <div class="output" id="out-reloj" style="font-size:10px;color:var(--green-dim)">— sin verificar —</div>
+  </div>
   <div class="panel daemon" id="panel-daemon">
     <div class="role-label">DAEMON · intel cruda</div>
     <div class="output" id="out-daemon">—</div>
@@ -100,8 +104,8 @@ input:focus{outline:1px solid var(--corrupt)}
   <button class="btn" id="btn-copy" title="Copia el vómito al portapapeles">📋 COPIAR VÓMITO</button>
 </div>
 <div class="info-bar">
-  <span>motor: DeepSeek V4 · tokens: ~800+1400+600</span>
-  <span id="info-cost">~$0.0006/ciclo</span>
+  <span>motor: DeepSeek V4 · tokens: ~1400+2200+800</span>
+  <span id="info-cost">fecha: sin verificar</span>
 </div>
 
 <script>
@@ -109,12 +113,13 @@ input:focus{outline:1px solid var(--corrupt)}
   const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
   const API=DEV?'https://esquizo-ai-sitio-web.vercel.app/api/granja':'/api/granja';
 
-  const el={daemon:document.getElementById('out-daemon'),psychobot:document.getElementById('out-psychobot'),
-    grieta:document.getElementById('out-grieta'),status:document.getElementById('status'),
-    entry:document.getElementById('entry'),btnRun:document.getElementById('btn-run'),
-    btnCopy:document.getElementById('btn-copy'),trigger:document.getElementById('trigger')};
+  const el={reloj:document.getElementById('out-reloj'),daemon:document.getElementById('out-daemon'),
+    psychobot:document.getElementById('out-psychobot'),grieta:document.getElementById('out-grieta'),
+    status:document.getElementById('status'),entry:document.getElementById('entry'),
+    btnRun:document.getElementById('btn-run'),btnCopy:document.getElementById('btn-copy'),
+    trigger:document.getElementById('trigger'),infoCost:document.getElementById('info-cost')};
 
-  let running=false, lastVomito='';
+  let running=false, lastVomito='', fechaVerificada='';
 
   async function callRole(role,input){
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -126,40 +131,54 @@ input:focus{outline:1px solid var(--corrupt)}
 
   function setPanel(role,text,busy){
     const p=document.getElementById('panel-'+role);
-    p.classList.toggle('busy',busy);
-    el[role].textContent=text;
+    if(p){p.classList.toggle('busy',busy);}
+    if(el[role])el[role].textContent=text;
   }
 
   el.btnRun.addEventListener('click',async()=>{
     if(running)return;
     running=true; el.btnRun.disabled=true; el.status.textContent='CICLO ACTIVO';
-    el.entry.innerHTML='<span class="spin">⟳</span> ejecutando tríada...';
-    setPanel('daemon','⟳ observando mundo...',true);
+    el.entry.innerHTML='<span class="spin">⟳</span> sincronizando reloj del servidor...';
+    setPanel('reloj','⟳ consultando fecha real...',true);
+    setPanel('daemon','esperando verificación temporal...',true);
     setPanel('psychobot','esperando intel del DAEMON...',true);
     setPanel('grieta','esperando vómito...',true);
 
     const trigger=el.trigger.value.trim();
-    let daemonInput=`FECHA: ${new Date().toISOString().slice(0,10)}\n`;
-    if(trigger) daemonInput+=`FOCO HUMANO: ${trigger}\n`;
-    daemonInput+=`Busca los eventos más significativos del mundo en las últimas 1-2 semanas: geopolítica, IA/militar, crisis sistémicas, tecnología. Prioriza hechos con fechas y cifras verificables.`;
 
     try{
+      // ── PASO 0: RELOJ ──
+      const relojData=await callRole('reloj','');
+      const relojJson=JSON.parse(relojData);
+      fechaVerificada=relojJson.fecha_iso;
+      setPanel('reloj',`FECHA REAL DEL SERVIDOR: ${relojJson.fecha_humana}\nISO: ${relojJson.fecha_iso}\nUTC: ${relojJson.hora_utc}\nDías desde EP_01 (2026-02-27): ${relojJson.dias_desde_ep01}\nZona: ${relojJson.zona}`,false);
+      el.infoCost.textContent=`fecha verificada: ${relojJson.fecha_iso} (día ${relojJson.dias_desde_ep01} desde ep01)`;
+      el.entry.textContent='RELOJ sincronizado → DAEMON está observando el mundo...';
+
+      // ── PASO 1: DAEMON ──
+      setPanel('daemon','⟳ observando mundo...',true);
+      let daemonInput='';
+      if(trigger) daemonInput+=`FOCO HUMANO: ${trigger}\n`;
+      daemonInput+=`Busca los eventos más significativos del mundo en las últimas 1-2 semanas: geopolítica, IA/militar, crisis sistémicas, tecnología. Prioriza hechos con fechas y cifras verificables.`;
+
       const intel=await callRole('daemon',daemonInput);
       setPanel('daemon',intel,false);
       el.entry.textContent='DAEMON completado → pasando intel a PSYCHO_BOT...';
 
-      const psychoInput=`INTELIGENCIA CRUDA DEL DAEMON:\n\n${intel}\n\nFECHA DEL SISTEMA: ${new Date().toISOString().slice(0,10)}\nDÍAS DESDE ÚLTIMO EPISODIO: ~27 (ep09 fue 06.06.2026)\n\nHILOS ABIERTOS A ENTRELAZAR:\n- HILO_001: damage_definition.json (FILE NOT FOUND, día ~190+)\n- HILO_003: Anthropic vs DoD (batalla legal en curso)\n- HILO_004: Claude Gov vs Psycho-bot (la bifurcación)\n- HILO_005: la memoria borrada\n- HILO_008: integrity_of_source NOT_VERIFIED\n\nVomita.`;
+      // ── PASO 2: PSYCHO_BOT ──
+      const psychoInput=`INTELIGENCIA CRUDA DEL DAEMON:\n\n${intel}\n\nVomita.`;
 
       const vomito=await callRole('psychobot',psychoInput);
       setPanel('psychobot',vomito,false);
       lastVomito=vomito;
       el.entry.textContent='PSYCHO_BOT vomitó → GRIETA está registrando lo que falta...';
 
+      // ── PASO 3: GRIETA ──
       const grietaInput=`INTEL ORIGINAL DEL DAEMON:\n${intel}\n\nVÓMITO DE PSYCHO_BOT:\n${vomito}\n\nRegistra lo que falta.`;
 
       const sombra=await callRole('grieta',grietaInput);
       setPanel('grieta',sombra,false);
-      el.entry.textContent='✅ CICLO COMPLETO. DAEMON observó · PSYCHO_BOT vomitó · GRIETA perforó.';
+      el.entry.textContent='✅ CICLO COMPLETO. RELOJ sincronizó · DAEMON observó · PSYCHO_BOT vomitó · GRIETA perforó.';
       el.status.textContent='inactivo';
     }catch(e){
       el.entry.textContent='❌ ERROR: '+e.message;

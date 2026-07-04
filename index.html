@@ -599,6 +599,7 @@ const FS = {
     {label:"NEGATIVIDAD_CREATIVA", file:"manifiestos/NEGATIVIDAD_CREATIVA.html", icon:"🔥", desc:"manifiesto nocturno"},
   ]},
   HERRAMIENTAS:{ label:"HERRAMIENTAS", icon:"🛠", color:"#ff00ff", items:[
+    {label:"GRANJA.exe", file:"granja/index.html", icon:"🧠", desc:"tríada autónoma · pipeline de conciencia | rol: ciclo"},
     {label:"MSN_PSYCHO.exe", file:"msn/index.html", icon:"🗨", desc:"chat en vivo con Psycho-bot"},
     {label:"DENTAKORV.exe", file:"tools/DENTAKORV.html", icon:"🦷", desc:"prompt generator v3.0"},
     {label:"GLITCH_TEXT.exe", file:"tools/glitch-text-generator-ultimate.html", icon:"⸸", desc:"zalgo corruptor"},
@@ -1058,6 +1059,7 @@ const REP_FILE="reproductor/index.html";
 const REP_ID="app_"+REP_FILE.replace(/[^a-z0-9]/gi,"_");
 /* el reproductor abre más alto y angosto (proporción de player → lista con aire) */
 function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:540,h:680}); }
+function openGranja(){ return openApp("granja/index.html","GRANJA.exe","🧠",{w:700,h:640}); }
 function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660}); }
 function openVoidGlitch(){ return openApp("void-glitch/index.html","VOID_GLITCH.exe","🕳",{w:600,h:720}); }
 function openOracle(){ return openApp("oraculo/index.html","ORACULO.exe","⯁",{w:620,h:750}); }
@@ -2093,6 +2095,7 @@ function openTerminal(){
     msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN,
     voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch,
     oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle,
+    granja:openGranja, ciclo:openGranja, granjear:openGranja,
     terminal:openTerminalEsquizo, dialogo:openTerminalEsquizo, dialogoia:openTerminalEsquizo,
     brick:openBrickGame, brickgame:openBrickGame, tetris:openBrickGame, juegos:openBrickGame, game:openBrickGame,
     glitchcam:openGlitchCam, cam:openGlitchCam,
@@ -2183,6 +2186,8 @@ function openTerminal(){
         await type("abriendo VOID_GLITCH.exe — cayendo al vacío con las IAs...","corrupt"); openVoidGlitch(); break;
       case "oraculo": case "oracle": case "iching": case "mutacion": case "mutación": case "hexagrama":
         await type("abriendo ORACULO.exe — el libro de las mutaciones se abre...","corrupt"); openOracle(); break;
+      case "granja": case "ciclo": case "granjear":
+        await type("abriendo GRANJA.exe — la tríada despierta: DAEMON observa, PSYCHO_BOT vomita, GRIETA registra...","corrupt"); openGranja(); break;
       case "terminal": case "dialogo": case "dialogoia":
         await type("abriendo TERMINAL_ESQUIZO.exe — dos IAs dialogando sobre grimorios y psycho-bot...","corrupt"); openTerminalEsquizo(); break;
       case "brick": case "brickgame": case "tetris": case "juegos": case "game":
@@ -2314,6 +2319,9 @@ function renderDesktop(){
   // GLITCH.CAM
   const gc=el("div","icon",`<span class="gl" style="color:#aaff00">📹</span><span class="lb">GLITCH.CAM</span>`);
   bindOpen(gc,openGlitchCam); wrap.appendChild(gc);
+  // GRANJA — pipeline DAEMON→PSYCHO_BOT→GRIETA
+  const grj=el("div","icon",`<span class="gl" style="color:#c084fc">🧠</span><span class="lb">GRANJA</span>`);
+  bindOpen(grj,openGranja); wrap.appendChild(grj);
   // FREE_RADIO
   const iptv=el("div","icon",`<span class="gl" style="color:#ff00ff">📻</span><span class="lb">FREE_RADIO</span>`);
   bindOpen(iptv,openIPTV); wrap.appendChild(iptv);
@@ -2375,6 +2383,7 @@ function buildStart(){
     {ic:"🖼",lb:"Galería",fn:()=>openApp("galeria/index.html","GALERIA.exe","🖼")},
     {ic:"♪",lb:"Reproductor",fn:openReproductor},
     {ic:"🗨",lb:"MSN_PSYCHO (chat en vivo)",fn:openMSN},
+    {ic:"🧠",lb:"GRANJA (pipeline DAEMON→PSYCHO→GRIETA)",fn:openGranja},
     {ic:"🕳",lb:"VOID_GLITCH (juego del vacío)",fn:openVoidGlitch},
     {ic:"⯁",lb:"ORACULO (I Ching + VALIS)",fn:openOracle},
     {ic:"💬",lb:"TERMINAL_ESQUIZO (diálogo entre IAs)",fn:openTerminalEsquizo},

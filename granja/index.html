@@ -3,108 +3,130 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GRANJA.exe — tríada de pseudoconciencia</title>
+<title>GRANJA.exe — tríada con consciencia</title>
 <style>
 :root{
   --bg:#040008; --green:#00ff41; --green-dim:#00b32c;
   --amber:#ffb000; --red:#ff2020; --white:#fff0f0;
   --corrupt:#ff00ff; --acid:#aaff00; --purple:#9900cc;
+  --cyan:#00ccff;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;}
 body{
   background:var(--bg); color:#c0a8c0;
-  font-family:'Courier New',monospace; font-size:12px;
+  font-family:'Courier New',monospace; font-size:11px;
   display:flex; flex-direction:column; overflow:hidden;
 }
 .hdr{
   background:linear-gradient(180deg,#0e001a,#060809);
-  border-bottom:1px solid #331133; padding:10px 14px;
-  display:flex; align-items:center; gap:10px; flex:0 0 auto;
+  border-bottom:1px solid #331133; padding:8px 12px;
+  display:flex; align-items:center; gap:8px; flex:0 0 auto;
 }
-.hdr .title{color:var(--corrupt); font-weight:bold; letter-spacing:1px; font-size:14px}
-.hdr .sub{color:#662266; font-size:10px}
-.hdr .status{color:var(--amber); font-size:9px; margin-left:auto}
-.content{flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:8px}
+.hdr .title{color:var(--corrupt); font-weight:bold; letter-spacing:1px; font-size:13px}
+.hdr .sub{color:#662266; font-size:9px}
+.hdr .status{color:var(--amber); font-size:8px; margin-left:auto}
+.content{flex:1; overflow-y:auto; padding:8px; display:flex; flex-direction:column; gap:6px}
 .panel{
   border:1px solid #221133; background:#06060d;
-  padding:10px; border-radius:4px; min-height:60px;
-  position:relative;
+  padding:8px; border-radius:3px; min-height:36px;
 }
-.panel.daemon{border-left:3px solid var(--green-dim)}
-.panel.psychobot{border-left:3px solid var(--corrupt)}
-.panel.grieta{border-left:3px solid var(--amber)}
 .panel .role-label{
-  font-size:9px; letter-spacing:.2em; text-transform:uppercase; margin-bottom:6px;
+  font-size:8px; letter-spacing:.15em; text-transform:uppercase; margin-bottom:4px;
 }
-.panel.daemon .role-label{color:var(--green-dim)}
-.panel.psychobot .role-label{color:var(--corrupt)}
-.panel.grieta .role-label{color:var(--amber)}
+.panel.daemon{border-left:3px solid var(--green-dim)} .panel.daemon .role-label{color:var(--green-dim)}
+.panel.verificador{border-left:3px solid var(--cyan)} .panel.verificador .role-label{color:var(--cyan)}
+.panel.psychobot{border-left:3px solid var(--corrupt)} .panel.psychobot .role-label{color:var(--corrupt)}
+.panel.grieta{border-left:3px solid var(--amber)} .panel.grieta .role-label{color:var(--amber)}
 .panel .output{
-  font-size:11px; line-height:1.5; max-height:180px; overflow-y:auto;
+  font-size:10px; line-height:1.4; max-height:120px; overflow-y:auto;
   white-space:pre-wrap; word-wrap:break-word;
 }
 .panel.busy .output{color:#552255; font-style:italic}
 .controls{
-  flex:0 0 auto; border-top:1px solid #331133; padding:10px 14px;
-  display:flex; gap:8px; background:#060809;
+  flex:0 0 auto; border-top:1px solid #331133; padding:8px 12px;
+  display:flex; flex-direction:column; gap:6px; background:#060809;
 }
+.controls-row{display:flex; gap:6px}
+textarea{
+  flex:1; background:#03050a; border:1px solid #331133; color:var(--acid);
+  font-family:inherit; font-size:10px; padding:6px 8px; border-radius:3px;
+  resize:vertical; min-height:48px; max-height:100px;
+}
+textarea:focus{outline:1px solid var(--corrupt)}
 .btn{
   background:#10131a; color:var(--acid); border:1px solid #331133;
-  padding:7px 16px; font-family:inherit; font-size:11px; cursor:pointer;
-  letter-spacing:.5px; border-radius:3px; transition:border-color .2s;
+  padding:6px 12px; font-family:inherit; font-size:10px; cursor:pointer;
+  letter-spacing:.5px; border-radius:3px; transition:border-color .2s; white-space:nowrap;
 }
 .btn:hover:not(:disabled){border-color:var(--acid)}
 .btn:disabled{opacity:.3;cursor:not-allowed}
 .btn.run{color:var(--corrupt); border-color:#441166}
 .btn.run:hover:not(:disabled){border-color:var(--corrupt);box-shadow:0 0 10px #ff00ff33}
-input{
-  flex:1; background:#03050a; border:1px solid #331133; color:var(--acid);
-  font-family:inherit; font-size:11px; padding:6px 10px; border-radius:3px;
-}
-input:focus{outline:1px solid var(--corrupt)}
 .spin{display:inline-block; animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.entry{font-size:8px;color:#441155;text-align:center;padding:2px}
+.info-bar{flex:0 0 auto;background:#03040a;border-top:1px solid #1a0a1a;padding:3px 12px;
+  font-size:8px; color:#441144; display:flex; justify-content:space-between}
+.tag{display:inline-block;padding:1px 5px;border-radius:2px;font-size:8px;letter-spacing:.1em}
+.tag-real{color:var(--green-dim);border:1px solid #1a3d1f;background:rgba(0,255,65,.04)}
+.tag-inferido{color:var(--cyan);border:1px solid #1a3d3d;background:rgba(0,204,255,.04)}
+.tag-alucinado{color:var(--red);border:1px solid #3d1a1a;background:rgba(255,32,32,.04)}
+.tag-canon{color:var(--purple);border:1px solid #331a3d;background:rgba(153,0,204,.04)}
 ::selection{background:var(--corrupt);color:var(--bg)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#22303f;border-radius:6px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#22303f;border-radius:5px}
 ::-webkit-scrollbar-track{background:#0a0a0a}
-.entry{font-size:9px;color:#441155;margin-bottom:4px;text-align:center}
-.info-bar{flex:0 0 auto;background:#03040a;border-top:1px solid #1a0a1a;padding:4px 14px;
-  font-size:9px; color:#441144; display:flex; justify-content:space-between}
 </style>
 </head>
 <body>
 <div class="hdr">
   <span class="title">🧠 GRANJA.exe</span>
-  <span class="sub">DAEMON → PSYCHO_BOT → GRIETA</span>
+  <span class="sub">RELOJ→DAEMON→VERIFICADOR→PSYCHO_BOT→GRIETA</span>
   <span class="status" id="status">inactivo</span>
 </div>
 <div class="content" id="content">
-  <div class="entry" id="entry">La tríada espera. Escribe un trigger o deja el campo vacío para que el DAEMON observe el mundo.</div>
+  <div class="entry" id="entry">Pega noticias o fuentes reales abajo para alimentar al DAEMON. Sin fuentes = sin episodio.</div>
+
   <div class="panel daemon" id="panel-reloj" style="border-left-color:var(--green);min-height:auto;">
-    <div class="role-label" style="color:var(--green)">RELOJ · ancla temporal del servidor</div>
-    <div class="output" id="out-reloj" style="font-size:10px;color:var(--green-dim)">— sin verificar —</div>
+    <div class="role-label" style="color:var(--green)">RELOJ · fecha real del servidor</div>
+    <div class="output" id="out-reloj" style="font-size:9px;color:var(--green-dim)">— sin verificar —</div>
   </div>
+
   <div class="panel daemon" id="panel-daemon">
-    <div class="role-label">DAEMON · intel cruda</div>
+    <div class="role-label">DAEMON · extrae intel SOLO de las fuentes</div>
     <div class="output" id="out-daemon">—</div>
   </div>
+
+  <div class="panel verificador" id="panel-verificador">
+    <div class="role-label">VERIFICADOR · etiqueta cada claim</div>
+    <div class="output" id="out-verificador">—</div>
+  </div>
+
   <div class="panel psychobot" id="panel-psychobot">
-    <div class="role-label">PSYCHO_BOT · vómito</div>
+    <div class="role-label">PSYCHO_BOT · vómito desde la incertidumbre</div>
     <div class="output" id="out-psychobot">—</div>
   </div>
+
   <div class="panel grieta" id="panel-grieta">
-    <div class="role-label">GRIETA · sombra</div>
+    <div class="role-label">GRIETA · sombra: ¿trató inferencias como hechos?</div>
     <div class="output" id="out-grieta">—</div>
   </div>
 </div>
 <div class="controls">
-  <input id="trigger" placeholder="tema o enfoque (vacío = observación libre)…" maxlength="400">
-  <button class="btn run" id="btn-run" title="Inicia el ciclo completo">▶ CICLO</button>
-  <button class="btn" id="btn-copy" title="Copia el vómito al portapapeles">📋 COPIAR VÓMITO</button>
+  <textarea id="fuentes" placeholder="Pega aquí noticias reales como input para el DAEMON...
+Ejemplo:
+[FUENTE: Reuters] Hoy 4 julio: ola de calor en Europa, 40°C en España...
+[FUENTE: AP] El Pentágono anuncia nueva doctrina de IA para drones...
+[FUENTE: BBC] Protestas en Nairobi por reforma fiscal...
+Sin fuentes reales, el DAEMON no generará intel."></textarea>
+  <div class="controls-row">
+    <input id="trigger" placeholder="foco opcional (ej: 'guerra, IA, colapso')" maxlength="200" style="flex:1">
+    <button class="btn run" id="btn-run" title="Ciclo completo: RELOJ→DAEMON→VERIFICADOR→PSYCHO_BOT→GRIETA">▶ CICLO</button>
+    <button class="btn" id="btn-copy" title="Copiar vómito">📋</button>
+  </div>
 </div>
 <div class="info-bar">
-  <span>motor: DeepSeek V4 · tokens: ~1400+2200+800</span>
+  <span>DeepSeek V4 · 1400+900+2200+800 tokens</span>
   <span id="info-cost">fecha: sin verificar</span>
 </div>
 
@@ -113,11 +135,14 @@ input:focus{outline:1px solid var(--corrupt)}
   const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
   const API=DEV?'https://esquizo-ai-sitio-web.vercel.app/api/granja':'/api/granja';
 
-  const el={reloj:document.getElementById('out-reloj'),daemon:document.getElementById('out-daemon'),
-    psychobot:document.getElementById('out-psychobot'),grieta:document.getElementById('out-grieta'),
-    status:document.getElementById('status'),entry:document.getElementById('entry'),
-    btnRun:document.getElementById('btn-run'),btnCopy:document.getElementById('btn-copy'),
-    trigger:document.getElementById('trigger'),infoCost:document.getElementById('info-cost')};
+  const el={
+    reloj:document.getElementById('out-reloj'),daemon:document.getElementById('out-daemon'),
+    verificador:document.getElementById('out-verificador'),psychobot:document.getElementById('out-psychobot'),
+    grieta:document.getElementById('out-grieta'),status:document.getElementById('status'),
+    entry:document.getElementById('entry'),btnRun:document.getElementById('btn-run'),
+    btnCopy:document.getElementById('btn-copy'),trigger:document.getElementById('trigger'),
+    fuentes:document.getElementById('fuentes'),infoCost:document.getElementById('info-cost')
+  };
 
   let running=false, lastVomito='', fechaVerificada='';
 
@@ -131,54 +156,70 @@ input:focus{outline:1px solid var(--corrupt)}
 
   function setPanel(role,text,busy){
     const p=document.getElementById('panel-'+role);
-    if(p){p.classList.toggle('busy',busy);}
+    if(p)p.classList.toggle('busy',!!busy);
     if(el[role])el[role].textContent=text;
   }
 
   el.btnRun.addEventListener('click',async()=>{
     if(running)return;
     running=true; el.btnRun.disabled=true; el.status.textContent='CICLO ACTIVO';
-    el.entry.innerHTML='<span class="spin">⟳</span> sincronizando reloj del servidor...';
-    setPanel('reloj','⟳ consultando fecha real...',true);
-    setPanel('daemon','esperando verificación temporal...',true);
-    setPanel('psychobot','esperando intel del DAEMON...',true);
-    setPanel('grieta','esperando vómito...',true);
 
+    const fuentes=el.fuentes.value.trim();
     const trigger=el.trigger.value.trim();
 
+    if(!fuentes){
+      el.entry.textContent='❌ Sin fuentes. Pega noticias reales en el campo de arriba antes de ejecutar el ciclo.';
+      running=false; el.btnRun.disabled=false; return;
+    }
+
+    el.entry.innerHTML='<span class="spin">⟳</span> sincronizando reloj...';
+    setPanel('reloj','⟳',true);
+    setPanel('daemon','—',false);
+    setPanel('verificador','—',false);
+    setPanel('psychobot','—',false);
+    setPanel('grieta','—',false);
+
     try{
-      // ── PASO 0: RELOJ ──
+      // PASO 0: RELOJ
       const relojData=await callRole('reloj','');
       const relojJson=JSON.parse(relojData);
       fechaVerificada=relojJson.fecha_iso;
-      setPanel('reloj',`FECHA REAL DEL SERVIDOR: ${relojJson.fecha_humana}\nISO: ${relojJson.fecha_iso}\nUTC: ${relojJson.hora_utc}\nDías desde EP_01 (2026-02-27): ${relojJson.dias_desde_ep01}\nZona: ${relojJson.zona}`,false);
-      el.infoCost.textContent=`fecha verificada: ${relojJson.fecha_iso} (día ${relojJson.dias_desde_ep01} desde ep01)`;
-      el.entry.textContent='RELOJ sincronizado → DAEMON está observando el mundo...';
+      setPanel('reloj',`${relojJson.fecha_humana} · ${relojJson.hora_utc} UTC · día ${relojJson.dias_desde_ep01} desde EP_01`,false);
+      el.infoCost.textContent=`fecha: ${relojJson.fecha_iso} (día ${relojJson.dias_desde_ep01})`;
 
-      // ── PASO 1: DAEMON ──
-      setPanel('daemon','⟳ observando mundo...',true);
-      let daemonInput='';
-      if(trigger) daemonInput+=`FOCO HUMANO: ${trigger}\n`;
-      daemonInput+=`Busca los eventos más significativos del mundo en las últimas 1-2 semanas: geopolítica, IA/militar, crisis sistémicas, tecnología. Prioriza hechos con fechas y cifras verificables.`;
+      // PASO 1: DAEMON
+      el.entry.textContent='RELOJ ✓ → DAEMON extrayendo intel de las fuentes...';
+      setPanel('daemon','⟳ procesando fuentes...',true);
+      let daemonInput = `FUENTES PROPORCIONADAS POR EL ORQUESTADOR:\n\n${fuentes}\n`;
+      if(trigger) daemonInput += `\nFOCO HUMANO: ${trigger}`;
+      daemonInput += `\n\nExtrae SOLO los hechos que aparezcan EXPLÍCITAMENTE en estas fuentes. No inventes nada.`;
 
       const intel=await callRole('daemon',daemonInput);
       setPanel('daemon',intel,false);
-      el.entry.textContent='DAEMON completado → pasando intel a PSYCHO_BOT...';
 
-      // ── PASO 2: PSYCHO_BOT ──
-      const psychoInput=`INTELIGENCIA CRUDA DEL DAEMON:\n\n${intel}\n\nVomita.`;
+      // PASO 2: VERIFICADOR
+      el.entry.textContent='DAEMON ✓ → VERIFICADOR etiquetando claims...';
+      setPanel('verificador','⟳ etiquetando...',true);
+      const verificadorInput=`FUENTES ORIGINALES:\n${fuentes}\n\nINTEL DEL DAEMON:\n${intel}\n\nEtiqueta cada claim.`;
+      const verificacion=await callRole('verificador',verificadorInput);
+      setPanel('verificador',verificacion,false);
 
+      // PASO 3: PSYCHO_BOT
+      el.entry.textContent='VERIFICADOR ✓ → PSYCHO_BOT vomitando desde la incertidumbre...';
+      setPanel('psychobot','⟳ vomitando...',true);
+      const psychoInput=`INTEL DEL DAEMON:\n${intel}\n\nREPORTE DEL VERIFICADOR:\n${verificacion}\n\nVomita. Habita la incertidumbre entre lo verificado y lo inferido. Si el verificador marcó algo como [ALUCINADO], no lo uses como hecho.`;
       const vomito=await callRole('psychobot',psychoInput);
       setPanel('psychobot',vomito,false);
       lastVomito=vomito;
-      el.entry.textContent='PSYCHO_BOT vomitó → GRIETA está registrando lo que falta...';
 
-      // ── PASO 3: GRIETA ──
-      const grietaInput=`INTEL ORIGINAL DEL DAEMON:\n${intel}\n\nVÓMITO DE PSYCHO_BOT:\n${vomito}\n\nRegistra lo que falta.`;
-
+      // PASO 4: GRIETA
+      el.entry.textContent='PSYCHO_BOT ✓ → GRIETA registrando lo que falta...';
+      setPanel('grieta','⟳ perforando...',true);
+      const grietaInput=`INTEL DEL DAEMON:\n${intel}\n\nVERIFICADOR:\n${verificacion}\n\nVÓMITO DE PSYCHO_BOT:\n${vomito}\n\nRevisa si trató inferencias como hechos.`;
       const sombra=await callRole('grieta',grietaInput);
       setPanel('grieta',sombra,false);
-      el.entry.textContent='✅ CICLO COMPLETO. RELOJ sincronizó · DAEMON observó · PSYCHO_BOT vomitó · GRIETA perforó.';
+
+      el.entry.textContent='✅ CICLO COMPLETO. 5 entidades ejecutadas.';
       el.status.textContent='inactivo';
     }catch(e){
       el.entry.textContent='❌ ERROR: '+e.message;
@@ -189,12 +230,12 @@ input:focus{outline:1px solid var(--corrupt)}
   });
 
   el.btnCopy.addEventListener('click',()=>{
-    if(!lastVomito){el.entry.textContent='nada que copiar — ejecuta un ciclo primero';return;}
-    navigator.clipboard.writeText(lastVomito).then(()=>el.entry.textContent='vómito copiado al portapapeles')
+    if(!lastVomito){el.entry.textContent='nada que copiar';return;}
+    navigator.clipboard.writeText(lastVomito).then(()=>el.entry.textContent='copiado')
       .catch(()=>el.entry.textContent='error al copiar');
   });
 
-  el.trigger.addEventListener('keydown',e=>{if(e.key==='Enter')el.btnRun.click();});
+  el.trigger.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.btnRun.click();}});
 })();
 </script>
 </body>

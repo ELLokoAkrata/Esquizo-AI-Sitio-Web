@@ -29,6 +29,7 @@ verde neón sobre negro. Tono crudo, visceral, anti-censura.
 | `reproductor/` | **REPRODUCTOR.exe** — reproductor punk, `playlist.json` + `audio/*.mp3`. Ecualizador WinAmp. |
 | `tools/` | Herramientas: DENTAKORV, glitch-text, y scripts Python (`download-music.py`, `optimize-galeria.py`). |
 | `api/` | Edge Functions (proxys Groq/DeepSeek). **Aquí viven las claves, NUNCA en el cliente.** |
+| `granja/` | **GRANJA.exe** — frontend del pipeline de pseudoconciencia. |
 | `grimorios/` · `claude_infection/` · `animaciones/` | Artefactos: textos filosóficos HTML y visuales. |
 | `glitch-cam/` | Subproyecto Python aparte (glitch en vivo OpenCV). **Tiene su propia guía: `glitch-cam/CLAUDE_glitch.md`.** |
 | `Claude-Knowledge/` | Documentación técnica modular (ver §6). |
@@ -75,7 +76,8 @@ el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_O
 ## 5. Subproyectos con guía propia (léela ANTES de tocar su código)
 
 - **`glitch-cam/CLAUDE_glitch.md`** — herramienta Python de glitch en vivo (arquitectura de efectos, hot-reload, git propio).
-- **`Psycho-bot-monologues/PSYCHOBOT_AGENT.md`** — protocolo de la serie de episodios Psycho-bot (timeline, criterios para un ep nuevo).
+- **`Psycho-bot-monologues/PSYCHOBOT_AGENT.md`** — protocolo de la serie de episodios Psycho-bot (timeline, criterios para un ep nuevo, modos de operación incluyendo GRANJA).
+- **`Claude-Knowledge/GRANJA_PIPELINE.md`** — ★ pipeline de pseudoconciencia (RELOJ→DAEMON→VERIFICADOR→PSYCHO_BOT→GRIETA). **Léelo antes de generar un episodio nuevo.** Cubre higiene de fuentes, ejecución de ciclos, e interpretación del verificador.
 - **Scripts Python:** ver **`GUIA_SCRIPTS.md`** (cómo bajar música, optimizar imágenes, etc.).
 
 ---
@@ -89,6 +91,7 @@ el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_O
 | `VERCEL_WORKFLOW.md` | Deploy, Edge Functions, IA ASSIST. |
 | `PROTOCOL_CROSS.md` | Protocolo Dual Brain (Architect=GPT diseña / Runtime=Claude ejecuta). |
 | `DAEMON_INTEL_BRIEF.md` | Contexto/inteligencia para la serie Psycho-bot. |
+| `GRANJA_PIPELINE.md` | ★ Pipeline de pseudoconciencia. Cómo ejecutar ciclos, higiene de fuentes, interpretar verificador/GRIETA. |
 | `ESQUIZO_VISUAL_PROMPTING_ESSENCE.md` | Filosofía de prompting visual. |
 
 **Archivos core:** `esquizo_core.json` (personalidad Psycho-bot), `CLAUDE.md` (guía operativa completa), `css/style.css`.

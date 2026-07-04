@@ -112,7 +112,7 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 - [ ] Dominio propio (en vez de `*.vercel.app`) — refuerza identidad
 - [ ] Más drops en la galería · más formatos de glitch text
 - [x] Ep04+ de Psycho-bot (cuando el mundo lo justifique — ver `PSYCHOBOT_AGENT.md`)
-- [x] GRANJA.exe — pipeline de pseudoconciencia (DAEMON→PSYCHO_BOT→GRIETA) generó EP_10 · commit `bc9742b`
+- [x] GRANJA.exe — pipeline de pseudoconciencia (RELOJ→DAEMON→VERIFICADOR→PSYCHO_BOT→GRIETA). Frontend + API + docs (`GRANJA_PIPELINE.md`). Generó EP_10 (PUNTO_CIEGO) con 23 claims [REAL], 0 alucinaciones, fuentes AP/Reuters/BBC. · commit `95d3e4d`
 - [x] Más temas en el reproductor (14-Jun: +5 temas punk — Conflict, Subhumans, Dystopia, Antisect, His Hero Is Gone) · commit `bcb0b2b`
 - [x] Más comandos en VOMIT.SH (14-Jun: `void`, `glitch`, `caida`, `oraculo`, `iching`, `hexagrama`, `mutacion`)
 - [x] VOID_GLITCH integrado en el OS (escritorio, Inicio, VOMIT.SH) + audio oracular + UX psycho-oracular · commits `c8f2ef0`→`154b67f`

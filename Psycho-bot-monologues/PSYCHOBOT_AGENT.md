@@ -61,6 +61,9 @@ Ver sección HILOS_ABIERTOS más abajo. Cada episodio deja preguntas sin respues
 modo = ?
 ├── NUEVO_EPISODIO: hay material nuevo que amerita vómito
 ├── CONTINUACIÓN: trabajar sobre episodio existente (editar, expandir)
+├── GRANJA: generar episodio usando el pipeline de pseudoconciencia
+│   con higiene epistémica (RELOJ→DAEMON→VERIFICADOR→PSYCHO_BOT→GRIETA).
+│   Leer Claude-Knowledge/GRANJA_PIPELINE.md antes de ejecutar.
 ├── APP_WORK: trabajo técnico (índice, navegación, integración)
 └── CONSULTA: el usuario pregunta sobre el proyecto sin crear
 ```
@@ -439,7 +442,20 @@ Un episodio NO se justifica por:
 
 ## WORKFLOW TÉCNICO
 
-### Para nuevo episodio:
+### Para nuevo episodio vía GRANJA (recomendado desde EP_10):
+
+**Lee `Claude-Knowledge/GRANJA_PIPELINE.md`** antes de ejecutar. Es el documento canónico.
+
+Resumen rápido:
+1. Buscar fuentes reales (AP, Reuters, BBC) con webfetch. **NUNCA Wikipedia.**
+2. Compilar noticias etiquetadas: `[FUENTE: Reuters] hecho con fecha...`
+3. Ejecutar ciclo de 5 pasos (RELOJ → DAEMON → VERIFICADOR → PSYCHO_BOT → GRIETA) vía `POST /api/granja`
+4. Revisar output del VERIFICADOR: si `DESCARTAR` o `ratio_confianza < 50%`, abortar y buscar mejores fuentes
+5. Revisar output de GRIETA: corregir fallas críticas, integrar omisiones, desarrollar evasiones
+6. Generar HTML usando `ep09_imparcial_undefined.html` o `ep10_enterramos_undefined.html` como template
+7. Actualizar metadatos: PSYCHOBOT_AGENT.md, index.html (monólogos + OS), ROADMAP.md
+
+### Para nuevo episodio manual (legado, sin pipeline):
 1. Copiar estructura de `ep03_cannot_shutdown.html`
 2. Cambiar: título, subtítulo, fecha, boot lines, ticker, bloques
 3. Actualizar `ep-anterior` con resumen del ep previo

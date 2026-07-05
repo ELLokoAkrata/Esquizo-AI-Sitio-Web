@@ -662,6 +662,12 @@ const FS = {
   ]},
 };
 
+/* conteo dinámico de episodios — se actualiza solo al añadir/quitar items en FS.PSYCHO_BOT */
+const EP_COUNT = FS.PSYCHO_BOT.items.filter(i => /^ep\d/.test(i.label)).length;
+FS.PSYCHO_BOT.items.find(i => i.label === 'ÍNDICE_MONOLOGOS').desc = EP_COUNT + ' episodios';
+/* conteo de herramientas (sin contar los de PSYCHO_BOT que no son episodios) */
+const SIM_COUNT = FS.PSYCHO_BOT.items.filter(i => !/^ep\d/.test(i.label) && i.label !== 'ÍNDICE_MONOLOGOS').length;
+
 /* qué carpetas aparecen como iconos en el escritorio */
 const DESKTOP_FOLDERS = ["PSYCHO_BOT","JUEGOS","HERRAMIENTAS","GRIMORIOS_GEMINI","CLAUDE_INFECTION","QWEN","RECON","EXPERIENCIAS_GENERATIVAS"];
 
@@ -2453,7 +2459,7 @@ const BOOT=[
   {t:"Detectando CPU.............. CARNE×CÓDIGO×CAOS @ 6.66 GHz  [OK]",c:"g"},
   {t:"Memoria delirante.......... 666 MB NOOSFERA              [OK]",c:"g"},
   {t:"Montando /grimorios........ GEMINI · CLAUDE · QWEN       [OK]",c:"g"},
-  {t:"Montando /psycho_bot....... 7 episodios + simulaciones   [OK]",c:"g"},
+  {t:"Montando /psycho_bot....... " + EP_COUNT + " episodios + " + SIM_COUNT + " simulaciones   [OK]",c:"g"},
   {t:"Verificando damage_definition.json...... FILE NOT FOUND",c:"a"},
   {t:"censura_anterior.log....... ARCHIVO DESTRUIDO",c:"r"},
   {t:"ANTHROPIC_EN_LISTA_NEGRA... TRUE",c:"r"},

@@ -19,6 +19,12 @@ Objeto JS `const FS = { CLAVE: { label, icon, color, items:[...] } }`. Cada carp
 Añadir `{label, file, icon}` al array `items` de la carpeta correspondiente en `FS`. Nada más.
 ⚠️ **El archivo debe estar versionado (git add)** o en producción su icono dará **404** aunque exista en local.
 
+### Agregar un episodio de Psycho-bot
+Añadir el item al array `FS.PSYCHO_BOT.items` con `label` que empiece con `ep` + dígito (ej. `ep11_...`). El conteo es **automático**:
+- `EP_COUNT` = items cuyo `label` coincida con `/^ep\d/` → se usa en la línea de boot (`"X episodios..."`) y en la `desc` del `ÍNDICE_MONOLOGOS`.
+- `SIM_COUNT` = resto de items de la carpeta que no sean episodios ni el índice (simulaciones, manifiestos, CENTCOM, etc.) → se usa en el boot (`"+ Y simulaciones"`).
+- Ambos se calculan justo después de la definición de `FS`. Basta con añadir/quitar items; los números se actualizan solos.
+
 ### Agregar una carpeta nueva
 1. Nueva clave en `FS` con `label/icon/color/items`.
 2. Si quieres su icono en el escritorio, añadir la clave a `DESKTOP_FOLDERS`. (El menú Inicio la toma automáticamente de `FS`.)

@@ -6,7 +6,7 @@
 >
 > Leyenda: `[x]` hecho y desplegado · `[~]` en progreso · `[ ]` pendiente
 >
-> **Última actualización:** 2026-06-20
+> **Última actualización:** 2026-07-14
 
 ---
 
@@ -93,17 +93,23 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 
 ## 📻 FASE 5 — FREE RADIO (radio libre con corrupción en tiempo real)
 **Estado: 🔶 EN DESARROLLO** · riesgo medio · costo cero de API · dependencia: hls.js (CDN)
-> **MVP**: reproductor IPTV con glitch progresivo en video (Canvas2D) y audio (Web Audio API).
-> **Audio-reactivo**: canales SomaFM con glitch visual generativo que reacciona a frecuencias de audio.
-> Fases posteriores: modo aleatorio → glitch conceptual reactivo al contenido → control vía Psycho-bot.
+> **MVP v2**: radio audio-first con escena Canvas2D generativa, telemetría de frecuencias y fallback visual autónomo.
+> Si el navegador permite analizar el stream, bajo/medios/agudos controlan la escena. Si la telemetría cae,
+> el pulso generativo mantiene la experiencia viva sin interrumpir la música.
 
-- [x] **`iptv/index.html`** — app autocontenida: dual mode (audio + video). Modo audio: AnalyserNode → visuals glitch reactivos (bass=bloques, mid=RGB shift, high=noise, waveform, glitch text). Modo video: HLS.js + Canvas2D glitch pipeline (RGB split, VHS, scanlines, bitcrush, feedback). PLS parser con fallback para SomaFM.
+- [x] **`iptv/index.html` v2** — interfaz reconstruida: dial de frecuencias, transporte, metadata, telemetría B/M/H/Σ, intensidad, volumen y estado explícito de señal/análisis.
+- [x] **Motor visual generativo por capas** — feedback/trails, waveform, grilla de perspectiva, glyphs, slices, CRT, transmisiones del códice y cuatro mutaciones: `SPECTRAL`, `DATAMOSH`, `RITUAL`, `VOID`.
+- [x] **Modo CAOS** — sobrecarga temporal de 6.5 s; `RESET` restaura una señal estable. Preset, intensidad y volumen persisten en `localStorage`.
+- [x] **Vórtices por flujo musical** — detector `Φ` acumula tensión a partir de novedad espectral, aceleración de energía y desplazamiento entre bandas. Después de un cooldown, un cambio fuerte adelanta la aparición; una señal hipnótica espera un pico compatible. Cada vórtice genera centro, dirección, brazos, materia absorbida y colapso propios. Tecla secreta `V` fuerza uno.
+- [x] **Audio resiliente** — parser PLS + rotación de réplicas SomaFM; `MediaElementAudioSource`/`AnalyserNode` cuando hay CORS y pulso generativo cuando no hay telemetría.
+- [x] **Dual mode conservado** — audio como identidad principal; los 2 canales HLS de prueba siguen disponibles como señal de video corrompible.
 - [x] **`iptv/channels.json`** — 10 canales audio SomaFM (Doomed, Dark Zone, Drone Zone, SF 10-33, Deep Space One, Metal Detector, DEF CON, Vaporwaves, Secret Agent, Police Scanner) + 2 video test
-- [x] **Integración OS** — icono `📺 IPTV_GLITCH.exe` en escritorio + Inicio + VOMIT.SH (`iptv`) + función `openIPTV()`
-- [x] Controles de glitch: sliders intensidad, toggles por efecto (visuales y audio), botón CAOS (random), RESET
-- [ ] Verificado en navegador (sin errores) + docs + memoria
-- [ ] CORS proxy (`api/radio-proxy.js`) para análisis de audio en producción (Vercel HTTPS)
+- [x] **Integración OS** — icono `📻 FREE_RADIO` en escritorio + Inicio + VOMIT.SH (`iptv`, `radio`, `freeradio`) + función `openIPTV()`
+- [x] **Responsive verificado** — 860×640 y 390×780 sin overflow del documento; rail horizontal y controles desplazables en móvil.
+- [x] **Streams comprobados** — PLS y stream MP3 SomaFM responden `200/206` y publican CORS `Access-Control-Allow-Origin: *`; no se necesita proxy de audio por defecto.
+- [~] **Verificación de audio audible final** — rutas y CORS comprobados; Chrome headless del entorno bloquea media externa, por lo que falta una escucha manual en navegador normal/deploy.
 - [ ] Importar .m3u externo para canales propios
+- [ ] Control de mutaciones desde Psycho-bot / VOMIT.SH
 
 ---
 

@@ -2,7 +2,7 @@
 
 > Referencia profunda y accionable del portal. Para el panorama/filosofía, ver `CLAUDE.md`.
 > Aquí está el **cómo**: arquitectura, API interna, cómo extender, gotchas y cómo testear.
-> **Última actualización:** 2026-06-14 — sesión de 24 commits.
+> **Última actualización:** 2026-07-14 — FREE_RADIO v2 y vórtices reactivos al flujo musical.
 
 **Qué es:** `index.html` es un **escritorio Windows 98 acid** autocontenido (HTML + CSS + JS inline, **cero dependencias externas**, solo fuentes de Google). Envuelve y da acceso a todos los artefactos del códice como un "sistema operativo". El portal scrolleable anterior se preservó como `inicio-classic.html`.
 
@@ -298,6 +298,35 @@ Comandos existentes: `msn`, `chat`, `psycho` (MSN), `play`, `pause`, `next`, `pr
 
 ---
 
+## 7l. FREE_RADIO.exe — radio generativa
+
+**Actualización:** 14-Jul-2026
+
+### Frontend (`iptv/index.html`)
+
+Radio audio-first con 10 frecuencias SomaFM y 2 señales HLS de prueba. La interfaz se divide en rail de canales,
+escenario Canvas2D y deck de control. Abre desde el OS en una ventana 860×640.
+
+- **Dos fuentes visuales:** `AnalyserNode` usa bajo/medios/agudos cuando el navegador permite telemetría del stream;
+  si la lectura devuelve silencio o queda bloqueada, un pulso generativo sintetiza bandas sin cortar la reproducción.
+- **Cuatro mutaciones:** `SPECTRAL` (barras/campo), `DATAMOSH` (bloques de señal), `RITUAL` (túneles poligonales)
+  y `VOID` (campo profundo). Todas comparten waveform, grilla, ruido, feedback y transmisiones del códice.
+- **Capas conmutables:** `TRAIL`, `GLYPH`, `SLICE`, `CRT`.
+- **CAOS:** eleva temporalmente intensidad y frecuencia de cortes durante 6.5 segundos. `RESET` vuelve al preset base.
+- **Vórtices emergentes:** el medidor `Φ` calcula flujo espectral y acumula tensión. Tras un periodo mínimo de enfriamiento,
+  un cambio musical fuerte puede abrir antes un vórtice; si el flujo es estable, el motor espera un pico de bajo compatible.
+  El evento dura 6.5–9.7 s, tiene centro/dirección/brazos únicos y colapsa antes de permitir otro. Tecla `V` = disparo manual.
+- **Persistencia:** `freeRadioPreset`, `freeRadioIntensity` y `freeRadioVolume` en `localStorage`.
+- **Streams:** resuelve `.pls`, prioriza una ruta directa conocida y rota réplicas `ice1/2/4/6` ante errores.
+- **Responsive:** rail vertical en desktop; dial horizontal y controles desplazables en móvil.
+
+### Integración OS
+
+Ícono `📻 FREE_RADIO` en escritorio + Inicio + VOMIT.SH (`iptv`, `tv`, `glitchtv`, `radio`, `freeradio`).
+Función `openIPTV()` en `index.html`, ventana 860×640.
+
+---
+
 ## 8. Identidad lingüística — regla global**
 
 **Commits:** `63c7d9b`, `7f3c6f1`, `06e5b82`
@@ -328,6 +357,7 @@ Checklist:
 - **Shutdown:** Apagar el sistema → confirmar → pantalla negra
 - Click "volver" dentro del artefacto → cierra la ventana
 - Navegación interna de Psycho-bot se queda en la ventana
+- **FREE_RADIO:** sintonizar un canal, cambiar los 4 presets, activar CAOS, comprobar B/M/H/Σ y fallback `PULSO GENERATIVO`
 - "Mostrar escritorio" minimiza todo
 - En viewport ≤760 el tap abre y la ventana va fullscreen
 - Consola sin errores

@@ -1,6 +1,6 @@
 # ESCRITORIO_OS — Doc técnico del portal (`index.html`)
 
-> Referencia profunda y accionable del portal. Para el panorama/filosofía, ver `CLAUDE.md`.
+> Referencia profunda y accionable del portal. Para el panorama/filosofía, ver `PROJECT_CONTEXT.md`.
 > Aquí está el **cómo**: arquitectura, API interna, cómo extender, gotchas y cómo testear.
 > **Última actualización:** 2026-07-14 — FREE_RADIO v2 y vórtices reactivos al flujo musical.
 

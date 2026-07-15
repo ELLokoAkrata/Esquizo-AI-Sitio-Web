@@ -1,8 +1,8 @@
 # CLAUDE_glitch.md — Guía operativa de GLITCH.CAM
 
-> Sub-guía del proyecto `glitch-cam`. El `CLAUDE.md` de raíz referencia este archivo.
+> Sub-guía histórica del proyecto `glitch-cam`. `AGENTS.md` referencia este archivo.
 > Al trabajar dentro de `glitch-cam/`, esta es la guía principal. Para el contexto
-> general del proyecto EsquizoAI, ver el `CLAUDE.md` de raíz.
+> general del proyecto EsquizoAI, ver `PROJECT_CONTEXT.md` en la raíz.
 
 ---
 
@@ -77,7 +77,7 @@ Todo se tunea editando el número + `R`.
    + `import main` (resuelve el pipeline) + `hud.draw_hud` en banco A y B.
 3. **Presupuesto:** ≥30fps a 640×360 con el efecto solo. Si baja, cachear grids / bajar resolución interna.
 4. **Commit por efecto.** Estilo: `feat(glitch-cam): #N NOMBRE (banco·tecla)` + cuerpo con bullets.
-   Terminar el mensaje con `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>`.
+   No agregar firmas de modelos por defecto; si el creador quiere registrar procedencia, usar la autoría real.
 5. Actualizar `ROADMAP_EFECTOS_NUEVOS.md` (estado) y `README.md` cuando corresponda.
 
 ## 🔧 GIT (coexistencia con otra terminal)
@@ -100,4 +100,4 @@ Todo se tunea editando el número + `R`.
 
 ---
 
-*EsquizoAI — GLITCH.CAM · El Loko Akrata + Claude*
+*EsquizoAI — GLITCH.CAM · El Loko Akrata + colaboradores IA*

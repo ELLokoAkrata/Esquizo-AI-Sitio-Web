@@ -2,6 +2,10 @@
 
 ## Arquitectura Cerebro Dual para Esquizo-AI
 
+> **Vigencia:** la separación entre arquitectura y runtime sigue activa; la asignación histórica
+> GPT=Architect / Claude=Runtime no es obligatoria. Los roles se asignan por capacidades reales de la sesión.
+> El protocolo canónico actual es `Claude-Knowledge/PROTOCOL_CROSS.md`.
+
 El sistema **Dual Brain** es una arquitectura de separación cognitiva que divide el proceso de creación en dos cerebros especializados:
 
 ### 🧠 ARCHITECT BRAIN (Cerebro Arquitecto)

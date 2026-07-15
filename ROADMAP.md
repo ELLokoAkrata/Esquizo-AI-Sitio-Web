@@ -2,7 +2,8 @@
 
 > Tablero vivo del arco que convierte el códice en **organismo**: cuerpo (OS), voz (Psycho-bot),
 > memoria (grimorios/ops), sistema nervioso (proxies de IA). Se ejecuta **por fases, de menor a mayor riesgo**.
-> Aquí marcamos lo que ya está listo. Plan detallado: `~/.claude/plans/` · contexto: `CLAUDE.md`, `AGENTS.md`.
+> Aquí marcamos lo que ya está listo. Contexto: `AGENTS.md`, `PROJECT_CONTEXT.md` y `AGENT_MEMORY.md`.
+> Los planes privados de cualquier proveedor son temporales y no sustituyen este tablero.
 >
 > Leyenda: `[x]` hecho y desplegado · `[~]` en progreso · `[ ]` pendiente
 >
@@ -19,6 +20,7 @@
 - [x] **Glitch Text Generator** (15 formatos) · **DENTAKORV** · grimorios · Psycho-bot (8 eps) · RECON · GLITCH.CAM
 - [x] Renombre `TRABAJO_VISUAL` → **EXPERIENCIAS_GENERATIVAS** (no confundir con la galería)
 - [x] Docs de onboarding: **AGENTS.md** + **GUIA_SCRIPTS.md**
+- [x] **Continuidad neutral de agentes** — contexto, memoria, estado y protocolo versionados sin depender de un proveedor
 
 ---
 

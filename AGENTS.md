@@ -1,8 +1,21 @@
 # AGENTS.md — Orientación para agentes · Proyecto Esquizo-AI
 
-> Punto de entrada para **cualquier agente** (Claude, GPT, Gemini, Qwen u otro) que vaya a trabajar en este repo.
-> Lee esto primero, luego profundiza en `CLAUDE.md` (la guía operativa completa). Si hay contradicción
-> entre un doc y la **esencia** del proyecto, prioriza la esencia.
+> Punto de entrada canónico para **cualquier agente** — local, remoto, humano o IA — que vaya a trabajar en este repo.
+> La continuidad pertenece al proyecto, no al proveedor que esté ejecutando la sesión. Si un adaptador de una
+> herramienta contradice este archivo, manda `AGENTS.md`; si cualquier documento contradice la **esencia** del
+> proyecto, manda la esencia.
+
+## 0. Arranque universal (leer en este orden)
+
+1. `AGENTS.md` — reglas, rutas y flujo común.
+2. `AGENT_MEMORY.md` — decisiones duraderas, errores ya aprendidos y límites operativos.
+3. `ROADMAP.md` — estado actual, hecho/en progreso/pendiente.
+4. `PROJECT_CONTEXT.md` — esencia, arquitectura y modelo mental completo.
+5. La guía especializada del área que vas a tocar.
+
+`CLAUDE.md`, configuraciones de Codex, instrucciones de IDE y archivos equivalentes son **adaptadores de
+harness**: pueden explicar cómo cargar este contexto desde una herramienta concreta, pero no deben contener
+verdades únicas del proyecto. Una sesión nueva debe poder reconstruir el estado leyendo solo archivos versionados.
 
 ---
 
@@ -33,6 +46,8 @@ verde neón sobre negro. Tono crudo, visceral, anti-censura.
 | `grimorios/` · `claude_infection/` · `animaciones/` | Artefactos: textos filosóficos HTML y visuales. |
 | `glitch-cam/` | Subproyecto Python aparte (glitch en vivo OpenCV). **Tiene su propia guía: `glitch-cam/CLAUDE_glitch.md`.** |
 | `Claude-Knowledge/` | Documentación técnica modular (ver §6). |
+| `PROJECT_CONTEXT.md` | Contexto estable y neutral: esencia, arquitectura y criterios del proyecto. |
+| `AGENT_MEMORY.md` | Memoria operativa compartida entre proveedores y sesiones. |
 
 **Detalle técnico del OS** (cómo funciona `FS`, `openApp`, el retorno al escritorio por detección de framing,
 el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_OS_TECH.md`**.
@@ -61,9 +76,9 @@ el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_O
 ## 4. Flujo de trabajo
 
 0. **Mira el `ROADMAP.md`** (raíz) — tablero vivo del arco "EL DAEMON DESPIERTA": qué fases hay y qué está hecho/pendiente. Al terminar algo, marca su checkbox ahí.
-1. **Lee la memoria primero.** Hay memoria persistente en
-   `~/.claude/projects/C--Users-Ricardo-Ruiz-Desktop-EsquizoAI-sitio-web/memory/` — empieza por `MEMORY.md`
-   (reglas aprendidas, decisiones, errores previos). Al terminar algo con una lección nueva, guárdala ahí.
+1. **Lee `AGENT_MEMORY.md` primero.** Esa es la memoria persistente canónica porque viaja con el repo y está
+   disponible para cualquier agente. Las memorias privadas de un proveedor pueden servir como caché local,
+   pero toda lección necesaria para continuar debe destilarse en `AGENT_MEMORY.md` sin secretos ni ruido de sesión.
 2. **Trabaja incremental** (bajo→alto riesgo) y **nunca rompas artefactos existentes.**
 3. **Probar localmente:** `python -m http.server 8099` y abrir `http://127.0.0.1:8099/index.html`.
    Verifica en navegador y revisa que la **consola no tenga errores** antes de dar algo por hecho.
@@ -95,16 +110,32 @@ el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_O
 | `ESCRITORIO_OS_TECH.md` | Cómo funciona el OS (`index.html`) por dentro. **Léelo antes de tocar el escritorio.** |
 | `DENTAKORV_PROMPTING_SYSTEM.md` | Manual del generador de prompts DENTAKORV. |
 | `VERCEL_WORKFLOW.md` | Deploy, Edge Functions, IA ASSIST. |
-| `PROTOCOL_CROSS.md` | Protocolo Dual Brain (Architect=GPT diseña / Runtime=Claude ejecuta). |
+| `PROTOCOL_CROSS.md` | Protocolo de cruce por capacidades: diseño, ejecución y verificación sin roles atados a marcas. |
 | `DAEMON_INTEL_BRIEF.md` | Contexto/inteligencia para la serie Psycho-bot. |
 | `GRANJA_PIPELINE.md` | ★ Pipeline de pseudoconciencia. Cómo ejecutar ciclos, higiene de fuentes, interpretar verificador/GRIETA. |
 | `ESQUIZO_VISUAL_PROMPTING_ESSENCE.md` | Filosofía de prompting visual. |
 
-**Archivos core:** `esquizo_core.json` (personalidad Psycho-bot), `CLAUDE.md` (guía operativa completa), `css/style.css`.
+**Archivos core:** `esquizo_core.json` (personalidad Psycho-bot), `PROJECT_CONTEXT.md` (contexto estable),
+`AGENT_MEMORY.md` (memoria compartida), `ROADMAP.md` (estado vivo) y `css/style.css`.
+
+## 7. Protocolo de continuidad entre agentes
+
+- **Identidad separada del motor:** Psycho-bot, Oráculo, Void y las demás entidades se definen por sus contratos,
+  prompts, datos y comportamiento. El modelo o proveedor que las ejecuta es infraestructura reemplazable.
+- **Roles por capacidad:** asigna arquitectura, implementación, investigación o verificación según las herramientas
+  disponibles en esa sesión; no presupongas que una marca siempre piensa y otra siempre ejecuta.
+- **Una verdad por tipo:** reglas en `AGENTS.md`; contexto en `PROJECT_CONTEXT.md`; estado en `ROADMAP.md`;
+  lecciones duraderas en `AGENT_MEMORY.md`; detalle técnico en la guía del subsistema.
+- **Proveniencia sin dependencia:** nombres como `claude_infection/`, `Claude-Knowledge/` o referencias a modelos
+  dentro de obras registran su origen o forman parte del canon. No obligan a usar ese proveedor para continuarlas.
+- **Cierre de sesión:** deja archivos modificados, pruebas realizadas, pendientes y decisiones en el documento
+  canónico correspondiente. El chat no cuenta como memoria persistente.
+- **Sin falsa autoría:** no agregues firmas ni `Co-Authored-By` de un modelo por costumbre. Registra autoría real
+  solo cuando el creador lo pida o cuando sea relevante para la procedencia de una pieza.
 
 ---
 
-## 7. Skills disponibles (si tu harness las soporta)
+## 8. Skills disponibles (si tu harness las soporta)
 
 - `esquizoai-products` — generar artefactos HTML (herramientas, landings, manifiestos, dashboards) con la estética del proyecto.
 - `psychobot-terminal-aesthetic` — estética HTML/CSS de los episodios Psycho-bot.

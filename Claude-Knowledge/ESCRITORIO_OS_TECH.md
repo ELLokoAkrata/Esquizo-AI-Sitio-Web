@@ -316,6 +316,12 @@ escenario Canvas2D y deck de control. Abre desde el OS en una ventana 860×640.
 - **Vórtices emergentes:** el medidor `Φ` calcula flujo espectral y acumula tensión. Tras un periodo mínimo de enfriamiento,
   un cambio musical fuerte puede abrir antes un vórtice; si el flujo es estable, el motor espera un pico de bajo compatible.
   El evento dura 6.5–9.7 s, tiene centro/dirección/brazos únicos y colapsa antes de permitir otro. Tecla `V` = disparo manual.
+- **ADN por frecuencia:** cada entrada de `iptv/channels.json` incluye escena, paleta, glifos, barrido de sintonización y
+  frases propias. Cambiar de estación dispara una ráfaga Web Audio sintetizada y transpone la geometría sin reemplazar
+  el preset seleccionado. Estas escenas consumen las mismas bandas reales o sintéticas del motor principal. Vaporwaves
+  usa una composición estable: ordenador CRT a la izquierda, sol VHS fijo en el horizonte y TV analógica a la derecha.
+  Las frases específicas dejan de flotar sobre la escena y se alternan dentro de ambas pantallas. Sus vórtices se fijan
+  en el centro del sol y se dibujan detrás de los aparatos; las demás emisoras conservan centros impredecibles.
 - **Persistencia:** `freeRadioPreset`, `freeRadioIntensity` y `freeRadioVolume` en `localStorage`.
 - **Streams:** resuelve `.pls`, prioriza una ruta directa conocida y rota réplicas `ice1/2/4/6` ante errores.
 - **Responsive:** rail vertical en desktop; dial horizontal y controles desplazables en móvil.

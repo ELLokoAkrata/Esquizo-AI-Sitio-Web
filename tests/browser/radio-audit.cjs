@@ -74,6 +74,10 @@ async function inspectDesktop(page) {
       channels: document.querySelectorAll('.channel').length,
       presets: document.querySelectorAll('[data-preset]').length,
       effects: document.querySelectorAll('[data-fx]').length,
+      stationScenes: new Set([...document.querySelectorAll('.channel')].map((channel) => channel.dataset.scene)).size,
+      phraseBanks: [...document.querySelectorAll('.channel')].filter((channel) => Number(channel.dataset.phraseBank) >= 4).length,
+      analysisMode: document.querySelector('#analysisBadge').textContent,
+      fallbackEnergy: Number(document.querySelector('#valEnergy').textContent),
       canvasWidth: canvas.width,
       canvasHeight: canvas.height,
       overflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
@@ -87,6 +91,9 @@ async function inspectDesktop(page) {
   check('Catálogo de frecuencias disponible', initial.channels >= 12, `${initial.channels} canales`);
   check('Cuatro presets disponibles', initial.presets === 4, `${initial.presets} presets`);
   check('Cuatro capas visuales disponibles', initial.effects === 4, `${initial.effects} capas`);
+  check('Cada frecuencia declara una escena propia', initial.stationScenes === initial.channels, `${initial.stationScenes} escenas únicas`);
+  check('Cada frecuencia declara frases propias', initial.phraseBanks === initial.channels, `${initial.phraseBanks}/${initial.channels} bancos`);
+  check('Fallback generativo sigue activo sin telemetría', initial.analysisMode === 'PULSO GENERATIVO' && initial.fallbackEnergy > 0, `${initial.analysisMode} / Σ ${initial.fallbackEnergy}`);
   check('Canvas conserva resolución interna', initial.canvasWidth === 960 && initial.canvasHeight === 540, `${initial.canvasWidth}×${initial.canvasHeight}`);
   check('Sin overflow horizontal en escritorio', initial.overflow <= 1, `${initial.overflow}px`);
   check('Aplicación cabe en el viewport', initial.radioWidth <= initial.viewportWidth + 1, `${initial.radioWidth}/${initial.viewportWidth}px`);
@@ -104,10 +111,63 @@ async function inspectDesktop(page) {
   report.observations.desktop.framesIn1200ms = frameCount;
   check('Motor generativo continúa animando', frameCount >= 20, `${frameCount} frames/1.2s`);
 
+  await page.evaluate(() => {
+    window.__freeRadioTuningEvents = [];
+    window.addEventListener('free-radio:tuning', (event) => window.__freeRadioTuningEvents.push(event.detail));
+  });
   await page.click('.channel');
   await sleep(650);
-  const tuned = await page.$eval('#stageName', (element) => element.textContent.trim());
+  const firstStation = await page.evaluate(() => ({
+    tuned: document.querySelector('#stageName').textContent.trim(),
+    scene: document.querySelector('#stage').dataset.stationScene,
+    palette: getComputedStyle(document.querySelector('#stage')).getPropertyValue('--station-a').trim(),
+    tuningBurst: Number(document.querySelector('#stage').dataset.tuningBurst || 0)
+  }));
+  const tuned = firstStation.tuned;
   check('Una frecuencia puede sintonizarse', tuned && tuned !== 'SEÑALCORRUPTA', tuned.replace(/\s+/g, ' '));
+
+  await page.click('.channel:nth-of-type(3)');
+  await page.waitForFunction(() => document.querySelector('#stage').dataset.transmissionSource === 'station', { timeout: 3000 });
+  await page.waitForFunction(() => document.querySelector('#txText').textContent.length >= 6, { timeout: 3000 });
+  const secondStation = await page.evaluate(async () => {
+    const activeId = document.querySelector('.channel.active').dataset.id;
+    const channelList = await fetch('channels.json', { cache: 'no-store' }).then((response) => response.json());
+    const activeChannel = channelList.find((channel) => channel.id === activeId);
+    return {
+      id: activeId,
+      scene: document.querySelector('#stage').dataset.stationScene,
+      palette: getComputedStyle(document.querySelector('#stage')).getPropertyValue('--station-a').trim(),
+      tuningBurst: Number(document.querySelector('#stage').dataset.tuningBurst || 0),
+      tuningEvents: window.__freeRadioTuningEvents,
+      transmission: document.querySelector('#txText').textContent,
+      phrases: activeChannel.visual.phrases
+    };
+  });
+  check('Cambiar de estación dispara sonido de sintonización', secondStation.tuningBurst === firstStation.tuningBurst + 1 && secondStation.tuningEvents.length === 2, `${secondStation.tuningEvents.length} ráfagas Web Audio`);
+  check('Cambiar de estación transmuta la escena', secondStation.scene !== firstStation.scene && secondStation.palette !== firstStation.palette, `${firstStation.scene} → ${secondStation.scene}`);
+  check('La transmisión usa frases de la estación activa', secondStation.phrases.some((phrase) => phrase.startsWith(secondStation.transmission)), secondStation.transmission);
+
+  await page.click('.channel[data-id="vaporwaves"]');
+  await page.waitForFunction(() => document.querySelector('#stage').dataset.vaporLayout === 'CRT_LEFT + SUN_HORIZON + TV_RIGHT', { timeout: 3000 });
+  await sleep(900);
+  const vaporLayout = await page.evaluate(async () => {
+    const stage = document.querySelector('#stage');
+    const channelList = await fetch('channels.json', { cache: 'no-store' }).then((response) => response.json());
+    const phrases = channelList.find((channel) => channel.id === 'vaporwaves').visual.phrases;
+    return {
+      anchor: stage.dataset.vaporAnchor,
+      layout: stage.dataset.vaporLayout,
+      copyMode: stage.dataset.vaporCopy,
+      leftCopy: stage.dataset.vaporLeftCopy,
+      rightCopy: stage.dataset.vaporRightCopy,
+      bottomCopyOpacity: getComputedStyle(document.querySelector('#txText')).opacity,
+      phrases
+    };
+  });
+  await page.screenshot({ path: path.join(SCREENSHOTS, 'free-radio-vapor-composition.png') });
+  check('Vaporwaves fija el sol en el horizonte', vaporLayout.anchor === '50% 58%', vaporLayout.anchor);
+  check('Vaporwaves ordena ordenador, sol y TV', vaporLayout.layout === 'CRT_LEFT + SUN_HORIZON + TV_RIGHT', vaporLayout.layout);
+  check('Las frases viven dentro de las pantallas', vaporLayout.copyMode === 'DEVICE_SCREENS' && vaporLayout.bottomCopyOpacity === '0' && vaporLayout.leftCopy && vaporLayout.rightCopy && vaporLayout.phrases.some((phrase) => phrase.startsWith(vaporLayout.leftCopy) || phrase.startsWith(vaporLayout.rightCopy)), `${vaporLayout.leftCopy} // ${vaporLayout.rightCopy}`);
 
   await page.click('[data-preset="datamosh"]');
   const activePreset = await page.$eval('.preset.active', (element) => element.dataset.preset);
@@ -119,22 +179,29 @@ async function inspectDesktop(page) {
 
   await page.keyboard.press('v');
   await page.waitForSelector('#vortexState.open', { timeout: 3000 });
-  const manualVortex = await page.$eval('#vortexState', (element) => element.textContent);
-  check('Atajo V genera un vórtice manual', manualVortex.includes('MANUAL'), manualVortex);
+  const manualVortex = await page.evaluate(() => ({
+    state: document.querySelector('#vortexState').textContent,
+    anchor: document.querySelector('#stage').dataset.vortexAnchor,
+    coordinates: document.querySelector('#stage').dataset.vortexCoordinates
+  }));
+  check('Atajo V genera un vórtice manual', manualVortex.state.includes('MANUAL'), manualVortex.state);
+  check('El vórtice Vaporwaves se centra sobre el sol', manualVortex.anchor === 'SUN_HORIZON' && manualVortex.coordinates === '480,313', `${manualVortex.anchor} @ ${manualVortex.coordinates}`);
+  await sleep(1200);
   await page.screenshot({ path: path.join(SCREENSHOTS, 'free-radio-vortex-desktop.png') });
 
   await page.click('#chaosBtn');
-  const chaosStatus = await page.$eval('#statusline', (element) => element.textContent);
-  check('Modo CAOS responde', chaosStatus.includes('6.5'), chaosStatus);
+  const chaosState = await page.$eval('#stage', (element) => element.dataset.chaos);
+  check('Modo CAOS responde', chaosState === 'active', chaosState || 'inactivo');
 
   await page.click('#resetBtn');
   const resetState = await page.evaluate(() => ({
     preset: document.querySelector('.preset.active')?.dataset.preset,
     intensity: document.querySelector('#intensity').value,
     layersOn: document.querySelectorAll('[data-fx].on').length,
-    vortex: document.querySelector('#vortexState').textContent
+    vortex: document.querySelector('#vortexState').textContent,
+    chaos: document.querySelector('#stage').dataset.chaos || 'inactivo'
   }));
-  check('RESET restaura el estado visual', resetState.preset === 'spectral' && resetState.intensity === '58' && resetState.layersOn === 4, JSON.stringify(resetState));
+  check('RESET restaura el estado visual', resetState.preset === 'spectral' && resetState.intensity === '58' && resetState.layersOn === 4 && resetState.chaos === 'inactivo', JSON.stringify(resetState));
 
   if (!quick) {
     await page.waitForSelector('#vortexState.open', { timeout: 40000 });
@@ -177,6 +244,12 @@ async function inspectMobile(page) {
   check('Escena generativa visible en móvil', mobile.stageHeight >= 180, `${mobile.stageHeight}px`);
   check('Controles visibles en móvil', mobile.controlsHeight > 0, `${mobile.controlsHeight}px`);
   check('Frecuencias usan rail móvil', mobile.channelLayout === 'flex', mobile.channelLayout);
+
+  await page.click('.channel[data-id="vaporwaves"]');
+  await page.waitForFunction(() => document.querySelector('#stage').dataset.vaporLayout === 'CRT_LEFT + SUN_HORIZON + TV_RIGHT', { timeout: 3000 });
+  const mobileVaporLayout = await page.$eval('#stage', (element) => element.dataset.vaporLayout);
+  check('Vaporwaves conserva su composición en móvil', mobileVaporLayout === 'CRT_LEFT + SUN_HORIZON + TV_RIGHT', mobileVaporLayout);
+  await page.screenshot({ path: path.join(SCREENSHOTS, 'free-radio-vapor-mobile.png') });
 
   await page.keyboard.press('v');
   await page.waitForSelector('#vortexState.open', { timeout: 3000 });

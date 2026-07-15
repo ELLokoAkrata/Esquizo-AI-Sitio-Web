@@ -8,6 +8,8 @@ Este directorio alojará las auditorías automatizadas del sitio con Puppeteer.
 - Probar vistas de escritorio y móvil.
 - Registrar errores de consola y excepciones de página.
 - Comprobar interacciones, desbordamientos y estados del DOM.
+- Verificar la ráfaga de sintonización y el ADN visual/textual propio de cada frecuencia.
+- Confirmar que el pulso generativo sigue activo cuando no existe telemetría.
 - Capturar escenas generativas para inspección visual.
 - Medir animaciones y rendimiento cuando sea necesario.
 

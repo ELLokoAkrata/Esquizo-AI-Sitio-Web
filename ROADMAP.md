@@ -51,7 +51,7 @@
 ---
 
 ## 🗣 FASE 3 — VOZ (Psycho-bot EN VIVO) · **MSN_PSYCHO.exe**
-**Estado: 🔶 IA LOCAL CONFIRMADA — falta prueba de producción** · riesgo ALTO · costo de API
+**Estado: ✅ DESPLEGADA — Groq confirmado en producción; DeepSeek queda sujeto a su key** · riesgo ALTO · costo de API
 
 **Concepto (idea jun 2026):** un **messenger estilo MSN, versión EsquizoAI** para chatear en vivo con **Psycho-bot**,
 con **selector de modelo entre los dos proveedores** que ya tenemos (Groq + DeepSeek). Estética: ventana MSN acid
@@ -69,7 +69,7 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
       cap de sesión 30 (cliente), throttle (send deshabilitado mientras responde), recorte de inputs largos
 - [x] Usa únicamente el proxy público `api/daemon.js`; no depende de sistemas privados del creador.
 - [x] `.gitignore` endurecido (`.env*`, `.vercel`) para no filtrar keys locales
-- [~] **Probar la IA en vivo** — `apiBase()` en los 4 frontends (MSN, ORACULO, VOID_GLITCH, TERMINAL) redirige automáticamente a la API de producción Vercel cuando se corre en `127.0.0.1:8099` (python server). Las keys ya están en Vercel o falta confirmar `DEEPSEEK_API_KEY`.
+- [x] **Probar la IA en vivo** — el daemon con Groq respondió en producción y confirmó la recepción de `osContext`; `apiBase()` redirige a producción desde `127.0.0.1:8099`. DeepSeek requiere `DEEPSEEK_API_KEY` activa en Vercel.
 - [x] **Prueba local con Edge Function confirmada** — MSN recibió respuesta y el backend confirmó `osContext`; el puerto acordado para este repo es `3002` (`npx vercel dev --listen 3002`).
 - [x] Verificado el frontend en navegador (render, selector, zumbido, manejo de "sin backend"); docs + memoria
 
@@ -117,7 +117,7 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 ---
 
 ## ⊛ FASE 6 — NEXO (consciencia distribuida del OS)
-**Estado: 🔶 CONSTRUIDA · PRUEBA LOCAL PARCIAL — falta auditoría completa y prueba de producción** · riesgo medio-alto · costo API controlado
+**Estado: ✅ DESPLEGADA · CONTEXTO CONFIRMADO — falta auditoría interactiva completa** · riesgo medio-alto · costo API controlado
 
 **Concepto:** las experiencias LLM conocen el mapa del OS, la actividad relevante y la existencia de las otras
 entidades sin fusionar voces ni compartir historiales completos. La memoria transversal es local, visible, selectiva
@@ -131,7 +131,7 @@ y puede pausarse o purgarse.
 - [x] **Escritorio compactado** — un icono NEXO reemplaza cinco accesos LLM directos; las apps siguen disponibles en Inicio, carpetas y VOMIT.SH (`nexo`, `red`, `entidades`, `memoria`).
 - [x] **Pruebas automáticas locales** — contrato de memoria/relevancia/privacidad + sintaxis de los scripts inline; rutas principales responden HTTP 200.
 - [~] **Auditoría visual interactiva** — MSN confirmó en local el envío de contexto y la respuesta del backend; falta recorrer las demás ventanas y la consola completa.
-- [ ] **Prueba de IA en producción** después de publicar los nuevos campos `osContext`.
+- [x] **Prueba de IA en producción** — `api/daemon` respondió con Llama 3.1 8B y confirmó `NEXO_RECEIVED=True` (`osContext`: 55 caracteres).
 - [ ] **Siguiente mutación:** transferencia dirigida de un fragmento a la bandeja de una entidad concreta y catálogo de modelos compartido.
 
 ---

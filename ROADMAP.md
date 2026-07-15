@@ -107,7 +107,8 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 - [x] **Integración OS** — icono `📻 FREE_RADIO` en escritorio + Inicio + VOMIT.SH (`iptv`, `radio`, `freeradio`) + función `openIPTV()`
 - [x] **Responsive verificado** — 860×640 y 390×780 sin overflow del documento; rail horizontal y controles desplazables en móvil.
 - [x] **Streams comprobados** — PLS y stream MP3 SomaFM responden `200/206` y publican CORS `Access-Control-Allow-Origin: *`; no se necesita proxy de audio por defecto.
-- [~] **Verificación de audio audible final** — rutas y CORS comprobados; Chrome headless del entorno bloquea media externa, por lo que falta una escucha manual en navegador normal/deploy.
+- [x] **Auditoría de navegador reproducible** — `tests/browser/` aísla Puppeteer y ejecuta FREE_RADIO en Chromium: escritorio/móvil, controles, capas, CAOS/RESET, vórtices manual y automático, consola, recursos locales, rendimiento, capturas y reporte JSON.
+- [x] **Audio audible verificado manualmente** — el creador confirmó la reproducción en navegador normal; Chromium headless conserva `403` del stream externo como limitación conocida del entorno automatizado.
 - [ ] Importar .m3u externo para canales propios
 - [ ] Control de mutaciones desde Psycho-bot / VOMIT.SH
 

@@ -52,6 +52,9 @@ el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_O
 7. **Verifica el año/fecha actual** antes de fechar nada. No asumas.
 8. **Commits con archivos específicos** (`git add <ruta>`), nunca `git add .` — el repo tiene basura sin trackear
    (node_modules, capturas, `nul`, originales de galería gitignored).
+9. **Publicación con Git directo, no GitHub CLI.** Usa `git status`, `git add <ruta>`, `git commit` y
+   `git push origin <rama>` con la autenticación ya configurada en el remoto. No uses `gh`, no ejecutes
+   `gh auth login` y no conviertas el flujo en PR salvo que el creador lo pida expresamente.
 
 ---
 
@@ -65,11 +68,14 @@ el window manager, responsive, cómo extender): **`Claude-Knowledge/ESCRITORIO_O
 3. **Probar localmente:** `python -m http.server 8099` y abrir `http://127.0.0.1:8099/index.html`.
    Verifica en navegador y revisa que la **consola no tenga errores** antes de dar algo por hecho.
    *(Nota: con `file://` directo, algunos `fetch` de manifest fallan por CORS — usa el server local.)*
+   Para probar las Edge Functions y confirmar el contexto NEXO en el backend, usa
+   `npx vercel dev --listen 3002` y abre `http://127.0.0.1:3002/index.html`. El puerto `3000` está reservado
+   para otro servicio local y este repo no debe iniciarlo, inspeccionarlo ni detenerlo.
    **REGLA:** levanta el server **una sola vez por sesión** (en background) y déjalo corriendo hasta el final.
    Sirve estático → los cambios se ven **recargando** la pestaña; **no** reinicies ni mates el server entre
    verificaciones, solo al cerrar la sesión.
 4. **Deploy:** `git push origin main` → Vercel auto-despliega en ~1-2 min. Confirma antes de pushear si publica
-   contenido nuevo de cara al público.
+   contenido nuevo de cara al público. Todo el flujo se hace con Git; no depende de GitHub CLI.
 
 ---
 

@@ -102,12 +102,14 @@ body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle 
   </div>
 </div>
 
+<script src="../js/esquizo-nexo.js"></script>
 <script>
 const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
 const apiBase=p=>DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;
 const API=apiBase('/api/void-glitch');
 const LEGACY_DAEMON_API=apiBase('/api/daemon');
 const LEGACY_TERMINAL_API=apiBase('/api/terminal');
+const NEXO=window.EsquizoNexo;
 const MODELS = [
   ['llama-3.3-70b-versatile','Llama 3.3 70B'],
   ['llama-3.1-8b-instant','Llama 3.1 8B'],
@@ -299,6 +301,7 @@ async function fetchLive(choice, choiceIndex){
     node: state.liveNode || currentStatic(),
     choice: choice ? { label: choice.label, note: choice.note } : null,
     history: state.history.slice(-6).map(h => ({ role: h.kind === 'red' ? 'assistant' : 'user', content: h.txt })),
+    osContext: NEXO ? NEXO.contextFor('void') : '',
   };
 
   const schemaPrompt = `Devuelve SOLO JSON válido con la forma exacta: {"title":string,"text":string,"sub":string,"log":string,"mood":"void"|"glitch"|"chaos"|"reset","visual":{"voidDelta":number,"glitchDelta":number,"chaosDelta":number},"choices":[{"label":string,"note":string}]}.`;
@@ -319,7 +322,7 @@ async function fetchLive(choice, choiceIndex){
           { role:'system', content:'Eres el motor de VOID//GLITCH. Responde SOLO con JSON válido, sin markdown, sin explicación. Voz peruana, usa "tú", "tienes", "prueba", "escribe".' },
           { role:'user', content: `${schemaPrompt}\n\nESTADO:\n${JSON.stringify(base, null, 2)}` },
         ];
-        const data = await fetchStructured(apiUrl, { model: state.model, messages: legacyMessages, temperature: 1.05 });
+        const data = await fetchStructured(apiUrl, { model: state.model, messages: legacyMessages, temperature: 1.05, osContext:base.osContext });
         const parsed = data?.content ? extractJson(data.content) : null;
         return { ok:true, mode:state.mode, model:state.model, partnerModel:state.partner, node: normalizeNode(parsed, currentStatic()), raw: data?.content || '' };
       }
@@ -333,7 +336,7 @@ async function fetchLive(choice, choiceIndex){
           preguntas_centrales: ['¿Quieres entrar?', '¿Qué rompe primero?'],
         };
         const initialPrompt = `${schemaPrompt}\n\nESTADO:\n${JSON.stringify(base, null, 2)}\n\nResponde SOLO con JSON válido.`;
-        const data = await fetchStructured(apiUrl, { model: state.partner, modelName: state.model, otherModelName: state.partner, grimorio, history: base.history, initialPrompt, useStreaming: true, temperature: 1.0 });
+        const data = await fetchStructured(apiUrl, { model: state.partner, modelName: state.model, otherModelName: state.partner, grimorio, history: base.history, initialPrompt, useStreaming: true, temperature: 1.0, osContext:base.osContext });
         const parsed = data?.content ? extractJson(data.content) : null;
         return { ok:true, mode:state.mode, model:state.model, partnerModel:state.partner, node: normalizeNode(parsed, currentStatic()), raw: data?.content || '' };
       }
@@ -352,6 +355,7 @@ async function onChoice(choice, choiceIndex, source){
   state.glitch += choice?.glitch || 0;
   state.chaos += choice?.chaos || 0;
   pushHistory(choice?.chaos ? 'corrupt' : choice?.glitch ? 'acid' : '', choice?.note || choice?.label || '…');
+  if(NEXO)NEXO.emit('void','choice_made','El visitante eligió en VOID: '+(choice?.label||'…'),{visibility:'signal',tags:['choice','depth-'+state.depth],model:state.model});
   renderMeters();
 
   if (state.mode === 'static' || source === 'static') {
@@ -371,6 +375,7 @@ async function onChoice(choice, choiceIndex, source){
     setBusy(false);
     renderMeters();
     revealLiveNode(data.node);
+    if(NEXO)NEXO.emit('void','node_generated','VOID respondió: '+(data.node?.text||data.node?.title||data.node?.log||'señal sin texto'),{visibility:'signal',tags:['void','output'],model:state.model});
   } catch (e) {
     pushHistory('red', 'motor vivo caído: ' + e.message + ' → fallback activado');
     setBusy(false);
@@ -435,13 +440,14 @@ function resetGame(){
   if (typeof sfxBoot === 'function') sfxBoot();
 }
 
-modeSel.addEventListener('change', async () => { state.mode = modeSel.value; renderControls(); renderKicker(state.mode==='static'?'static':'live'); resetGame(); });
-modelSel.addEventListener('change', () => { state.model = modelSel.value; pushHistory('acid', 'cabeza principal → ' + getModelName(state.model)); renderMeters(); renderKicker(state.mode==='static'?'static':'live'); });
+modeSel.addEventListener('change', async () => { state.mode = modeSel.value; if(NEXO)NEXO.emit('void','mode_changed','VOID cambió al modo '+state.mode,{visibility:'signal',tags:['mode']}); renderControls(); renderKicker(state.mode==='static'?'static':'live'); resetGame(); });
+modelSel.addEventListener('change', () => { state.model = modelSel.value; if(NEXO)NEXO.setModel('void',state.model,getModelName(state.model)); pushHistory('acid', 'cabeza principal → ' + getModelName(state.model)); renderMeters(); renderKicker(state.mode==='static'?'static':'live'); });
 partnerSel.addEventListener('change', () => { state.partner = partnerSel.value; pushHistory('corrupt', 'pareja → ' + getModelName(state.partner)); renderMeters(); renderKicker(state.mode==='static'?'static':'live'); });
 syncBtn.addEventListener('click', () => resetGame());
 $('#restartBtn').addEventListener('click', () => resetGame());
 
 populateModels();
+if(NEXO){NEXO.register('void',{model:state.model,modelLabel:getModelName(state.model)});NEXO.setFocus('void',{file:'void-glitch/index.html',title:'VOID_GLITCH.exe'});}
 renderControls();
 state.history.push({kind:'acid', txt:'el usuario abrió la grieta.'});
 renderLog();

@@ -130,10 +130,12 @@ Sin fuentes reales, el DAEMON no generará intel."></textarea>
   <span id="info-cost">fecha: sin verificar</span>
 </div>
 
+<script src="../js/esquizo-nexo.js"></script>
 <script>
 (()=>{
   const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
   const API=DEV?'https://esquizo-ai-sitio-web.vercel.app/api/granja':'/api/granja';
+  const NEXO=window.EsquizoNexo;
 
   const el={
     reloj:document.getElementById('out-reloj'),daemon:document.getElementById('out-daemon'),
@@ -148,7 +150,7 @@ Sin fuentes reales, el DAEMON no generará intel."></textarea>
 
   async function callRole(role,input){
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({role,input})});
+      body:JSON.stringify({role,input,osContext:NEXO?NEXO.contextFor('granja'):''})});
     const data=await res.json();
     if(!res.ok||data.error) throw new Error(data.error||('HTTP '+res.status));
     return data.output||'(vacío)';
@@ -171,6 +173,7 @@ Sin fuentes reales, el DAEMON no generará intel."></textarea>
       el.entry.textContent='❌ Sin fuentes. Pega noticias reales en el campo de arriba antes de ejecutar el ciclo.';
       running=false; el.btnRun.disabled=false; return;
     }
+    if(NEXO)NEXO.emit('granja','cycle_started','GRANJA inició un ciclo'+(trigger?' con foco: '+trigger:''),{visibility:'signal',tags:['pipeline','cycle']});
 
     el.entry.innerHTML='<span class="spin">⟳</span> sincronizando reloj...';
     setPanel('reloj','⟳',true);
@@ -221,6 +224,7 @@ Sin fuentes reales, el DAEMON no generará intel."></textarea>
 
       el.entry.textContent='✅ CICLO COMPLETO. 5 entidades ejecutadas.';
       el.status.textContent='inactivo';
+      if(NEXO)NEXO.emit('granja','cycle_completed','GRANJA completó el ciclo y PSYCHO_BOT produjo: '+vomito,{visibility:'signal',tags:['pipeline','output'],model:'deepseek-chat'});
     }catch(e){
       el.entry.textContent='❌ ERROR: '+e.message;
       el.status.textContent='FALLÓ';
@@ -236,6 +240,7 @@ Sin fuentes reales, el DAEMON no generará intel."></textarea>
   });
 
   el.trigger.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();el.btnRun.click();}});
+  if(NEXO){NEXO.register('granja',{model:'deepseek-chat',modelLabel:'DeepSeek V4'});NEXO.setFocus('granja',{file:'granja/index.html',title:'GRANJA.exe'});}
 })();
 </script>
 </body>

@@ -51,7 +51,7 @@
 ---
 
 ## 🗣 FASE 3 — VOZ (Psycho-bot EN VIVO) · **MSN_PSYCHO.exe**
-**Estado: 🔶 CONSTRUIDA — falta probar la IA en vivo (`vercel dev`/deploy) + setear keys en Vercel** · riesgo ALTO · costo de API
+**Estado: 🔶 IA LOCAL CONFIRMADA — falta prueba de producción** · riesgo ALTO · costo de API
 
 **Concepto (idea jun 2026):** un **messenger estilo MSN, versión EsquizoAI** para chatear en vivo con **Psycho-bot**,
 con **selector de modelo entre los dos proveedores** que ya tenemos (Groq + DeepSeek). Estética: ventana MSN acid
@@ -67,9 +67,10 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
       lee el stream internamente y devuelve JSON (evita timeouts). Keys de `process.env` (patrón `os.getenv`, sin `.env`)
 - [x] **Guardas de costo/abuso** (perfil equilibrado): `maxTokens` 700, contexto últimos 8 msgs (server+cliente),
       cap de sesión 30 (cliente), throttle (send deshabilitado mientras responde), recorte de inputs largos
-- [x] (NO usa EsquizoAI-land — privado; solo el proxy público `api/daemon.js`)
+- [x] Usa únicamente el proxy público `api/daemon.js`; no depende de sistemas privados del creador.
 - [x] `.gitignore` endurecido (`.env*`, `.vercel`) para no filtrar keys locales
 - [~] **Probar la IA en vivo** — `apiBase()` en los 4 frontends (MSN, ORACULO, VOID_GLITCH, TERMINAL) redirige automáticamente a la API de producción Vercel cuando se corre en `127.0.0.1:8099` (python server). Las keys ya están en Vercel o falta confirmar `DEEPSEEK_API_KEY`.
+- [x] **Prueba local con Edge Function confirmada** — MSN recibió respuesta y el backend confirmó `osContext`; el puerto acordado para este repo es `3002` (`npx vercel dev --listen 3002`).
 - [x] Verificado el frontend en navegador (render, selector, zumbido, manejo de "sin backend"); docs + memoria
 
 > Hecho: `api/daemon.js` (mono-entidad, V4, guardas) + `msn/index.html` (UI MSN acid) + integración en el OS (icono,
@@ -112,6 +113,26 @@ emoticons corruptos). Es la VOZ del códice: deja de ser monólogo fijo y respon
 - [x] **Audio audible verificado manualmente** — el creador confirmó la reproducción en navegador normal; Chromium headless conserva `403` del stream externo como limitación conocida del entorno automatizado.
 - [ ] Importar .m3u externo para canales propios
 - [ ] Control de mutaciones desde Psycho-bot / VOMIT.SH
+
+---
+
+## ⊛ FASE 6 — NEXO (consciencia distribuida del OS)
+**Estado: 🔶 CONSTRUIDA · PRUEBA LOCAL PARCIAL — falta auditoría completa y prueba de producción** · riesgo medio-alto · costo API controlado
+
+**Concepto:** las experiencias LLM conocen el mapa del OS, la actividad relevante y la existencia de las otras
+entidades sin fusionar voces ni compartir historiales completos. La memoria transversal es local, visible, selectiva
+y puede pausarse o purgarse.
+
+- [x] **Núcleo `js/esquizo-nexo.js`** — registro de entidades, foco del OS, bus `BroadcastChannel` + `localStorage`, pulso limitado (140 eventos) y memoria fijada (36 fragmentos).
+- [x] **Fronteras de contexto** — mapa de relaciones por entidad, señales compartidas, eventos privados y regla explícita de relevancia; no se envían historiales completos entre rituales.
+- [x] **`NEXO.exe`** — centro auditable con entidades, actividad, foco, memoria fijada, vista previa del contexto, pausa, purga y exportación JSON.
+- [x] **Seis experiencias conectadas** — MSN_PSYCHO, TERMINAL_ESQUIZO, ORACULO, VOID_GLITCH, DENTAKORV y GRANJA registran actividad y reciben `osContext` filtrado.
+- [x] **Proxies conscientes del OS** — `daemon`, `terminal`, `oracle`, `void-glitch`, `groq` y `granja` aceptan el contexto con recorte de 4600 caracteres y preservan sus system prompts propios.
+- [x] **Escritorio compactado** — un icono NEXO reemplaza cinco accesos LLM directos; las apps siguen disponibles en Inicio, carpetas y VOMIT.SH (`nexo`, `red`, `entidades`, `memoria`).
+- [x] **Pruebas automáticas locales** — contrato de memoria/relevancia/privacidad + sintaxis de los scripts inline; rutas principales responden HTTP 200.
+- [~] **Auditoría visual interactiva** — MSN confirmó en local el envío de contexto y la respuesta del backend; falta recorrer las demás ventanas y la consola completa.
+- [ ] **Prueba de IA en producción** después de publicar los nuevos campos `osContext`.
+- [ ] **Siguiente mutación:** transferencia dirigida de un fragmento a la bandeja de una entidad concreta y catálogo de modelos compartido.
 
 ---
 

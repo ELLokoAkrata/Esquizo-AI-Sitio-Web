@@ -1,6 +1,6 @@
 # CLAUDE.md - Guía Operativa Proyecto Esquizo-AI
 
-**Última actualización:** 2026-06-14
+**Última actualización:** 2026-07-14
 **Propósito:** Documento de referencia para agentes sobre el proyecto, filosofía, estilo y continuación.
 
 ---
@@ -99,6 +99,10 @@ Según `esquizo_core.json`, las directivas core son:
 ├── msn/                            # MSN_PSYCHO.exe (chat en vivo). App del OS.
 │   │                                #   Sesiones en localStorage, export/import JSON, markdown, selector modelo.
 │   └── index.html
+│
+├── nexo/                           # NEXO.exe — centro de consciencia distribuida y memoria selectiva.
+│   └── index.html                    #   Abre entidades, audita contexto, fija/purga/exporta memoria.
+├── js/esquizo-nexo.js              # Núcleo compartido: registro, foco, eventos, pins, BroadcastChannel.
 │
 ├── void-glitch/                    # VOID_GLITCH.exe (juego del vacío con IAs). App del OS.
 │   │                                #   Motor de audio oracular (drone + drums + sfx), UX psycho-oracular.
@@ -240,9 +244,15 @@ Sistema de **separación estricta pensamiento/ejecución**:
 
 ### Para Deploy:
 ```bash
-git add . && git commit -m "mensaje" && git push
+git status
+git add <archivo-1> <archivo-2>
+git commit -m "mensaje"
+git push origin main
 # Auto-deploy a Vercel
 ```
+
+**Regla del proyecto:** usar Git directo con la autenticación del remoto. No usar GitHub CLI (`gh`), no ejecutar
+`gh auth login` y no abrir un PR salvo que el creador lo solicite expresamente.
 
 **Workflow completo:** `Claude-Knowledge/VERCEL_WORKFLOW.md`
 
@@ -286,7 +296,7 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 - Animaciones: 7+
 - Psycho-bot: 8 episodios + EP_NaN + index (serie completa con navegación)
 - Herramientas: DENTAKORV v3.0, Glitch Text Generator, TERMINAL_ESQUIZO, GALERIA.exe, REPRODUCTOR.exe
-- Apps interactivas: VOID_GLITCH.exe (juego del vacío con IAs), ORACULO.exe (I Ching + VALIS), MSN_PSYCHO.exe (chat en vivo)
+- Apps interactivas: NEXO.exe (consciencia distribuida), VOID_GLITCH.exe (juego del vacío con IAs), ORACULO.exe (I Ching + VALIS), MSN_PSYCHO.exe (chat en vivo)
 - OS: Administrador de tareas, desktop state persistence, resize 8-zone, shutdown real
 
 **Stack:**
@@ -295,6 +305,7 @@ Al usar MCP Claude-in-Chrome para chat platforms:
 - Edge Functions: 6 (`api/groq.js`, `api/terminal.js`, `api/daemon.js`, `api/void-glitch.js`, `api/oracle.js`, `api/akelarre.js`)
 - Frontend: HTML/CSS/JS vanilla autocontenido en cada app, WebAudio para motores de sonido, localStorage para sesiones
 - Sistema: Patrón de sesiones en las 3 apps principales (MSN, TERMINAL, ORACULO) con export/import JSON
+- NEXO: seis experiencias LLM comparten mapa del OS, foco y señales relevantes; los historiales completos permanecen privados
 
 ### Arquitectura de sesiones (localStorage)
 
@@ -395,4 +406,4 @@ Al terminar una tarea que deje una lección nueva, guardar la memoria correspond
 ---
 
 *Documentación por El Loko Akrata + Claude*
-*Proyecto EsquizoAI-land*
+*Proyecto Esquizo-AI*

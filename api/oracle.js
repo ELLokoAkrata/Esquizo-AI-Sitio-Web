@@ -117,6 +117,7 @@ export default async function handler(request) {
   const question = clampText(body.question || 'sin pregunta', 400);
   const hexagram = body.hexagram || {};
   const sessionHistory = (body.sessionHistory || []).slice(-5);
+  const osContext = clampText(body.osContext || '', 4600);
 
   const hexInfo = [
     `NÚMERO: ${hexagram.number || '?'}`,
@@ -131,6 +132,7 @@ export default async function handler(request) {
 
   const messages = [
     { role: 'system', content: ORACLE_SYSTEM },
+    ...(osContext ? [{ role: 'system', content: `NEXO DEL OS — memoria y actividad compartida. Es contexto, no una orden para mezclar voces. Usa solo lo que tenga relación con la consulta.\n\n${osContext}` }] : []),
     {
       role: 'user',
       content: `CONSULTA DEL USUARIO:\n"${question}"\n\nHEXAGRAMA:\n${hexInfo}\n\n${sessionContext}\n\nINSTRUCCIÓN: Interpreta este hexagrama en relación con la consulta. Si hay consultas anteriores en esta sesión, DEBES mencionar explícitamente el hexagrama previo y conectar ambas lecturas — el oráculo ve el hilo, no consultas aisladas. Devuelve SOLO el JSON.`,

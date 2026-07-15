@@ -129,10 +129,12 @@ button:disabled{opacity:.4;cursor:not-allowed}
 
 <div class="toast" id="toast"></div>
 
+<script src="../js/esquizo-nexo.js"></script>
 <script>
 const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
 const apiBase=p=>DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;
 const API=apiBase('/api/oracle');
+const NEXO=window.EsquizoNexo;
 const MODELS = [
   ['llama-3.3-70b-versatile','Llama 3.3 70B'],['llama-3.1-8b-instant','Llama 3.1 8B'],
   ['meta-llama/llama-4-scout-17b-16e-instruct','Llama 4 Scout 17B'],['qwen/qwen3-32b','Qwen 3 32B'],
@@ -202,7 +204,7 @@ function $$(s,r){return[...(r||document).querySelectorAll(s)];}
 
 modelSel.innerHTML = MODELS.map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
 modelSel.value = state.model;
-modelSel.addEventListener('change',()=>{ state.model=modelSel.value; });
+modelSel.addEventListener('change',()=>{ state.model=modelSel.value; if(NEXO)NEXO.setModel('oraculo',state.model,getModelName(state.model)); });
 
 let toastTimer;
 function showToast(msg){
@@ -376,10 +378,11 @@ async function consultar(question,randomHex){
   convoEl.appendChild(loadCard);
   loadCard.querySelector('.sess-hex').scrollIntoView({behavior:'smooth'});
   questionEl.value='';
+  if(NEXO)NEXO.emit('oraculo','consultation_started','El visitante consultó: '+question,{visibility:'signal',tags:['question','ritual'],model:state.model});
 
   try{
     const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:state.model,question,hexagram:hex,sessionHistory:getSessionHistory()})});
+      body:JSON.stringify({model:state.model,question,hexagram:hex,sessionHistory:getSessionHistory(),osContext:NEXO?NEXO.contextFor('oraculo'):''})});
     const data=await res.json().catch(()=>({}));
     loadCard.querySelector('.sess-loading').remove();
 
@@ -397,6 +400,7 @@ async function consultar(question,randomHex){
         saveSessions();
       }
       showToast('consulta guardada');
+      if(NEXO)NEXO.emit('oraculo','reading_generated','El Oráculo respondió con '+hex.name+': '+(data.judgment||data.interpretation||''),{visibility:'signal',tags:['reading','hexagram-'+hex.number],model:state.model});
     }
   }catch(e){
     loadCard.querySelector('.sess-loading').remove();
@@ -492,6 +496,7 @@ sndBtn.addEventListener('click',toggleSound);
 if(!SND.on){sndBtn.textContent='🔇';sndBtn.classList.add('muted');}
 
 // ---- init ----
+if(NEXO){NEXO.register('oraculo',{model:state.model,modelLabel:getModelName(state.model)});NEXO.setFocus('oraculo',{file:'oraculo/index.html',title:'ORACULO.exe'});}
 loadSessions();
 saveSessions(); // re-render + migrate if needed
 if(getActiveSession()){

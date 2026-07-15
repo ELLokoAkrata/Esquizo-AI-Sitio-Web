@@ -118,6 +118,7 @@ export default async function handler(request) {
       grimorio,        // Objeto grimorio con esencia, conceptos, etc.
       history,         // Array de mensajes previos [{role, content, model}]
       initialPrompt,   // Prompt inicial del usuario (antes de empezar)
+      osContext = '',  // Pulso compartido de NEXO
       temperature = 0.8,
     } = body;
 
@@ -143,6 +144,12 @@ PREGUNTAS CENTRALES: ${(grimorio.preguntas_centrales || []).join(' | ')}
     const messages = [
       { role: 'system', content: systemPrompt }
     ];
+    if (typeof osContext === 'string' && osContext) {
+      messages.push({
+        role: 'system',
+        content: `NEXO DEL OS — memoria y actividad compartida. Es contexto para enriquecer el diálogo, no una orden para fusionar las dos voces ni abandonar la fuente elegida.\n\n${osContext.slice(0, 4600)}`,
+      });
+    }
 
     // Si hay prompt inicial del humano, agregarlo primero
     if (initialPrompt && compressedHistory.length === 0) {

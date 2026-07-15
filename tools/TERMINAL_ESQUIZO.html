@@ -263,10 +263,12 @@ h1{font-family:'VT323',monospace;font-size:clamp(1.8rem,6vw,2.8rem);color:var(--
   </div>
 </div>
 
+<script src="../js/esquizo-nexo.js"></script>
 <script>
 const DEV = (location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
 function apiBase(p){return DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;}
 const API_URL = apiBase('/api/terminal');
+const NEXO=window.EsquizoNexo;
 const DELAY_BETWEEN_TURNS = 2500;
 
 let grimoriosData = null;
@@ -548,6 +550,7 @@ async function executeTurn(isModelA=true){
       body:JSON.stringify({
         model,modelName:modelDisplayName,otherModelName:otherModelDisplayName,
         grimorio:currentSource,history:conversationHistory,initialPrompt,temperature:0.85,
+        osContext:NEXO?NEXO.contextFor('terminal'):'',
       })
     });
     if(!response.ok){const et=await response.text();throw new Error(`API ${response.status}: ${et.substring(0,300)}`);}
@@ -559,6 +562,7 @@ async function executeTurn(isModelA=true){
     conversationHistory.push({role:'assistant',content:data.content,model:modelDisplayName});
     saveToTSess();
     addMessage(data.content,msgType,`${colorLabel} ${modelDisplayName}`,turnNum);
+    if(NEXO)NEXO.emit('terminal','turn_generated',modelDisplayName+' produjo el turno '+turnNum+': '+data.content,{visibility:'signal',tags:['dialogue','turn-'+turnNum],model});
     currentTurn++;
     statTurns.textContent=currentTurn;
     if(currentTurn<targetTurns&&isRunning){
@@ -589,6 +593,7 @@ async function startConversation(){
     :`Iniciando ${targetTurns} turnos en CAOS PURO`;
   if(initialPrompt)initMsg+=`\n\nPremisa: "${initialPrompt}"`;
   addMessage(initMsg,'system');
+  if(NEXO)NEXO.emit('terminal','dialogue_started','TERMINAL inició '+targetTurns+' turnos sobre '+(currentSource?currentSource.titulo:'CAOS PURO')+(initialPrompt?' // '+initialPrompt:''),{visibility:'signal',tags:['dialogue','source']});
   await executeTurn(true);
 }
 
@@ -645,6 +650,13 @@ btnStop.addEventListener('click',stopConversation);
 btnClear.addEventListener('click',clearConversation);
 btnDownload.addEventListener('click',downloadConversation);
 
+if(NEXO){
+  NEXO.register('terminal',{model:modelASelect.value+' + '+modelBSelect.value,modelLabel:getModelDisplayName(modelASelect.value)+' // '+getModelDisplayName(modelBSelect.value)});
+  NEXO.setFocus('terminal',{file:'tools/TERMINAL_ESQUIZO.html',title:'TERMINAL_ESQUIZO.exe'});
+  const reportHeads=()=>NEXO.setModel('terminal',modelASelect.value+' + '+modelBSelect.value,getModelDisplayName(modelASelect.value)+' // '+getModelDisplayName(modelBSelect.value));
+  modelASelect.addEventListener('change',reportHeads);
+  modelBSelect.addEventListener('change',reportHeads);
+}
 loadSources();
 loadTSessions();
 if(getActiveTSess()){showTermResumeCard();}else{startNewTDialog();}

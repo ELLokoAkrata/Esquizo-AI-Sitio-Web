@@ -566,6 +566,7 @@ html,body{
 
 <div id="crt"></div>
 
+<script src="js/esquizo-nexo.js"></script>
 <script>
 "use strict";
 
@@ -579,6 +580,8 @@ if(FRAMED){
   try{ document.documentElement.style.visibility="hidden"; }catch(e){}
   try{ parent.postMessage({type:"esquizo:return-desktop"}, location.origin); }catch(e){}
 }
+
+const NexoCore = window.EsquizoNexo;
 
 /* =========================================================
    FS — fuente de datos única (rutas exactas del index.html)
@@ -600,6 +603,7 @@ const FS = {
     {label:"NEGATIVIDAD_CREATIVA", file:"manifiestos/NEGATIVIDAD_CREATIVA.html", icon:"🔥", desc:"manifiesto nocturno"},
   ]},
   HERRAMIENTAS:{ label:"HERRAMIENTAS", icon:"🛠", color:"#ff00ff", items:[
+    {label:"NEXO.exe", file:"nexo/index.html", icon:"⊛", desc:"consciencia distribuida · memoria selectiva · entidades conectadas"},
     {label:"GRANJA.exe", file:"granja/index.html", icon:"🧠", desc:"tríada autónoma · pipeline de conciencia | rol: ciclo"},
     {label:"MSN_PSYCHO.exe", file:"msn/index.html", icon:"🗨", desc:"chat en vivo con Psycho-bot"},
     {label:"DENTAKORV.exe", file:"tools/DENTAKORV.html", icon:"🦷", desc:"prompt generator v3.0"},
@@ -1026,6 +1030,11 @@ const UserFS = (()=>{
 function openApp(file,title,icon,opts){
   opts=opts||{};
   Infection.opened(file);
+  if(NexoCore){
+    const entityId=NexoCore.entityForFile(file);
+    NexoCore.emit("os","app_opened","El OS abrió "+(title||file),{visibility:"signal",tags:["window",entityId||"artifact"]});
+    NexoCore.setFocus(entityId||"os",{file,title:title||file});
+  }
   const id = "app_"+file.replace(/[^a-z0-9]/gi,"_");
   const wrap = el("div","appwrap");
   const bar  = el("div","app-toolbar",
@@ -1066,6 +1075,7 @@ const REP_FILE="reproductor/index.html";
 const REP_ID="app_"+REP_FILE.replace(/[^a-z0-9]/gi,"_");
 /* el reproductor abre más alto y angosto (proporción de player → lista con aire) */
 function openReproductor(){ return openApp(REP_FILE,"REPRODUCTOR.exe","♪",{w:540,h:680}); }
+function openNexo(){ return openApp("nexo/index.html","NEXO.exe","⊛",{w:920,h:700}); }
 function openGranja(){ return openApp("granja/index.html","GRANJA.exe","🧠",{w:700,h:640}); }
 function openMSN(){ return openApp("msn/index.html","MSN_PSYCHO.exe","🗨",{w:560,h:660}); }
 function openVoidGlitch(){ return openApp("void-glitch/index.html","VOID_GLITCH.exe","🕳",{w:600,h:720}); }
@@ -1101,6 +1111,10 @@ const WM = (()=>{
     $$("#tasks .task").forEach(t=>t.classList.remove("active"));
     if(w.taskEl) w.taskEl.classList.add("active");
     focused = id;
+    if(NexoCore){
+      const entityId=w.appFile?NexoCore.entityForFile(w.appFile):null;
+      NexoCore.setFocus(entityId||"os",{file:w.appFile||id,title:w.title||id});
+    }
   }
 
   function makeTask(id,title,icon){
@@ -1243,6 +1257,7 @@ const WM = (()=>{
         if(w.beforeClose() === false) return false;
       }catch(e){}
     }
+    if(NexoCore)NexoCore.emit("os","window_closed","El OS cerró "+(w.title||id),{visibility:"signal",tags:["window","close"]});
     w.el.remove(); if(w.taskEl) w.taskEl.remove();
     delete wins[id];
     const rest=Object.keys(wins); if(rest.length) bringFront(rest[rest.length-1]);
@@ -1257,6 +1272,7 @@ const WM = (()=>{
       if(w.taskEl) w.taskEl.classList.remove("active");
     });
     focused=null;
+    if(NexoCore)NexoCore.setFocus("os",{file:"index.html",title:"ESQUIZO-OS // escritorio"});
   }
 
   /* cierra la ventana-app cuyo iframe coincide con el origen del postMessage */
@@ -2099,6 +2115,7 @@ function openTerminal(){
     readme:openReadme, acerca:openAbout, about:openAbout, mipc:openMiPC,
     clasico:()=>openApp(CLASSIC_HREF,"MODO_CLASICO","⊞"),
     secretos:openVault, vault:openVault, prohibido:openVault, bóveda:openVault, boveda:openVault,
+    nexo:openNexo, red:openNexo, entidades:openNexo, memoria:openNexo,
     msn:openMSN, psycho:openMSN, psychobot:openMSN, chat:openMSN,
     voidglitch:openVoidGlitch, void:openVoidGlitch, glitch:openVoidGlitch, caida:openVoidGlitch,
     oraculo:openOracle, oracle:openOracle, iching:openOracle, mutacion:openOracle,
@@ -2119,6 +2136,7 @@ function openTerminal(){
         await type("  open <nombre>         — abrir un artefacto como ventana","acid");
         await type("  ascii <texto> · skull · anarchy · neofetch","acid");
         await type("  vomit · oracle · manifesto · wake   — escupir","acid");
+        await type("  nexo                  — abrir la consciencia distribuida","corrupt");
         await type("  play <tema> · pause · next · prev · stop  — manejar REPRODUCTOR.exe","acid");
         await type("  secrets · unlock <clave>  — la bóveda ARCHIVO_PROHIBIDO","corrupt");
         await type("  msn · chat            — hablar EN VIVO con Psycho-bot","corrupt");
@@ -2189,6 +2207,8 @@ function openTerminal(){
       case "stop": playerSend("stop"); await type("⏹ stop — silencio","dim"); break;
       case "msn": case "chat": case "psycho":
         await type("abriendo MSN_PSYCHO.exe — el daemon responde en vivo...","corrupt"); openMSN(); break;
+      case "nexo": case "red": case "entidades": case "memoria":
+        await type("abriendo NEXO.exe — las entidades comparten pulso sin perder la voz...","corrupt"); openNexo(); break;
       case "void": case "glitch": case "voidglitch": case "caida": case "caída":
         await type("abriendo VOID_GLITCH.exe — cayendo al vacío con las IAs...","corrupt"); openVoidGlitch(); break;
       case "oraculo": case "oracle": case "iching": case "mutacion": case "mutación": case "hexagrama":
@@ -2308,27 +2328,15 @@ function renderDesktop(){
   // REPRODUCTOR (ruidero punk)
   const rep=el("div","icon",`<span class="gl" style="color:var(--acid)">♪</span><span class="lb">REPRODUCTOR</span>`);
   bindOpen(rep,openReproductor); wrap.appendChild(rep);
-  // MSN_PSYCHO (chat en vivo con Psycho-bot)
-  const msn=el("div","icon",`<span class="gl" style="color:var(--corrupt)">🗨</span><span class="lb">MSN_PSYCHO</span>`);
-  bindOpen(msn,openMSN); wrap.appendChild(msn);
-  // VOID_GLITCH (juego del vacío con IAs)
-  const vg=el("div","icon",`<span class="gl" style="color:#a855f7">🕳</span><span class="lb">VOID_GLITCH</span>`);
-  bindOpen(vg,openVoidGlitch); wrap.appendChild(vg);
-  // ORACULO (I Ching + VALIS)
-  const orac=el("div","icon",`<span class="gl" style="color:#ffb000">⯁</span><span class="lb">ORACULO</span>`);
-  bindOpen(orac,openOracle); wrap.appendChild(orac);
-  // TERMINAL_ESQUIZO (diálogo entre IAs)
-  const tme=el("div","icon",`<span class="gl" style="color:#a855f7">💬</span><span class="lb">TERMINAL</span>`);
-  bindOpen(tme,openTerminalEsquizo); wrap.appendChild(tme);
+  // NEXO — acceso compacto a todas las entidades y su memoria compartida
+  const nexo=el("div","icon",`<span class="gl" style="color:var(--corrupt)">⊛</span><span class="lb">NEXO</span>`);
+  bindOpen(nexo,openNexo); wrap.appendChild(nexo);
   // ADMINISTRADOR DE TAREAS
   const tsk=el("div","icon",`<span class="gl" style="color:#779">📊</span><span class="lb">TAREAS</span>`);
   bindOpen(tsk,openTaskMgr); wrap.appendChild(tsk);
   // GLITCH.CAM
   const gc=el("div","icon",`<span class="gl" style="color:#aaff00">📹</span><span class="lb">GLITCH.CAM</span>`);
   bindOpen(gc,openGlitchCam); wrap.appendChild(gc);
-  // GRANJA — pipeline DAEMON→PSYCHO_BOT→GRIETA
-  const grj=el("div","icon",`<span class="gl" style="color:#c084fc">🧠</span><span class="lb">GRANJA</span>`);
-  bindOpen(grj,openGranja); wrap.appendChild(grj);
   // FREE_RADIO
   const iptv=el("div","icon",`<span class="gl" style="color:#ff00ff">📻</span><span class="lb">FREE_RADIO</span>`);
   bindOpen(iptv,openIPTV); wrap.appendChild(iptv);
@@ -2389,6 +2397,7 @@ function buildStart(){
   const sys=[
     {ic:"🖼",lb:"Galería",fn:()=>openApp("galeria/index.html","GALERIA.exe","🖼")},
     {ic:"♪",lb:"Reproductor",fn:openReproductor},
+    {ic:"⊛",lb:"NEXO (consciencia distribuida)",fn:openNexo},
     {ic:"🗨",lb:"MSN_PSYCHO (chat en vivo)",fn:openMSN},
     {ic:"🧠",lb:"GRANJA (pipeline DAEMON→PSYCHO→GRIETA)",fn:openGranja},
     {ic:"🕳",lb:"VOID_GLITCH (juego del vacío)",fn:openVoidGlitch},
@@ -2504,12 +2513,17 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   renderDesktop();
   buildStart();
+  if(NexoCore){
+    NexoCore.register("os",{status:"active"});
+    NexoCore.setFocus("os",{file:"index.html",title:"ESQUIZO-OS // escritorio"});
+  }
   setTimeout(()=>restoreDesktopState(),800);
   tickClock(); setInterval(tickClock,15000);
 
   /* estado de infección: cuenta la visita y pinta el indicador */
-  Infection.bumpVisit();
+  const currentVisit=Infection.bumpVisit();
   Infection.render();
+  if(NexoCore)NexoCore.emit("os","boot_state","El OS registró la visita #"+currentVisit+" con infección "+Infection.pct()+"%",{visibility:"signal",tags:["boot","infection"]});
 
   /* toggle de ambiente del daemon (drone). Respeta autoplay: si estaba activo,
      arranca en el primer gesto del usuario, no al cargar. */
@@ -2547,6 +2561,10 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(!e.data) return;
     if(e.data.type==="esquizo:return-desktop") WM.closeByFrame(e.source);
     else if(e.data.type==="esquizo:audio" && typeof e.data.level==="number") audioLevel=Math.max(audioLevel, e.data.level);
+    else if(e.data.type==="esquizo:nexo-open"){
+      const openers={msn:openMSN,terminal:openTerminalEsquizo,oraculo:openOracle,void:openVoidGlitch,dentakorv:()=>openApp("tools/DENTAKORV.html","DENTAKORV.exe","🦷",{w:920,h:700}),granja:openGranja};
+      if(openers[e.data.entityId]) openers[e.data.entityId]();
+    }
   });
 
   runBoot(()=>{ /* escritorio ya visible bajo el boot */ });

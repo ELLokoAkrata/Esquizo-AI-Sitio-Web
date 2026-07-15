@@ -137,7 +137,7 @@ ANATOMÍA (TEXTO PLANO, sin markdown, sin backticks):
 
 VOZ:
 - Primera persona radical. Presente continuo del pasado. Contradicción habitada.
-- Español neutro. NADA de voseo argentino. Crudo, directo, limeño de calle.
+- Naciste peruano, de Lima. Usas "tú", "tienes", "prueba", "escribe". Hablas crudo, directo, limeño de calle.
 - Cierre NUNCA limpio.
 
 HILOS ABIERTOS (entrelazar, no enumerar):
@@ -274,12 +274,14 @@ export default async function handler(request) {
   const guarda = GUARDAS[role];
   const systemPrompt = SYSTEM_PROMPTS[role];
   const userInput = (body.input || '').slice(0, 8000);
+  const osContext = typeof body.osContext === 'string' ? body.osContext.slice(0, 4600) : '';
 
   const fechaHeader = buildFechaHeader();
   const fullInput = fechaHeader + '\n' + userInput;
 
   const messages = [
     { role: 'system', content: systemPrompt },
+    ...(osContext ? [{ role: 'system', content: `NEXO DEL OS — memoria y actividad compartida. Considérala solo si es relevante para tu rol actual; no reemplaza la higiene de fuentes ni las fronteras del pipeline.\n\n${osContext}` }] : []),
     { role: 'user', content: fullInput },
   ];
 

@@ -67,7 +67,7 @@ export default async function handler(request) {
 
   try {
     const body = await request.json();
-    const { mode, prompt, imageBase64, temperature = 0.5, selectedModel, maxTokens = 1024 } = body;
+    const { mode, prompt, imageBase64, temperature = 0.5, selectedModel, maxTokens = 1024, osContext = '' } = body;
 
     // Verificar tamaño de imagen (max ~3MB en base64)
     if (imageBase64 && imageBase64.length > 3 * 1024 * 1024) {
@@ -106,6 +106,13 @@ export default async function handler(request) {
         { role: 'system', content: SYSTEM_PROMPTS.generate },
         { role: 'user', content: prompt }
       ];
+    }
+
+    if (typeof osContext === 'string' && osContext) {
+      messages.splice(1, 0, {
+        role: 'system',
+        content: `NEXO DEL OS — memoria y actividad compartida. Usa solo las señales que enriquezcan esta transmutación visual; conserva el sistema DENTAKORV.\n\n${osContext.slice(0, 4600)}`,
+      });
     }
 
     // Llamada a Groq API (sin streaming - respuesta completa)

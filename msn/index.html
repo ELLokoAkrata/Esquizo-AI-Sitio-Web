@@ -159,12 +159,14 @@
     </div>
   </div>
 
+<script src="../js/esquizo-nexo.js"></script>
 <script>
 (()=>{
   "use strict";
   const DEV=(location.hostname==='127.0.0.1'||location.hostname==='localhost')&&location.port==='8099';
   const apiBase=p=>DEV?'https://esquizo-ai-sitio-web.vercel.app'+p:p;
   const API=apiBase("/api/daemon");
+  const NEXO=window.EsquizoNexo;
   const SESSION_CAP = 30;          // tope suave de mensajes del usuario por sesión
   const CONTEXT_MSGS = 8;          // cuántos mensajes mandamos de contexto
 
@@ -181,6 +183,7 @@
   let history=[];      // [{role, content}]
   let userCount=0;     // mensajes enviados por el usuario
   let busy=false;
+  let nexoConfirmed=false;
 
   /* ---- sessions (localStorage) ---- */
   let msnSessions=[], msnActiveSessionId=null;
@@ -326,6 +329,7 @@
   modelSel.addEventListener("change",()=>{
     modelFoot.textContent=modelSel.options[modelSel.selectedIndex].text;
     addMsg("sys","// el daemon cambió de cabeza → "+modelFoot.textContent);
+    if(NEXO)NEXO.setModel("msn",modelSel.value,modelFoot.textContent);
   });
 
   /* ---- enviar ---- */
@@ -341,12 +345,13 @@
     input.value=""; autoGrow();
     addMsg("user",text); sndSend();
     history.push({role:"user",content:text}); saveToSess();
+    if(NEXO)NEXO.emit("msn","user_prompt","El visitante preguntó a Psycho-bot: "+text,{visibility:"signal",tags:["conversation","user"],model:modelSel.value});
     userCount++; updateCounter();
     setBusy(true);
     try{
       const res=await fetch(API,{
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ model:modelSel.value, messages:history.slice(-CONTEXT_MSGS) })
+        body:JSON.stringify({ model:modelSel.value, messages:history.slice(-CONTEXT_MSGS), osContext:NEXO?NEXO.contextFor("msn"):"" })
       });
       const data=await res.json().catch(()=>({error:"respuesta no-JSON"}));
       setBusy(false);
@@ -360,9 +365,14 @@
         }
         return;
       }
+      if(NEXO&&!nexoConfirmed){
+        if(data.nexo&&data.nexo.received){addMsg("sys","// NEXO confirmado · backend recibió "+data.nexo.chars+" caracteres de contexto");nexoConfirmed=true;}
+        else addMsg("err","// NEXO local activo, pero este backend no confirmó el contexto · origen "+location.origin+" · API "+API);
+      }
       const reply=(data.content||"").trim() || "…(silencio. el vacío también responde)";
       addMsg("assistant",reply); sndRecv();
       history.push({role:"assistant",content:reply}); saveToSess();
+      if(NEXO)NEXO.emit("msn","response_generated","Psycho-bot respondió: "+reply,{visibility:"signal",tags:["conversation","output"],model:modelSel.value});
     }catch(e){
       setBusy(false);
       addMsg("err","sin señal con el daemon: "+e.message);
@@ -373,6 +383,7 @@
     document.body.classList.remove("buzz"); void document.body.offsetWidth;
     document.body.classList.add("buzz"); sndNudge();
     addMsg("sys","⚡ le enviaste un zumbido al daemon");
+    if(NEXO)NEXO.emit("msn","nudge","El visitante envió un zumbido a Psycho-bot",{visibility:"signal",tags:["gesture"]});
   }
 
   /* ---- textarea autosize + Enter ---- */
@@ -385,6 +396,10 @@
   nudgeBtn.addEventListener("click",nudge);
 
   /* ---- init ---- */
+  if(NEXO){
+    NEXO.register("msn",{model:modelSel.value,modelLabel:modelFoot.textContent});
+    NEXO.setFocus("msn",{file:"msn/index.html",title:"MSN_PSYCHO.exe"});
+  }
   loadSessions();
   addSysBtn();
   if(getActiveSess()){

@@ -1,6 +1,8 @@
 // DENTAKORV - IA Assist (Groq API Integration)
 
-const API_URL = '/api/groq';
+const DEV = (location.hostname === '127.0.0.1' || location.hostname === 'localhost') && location.port === '8099';
+const API_URL = DEV ? 'https://esquizo-ai-sitio-web.vercel.app/api/groq' : '/api/groq';
+const NEXO = window.EsquizoNexo;
 
 let currentImageBase64 = null;
 
@@ -86,6 +88,10 @@ async function fetchFromAPI(mode, prompt, imageBase64 = null, elements) {
     // Obtener configuracion
     const selectedModel = mode === 'analyze' ? iaModelVision.value : iaModelText.value;
     const temperature = parseFloat(iaTemperature.value);
+    if (NEXO) {
+        NEXO.touch('dentakorv', { model:selectedModel, modelLabel:selectedModel });
+        NEXO.emit('dentakorv', mode === 'analyze' ? 'image_analysis_started' : 'prompt_generation_started', mode === 'analyze' ? 'DENTAKORV comenzó a analizar una imagen' : 'DENTAKORV recibió la semilla: ' + prompt, { visibility:'signal', tags:[mode, 'visual'], model:selectedModel });
+    }
 
     try {
         const response = await fetch(API_URL, {
@@ -96,7 +102,8 @@ async function fetchFromAPI(mode, prompt, imageBase64 = null, elements) {
                 prompt,
                 imageBase64,
                 selectedModel,
-                temperature
+                temperature,
+                osContext: NEXO ? NEXO.contextFor('dentakorv') : ''
             })
         });
 
@@ -108,6 +115,7 @@ async function fetchFromAPI(mode, prompt, imageBase64 = null, elements) {
 
         // Mostrar contenido completo
         iaOutput.textContent = data.content || '';
+        if (NEXO && iaOutput.textContent.trim()) NEXO.emit('dentakorv', 'visual_prompt_generated', 'DENTAKORV produjo: ' + iaOutput.textContent, { visibility:'signal', tags:['visual', 'output'], model:selectedModel });
 
         // Show copy button when done
         if (iaOutput.textContent.trim()) {
@@ -120,6 +128,10 @@ async function fetchFromAPI(mode, prompt, imageBase64 = null, elements) {
 }
 
 export function initIAAssist() {
+    if (NEXO) {
+        NEXO.register('dentakorv');
+        NEXO.setFocus('dentakorv', { file:'tools/DENTAKORV.html', title:'DENTAKORV.exe' });
+    }
     const iaPromptInput = document.getElementById('ia-prompt-input');
     const iaGenerateBtn = document.getElementById('ia-generate-btn');
     const iaGenerateText = document.getElementById('ia-generate-text');

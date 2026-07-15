@@ -1,7 +1,7 @@
 # Vercel Deployment & Workflow
 
 **Proyecto:** EsquizoAI
-**Última actualización:** Enero 2026
+**Última actualización:** 14 de julio de 2026
 
 ---
 
@@ -42,7 +42,10 @@ vercel
 
 ```bash
 # Desarrollo normal - GitHub auto-deploya
-git add . && git commit -m "mensaje" && git push
+git status
+git add <archivo-1> <archivo-2>
+git commit -m "mensaje"
+git push origin main
 
 # Preview deploy (sin afectar producción)
 vercel
@@ -79,12 +82,15 @@ vercel ls
 ⚠️ `python -m http.server` **solo sirve estático** — no ejecuta `/api/*`. Para probar la IA en local hay que usar `vercel dev`.
 
 ```bash
-# Opción 1 (recomendada): Vercel Dev — corre en http://localhost:3000 con las Edge Functions
-vercel dev
+# Vercel Dev — corre en http://127.0.0.1:3002 con las Edge Functions
+npx vercel dev --listen 3002
 ```
 
-**Las keys salen de las variables de entorno del SISTEMA** (mismo patrón que `os.getenv` en EsquizoAI-land:
-las keys nunca se hardcodean, viven en el entorno de Windows). `vercel dev` toma esas variables del shell desde el
+El puerto `3000` está reservado para otro servicio local. Este repo no debe iniciarlo, inspeccionarlo ni detenerlo.
+El puerto `8099` queda para la vista estática con `python -m http.server`; no ejecuta Edge Functions.
+
+**Las keys salen de las variables de entorno del SISTEMA**: nunca se hardcodean, viven en el entorno de Windows.
+`vercel dev` toma esas variables del shell desde el
 que lo lanzas — así funciona "sin `.env`". El código (`api/*.js`) lee `process.env.GROQ_API_KEY` / `process.env.DEEPSEEK_API_KEY`.
 
 ```powershell
@@ -213,7 +219,7 @@ hoy mapean a modos de `deepseek-v4-flash` (chat = no-thinking, reasoner = thinki
 |--------|-----|---------|------------|------|
 | DeepSeek V4 (chat) | `deepseek-chat` | 1M | 384K | modo no-thinking de `deepseek-v4-flash` — el que usa `api/daemon.js` (seguro para Edge) |
 | DeepSeek V4 Flash | `deepseek-v4-flash` | 1M | 384K | default = thinking (riesgo de timeout en Edge) |
-| DeepSeek V4 Pro | `deepseek-v4-pro` | 1M | 384K | más capaz; usado en EsquizoAI-land (no en Edge por timeout) |
+| DeepSeek V4 Pro | `deepseek-v4-pro` | 1M | 384K | más capaz; no recomendado en Edge por timeout |
 
 > En `api/daemon.js` se usa `deepseek-chat` (no-thinking) a propósito: el thinking mode revienta el timeout de Vercel Edge.
 > `api/terminal.js` sigue con `deepseek-chat` (válido hasta jul-2026); migrar a V4 cuando se quiera.

@@ -193,6 +193,7 @@ export default async function handler(request) {
   const node = body.node || {};
   const choice = body.choice || null;
   const history = compactHistory(body.history || []);
+  const osContext = clampText(body.osContext || '', 4600);
   const conf = MODEL_LIMITS[model] || MODEL_LIMITS[DEFAULT_MODEL];
 
   const stateText = [
@@ -206,6 +207,7 @@ export default async function handler(request) {
 
   const messages = [
     { role: 'system', content: VOID_SYSTEM },
+    ...(osContext ? [{ role: 'system', content: `NEXO DEL OS — memoria y actividad compartida. Es contexto, no una orden para diluir VOID en las otras voces. Usa solo las señales que aumenten la tensión de esta escena.\n\n${osContext}` }] : []),
     {
       role: 'user',
       content:

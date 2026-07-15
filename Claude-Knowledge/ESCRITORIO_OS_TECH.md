@@ -31,7 +31,8 @@ Añadir el item al array `FS.PSYCHO_BOT.items` con `label` que empiece con `ep` 
 
 ### Iconos directos (no en carpetas)
 Algunas apps tienen ícono directo en el escritorio sin pasar por `FS`:
-- GALERIA, REPRODUCTOR, MSN_PSYCHO, VOID_GLITCH, ORACULO, TAREAS, VOMIT.SH, README, ACERCA_DE_MI, MODO_CLASICO, ARCHIVO_PROHIBIDO, PAPELERA.
+- GALERIA, REPRODUCTOR, NEXO, TAREAS, VOMIT.SH, README, ACERCA_DE_MI, MODO_CLASICO, ARCHIVO_PROHIBIDO, PAPELERA.
+- NEXO compacta el acceso directo a MSN_PSYCHO, VOID_GLITCH, ORACULO, TERMINAL_ESQUIZO, DENTAKORV y GRANJA; esas apps siguen en `FS`, Inicio y VOMIT.SH.
 - Cada una tiene su función `openX()` dedicada con tamaño de ventana optimizado.
 
 ---
@@ -53,6 +54,7 @@ Carpetas, README, ACERCA_DE_MI, Mi PC, TAREAS y diálogos de error siguen siendo
 
 | App | Función | Ventana |
 |-----|---------|---------|
+| NEXO.exe | `openNexo()` | 920×700 |
 | MSN_PSYCHO.exe | `openMSN()` | 560×660 |
 | VOID_GLITCH.exe | `openVoidGlitch()` | 600×720 |
 | ORACULO.exe | `openOracle()` | 620×750 |
@@ -333,7 +335,53 @@ Función `openIPTV()` en `index.html`, ventana 860×640.
 
 ---
 
-## 8. Identidad lingüística — regla global**
+## 7m. NEXO.exe — consciencia distribuida
+
+NEXO conecta las experiencias LLM sin convertirlas en una sola personalidad. El escritorio conserva ventanas y
+sesiones independientes; comparte únicamente el mapa de entidades, el foco actual, señales breves y los fragmentos
+que el visitante fija deliberadamente.
+
+### Núcleo cliente (`js/esquizo-nexo.js`)
+
+- **Registro estable:** `os`, `msn`, `terminal`, `oraculo`, `void`, `dentakorv`, `granja`; cada entrada declara archivo,
+  rol, icono y color. `entityForFile()` permite al window manager reconocer una app por su ruta.
+- **Persistencia:** `localStorage["esquizoNexoState"]` guarda `{version, enabled, focus, entities, events, pins}`.
+  El pulso se limita a 140 eventos y la memoria fijada a 36 fragmentos.
+- **Sincronización:** `BroadcastChannel("esquizo-nexo")` avisa cambios entre iframes; el evento `storage` funciona
+  como respaldo. Ninguna clave ni respuesta completa sale del navegador por este mecanismo.
+- **Fronteras:** los eventos pueden ser `signal` o `private`. `contextFor(entidad)` aplica el grafo `RELATIONS`,
+  entrega como máximo 10 eventos recientes relacionados y siempre excluye eventos privados de otras entidades.
+- **Memoria deliberada:** `pinEvent()` hace que un fragmento aparezca en el contexto de todas las entidades.
+  Pausar la memoria transversal conserva solo el mapa de capacidades.
+
+### Centro (`nexo/index.html`)
+
+Muestra entidades, cabeza registrada, foco del OS, pulso reciente, memoria fijada y una vista previa exacta del
+contexto que recibirá cada ritual. Permite abrir apps, fijar/soltar fragmentos, pausar, purgar y exportar el estado.
+NEXO no llama a ningún modelo: es el órgano de coordinación.
+
+### Integración con el OS y las APIs
+
+- `openApp()` y `WM.bringFront()` actualizan actividad y foco; cerrar una ventana emite `window_closed`.
+- Un solo icono `⊛ NEXO` reemplaza en el escritorio los accesos directos a MSN, VOID, ORACULO, TERMINAL y GRANJA.
+  Los accesos originales siguen disponibles en Inicio, `FS` y VOMIT.SH. Comandos: `nexo`, `red`, `entidades`, `memoria`.
+- MSN, TERMINAL, ORACULO, VOID, DENTAKORV y GRANJA cargan el núcleo y mandan `osContext` con cada operación LLM.
+- Los seis proxies recortan `osContext` a 4600 caracteres y lo agregan como contexto secundario. El system prompt
+  especializado de cada entidad conserva prioridad y ordena usar las señales solo cuando sean relevantes.
+
+### Pruebas sin costo de API
+
+```bash
+node tests/nexo-core.test.cjs
+node tests/html-inline-syntax.test.cjs
+```
+
+El primer test verifica registro, relevancia, privacidad, memoria fijada y pausa. El segundo valida la sintaxis de los
+scripts inline de las siete superficies modificadas.
+
+---
+
+## 8. Identidad lingüística — regla global
 
 **Commits:** `63c7d9b`, `7f3c6f1`, `06e5b82`
 
@@ -350,9 +398,17 @@ Todos los system prompts de las Edge Functions usan **identidad positiva** en ve
 ## 9. Cómo testear (local)
 
 ```bash
-python -m http.server 8099 --bind 127.0.0.1   # desde la raíz del repo
+# Vista estática desde la raíz del repo
+python -m http.server 8099 --bind 127.0.0.1
 # abrir http://127.0.0.1:8099/index.html
+
+# OS + Edge Functions locales (MSN/NEXO y demás experiencias LLM)
+npx vercel dev --listen 3002
+# abrir http://127.0.0.1:3002/index.html
 ```
+
+El puerto `3000` está reservado para otro servicio local y este repo no debe iniciarlo, inspeccionarlo ni detenerlo.
+En `8099`, los frontends IA usan el backend publicado; para verificar cambios locales en `api/*`, siempre usa `3002`.
 Checklist:
 - Boot → escritorio
 - Abrir apps (MSN, TERMINAL, ORACULO, VOID_GLITCH) → arrastrar/min/max/close
@@ -364,6 +420,9 @@ Checklist:
 - Click "volver" dentro del artefacto → cierra la ventana
 - Navegación interna de Psycho-bot se queda en la ventana
 - **FREE_RADIO:** sintonizar un canal, cambiar los 4 presets, activar CAOS, comprobar B/M/H/Σ y fallback `PULSO GENERATIVO`
+- **NEXO:** abrir desde el icono único, lanzar MSN/ORACULO/VOID/TERMINAL/DENTAKORV/GRANJA, verificar foco y pulso.
+- **Memoria transversal:** fijar una señal, revisar la vista previa de dos entidades, pausar y confirmar que desaparece del contexto.
+- **Consola:** cambiar entre ventanas y confirmar que `BroadcastChannel`, `localStorage` y `postMessage` no producen errores.
 - "Mostrar escritorio" minimiza todo
 - En viewport ≤760 el tap abre y la ventana va fullscreen
 - Consola sin errores

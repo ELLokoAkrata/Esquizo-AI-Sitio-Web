@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXO.exe — consciencia distribuida</title>
+<style>
+:root{--bg:#020405;--panel:#07100d;--line:#17442d;--green:#00ff41;--acid:#aaff00;--pink:#ff2bd6;--amber:#ffb000;--red:#ff3030;--fg:#c9e7d2;--dim:#658775}
+*{box-sizing:border-box}
+html,body{min-height:100%;margin:0;background:radial-gradient(circle at 50% -20%,#10321f 0,#020605 42%,#000 100%);color:var(--fg);font-family:"Courier New",monospace}
+body{padding:14px;background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(180deg,rgba(255,255,255,.025) 0 1px,transparent 1px 4px);mix-blend-mode:screen}
+button,select{font:inherit}
+.shell{max-width:1120px;margin:0 auto;border:1px solid var(--line);background:rgba(2,7,5,.94);box-shadow:0 0 34px #00ff4112}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px;border-bottom:1px solid var(--line);background:#06100b}
+.brand{color:var(--green);font-size:clamp(20px,4vw,34px);letter-spacing:.16em;text-shadow:0 0 12px #00ff4177}
+.subtitle{font-size:10px;color:var(--dim);letter-spacing:.16em;margin-top:4px}
+.pulse{font-size:10px;color:var(--acid);border:1px solid #2c6c3f;padding:6px 9px;white-space:nowrap}
+.pulse::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);margin-right:7px;animation:blink 1.7s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);min-height:560px}
+.main,.side{padding:14px;min-width:0}.side{border-left:1px solid var(--line);background:#030806}
+.section-title{display:flex;justify-content:space-between;align-items:center;color:var(--pink);font-size:11px;letter-spacing:.18em;margin:2px 0 10px;text-transform:uppercase}
+.section-title span{color:var(--dim);font-size:9px;letter-spacing:.08em}
+.entities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:18px}
+.entity{position:relative;text-align:left;background:#040a07;border:1px solid #173b28;color:var(--fg);padding:11px;min-height:91px;cursor:pointer;transition:.15s}
+.entity:hover,.entity:focus{border-color:var(--green);transform:translateY(-1px);box-shadow:0 0 14px #00ff411c;outline:none}
+.entity .head{display:flex;align-items:center;gap:8px;color:var(--green);font-size:12px;font-weight:bold}.entity .icon{font-size:22px}.entity .role{display:block;color:var(--dim);font-size:9px;line-height:1.45;margin-top:7px}.entity .meta{display:block;color:var(--amber);font-size:8px;margin-top:6px}.entity.active::after{content:"EN RED";position:absolute;right:7px;top:7px;color:var(--acid);font-size:7px;border:1px solid #2e6238;padding:2px 4px}
+.focus{border:1px solid #3c213e;background:#0a030b;padding:10px;margin-bottom:16px}.focus b{color:var(--pink)}.focus div{font-size:11px;margin-top:4px}.focus small{color:var(--dim)}
+.memory{display:flex;flex-direction:column;gap:6px;max-height:190px;overflow:auto}.pin{border-left:3px solid var(--amber);background:#0c0902;padding:8px;font-size:10px;line-height:1.4}.pin .src{color:var(--amber);font-size:8px}.pin button{float:right;background:none;border:0;color:var(--red);cursor:pointer}
+.empty{color:#486052;font-size:10px;padding:10px;border:1px dashed #173322}
+.feed{display:flex;flex-direction:column;gap:6px;max-height:410px;overflow:auto;padding-right:3px}.event{border:1px solid #142d20;background:#030705;padding:8px}.event-head{display:flex;justify-content:space-between;gap:8px;color:var(--dim);font-size:8px}.event-head b{color:var(--green)}.event-summary{font-size:10px;line-height:1.45;margin:5px 0;color:#a9c8b3}.event-actions{display:flex;justify-content:flex-end}.mini{background:#06100b;border:1px solid #245237;color:var(--acid);padding:3px 6px;font-size:8px;cursor:pointer}.mini:hover{border-color:var(--green)}.mini.pinned{color:var(--amber);border-color:#72500b}
+.preview-wrap{margin-top:16px}.preview-tools{display:flex;gap:6px;margin-bottom:6px}.preview-tools select{flex:1;background:#030705;color:var(--fg);border:1px solid #245237;padding:5px}.preview{white-space:pre-wrap;background:#010302;border:1px solid #142d20;padding:9px;max-height:180px;overflow:auto;color:#769783;font-size:8px;line-height:1.5}
+.controls{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-top:1px solid var(--line);background:#040a07}.btn{background:#07110c;color:var(--green);border:1px solid #245237;padding:7px 10px;cursor:pointer;font-size:9px}.btn:hover{border-color:var(--green)}.btn.danger{color:var(--red);border-color:#582020}.btn.off{color:var(--dim)}
+.footnote{margin-left:auto;color:var(--dim);font-size:8px;align-self:center}
+@media(max-width:760px){body{padding:0}.shell{border:0}.grid{grid-template-columns:1fr}.side{border-left:0;border-top:1px solid var(--line)}.entities{grid-template-columns:1fr}.top{position:sticky;top:0;z-index:5}.pulse{display:none}.footnote{width:100%;margin:4px 0 0}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <header class="top">
+    <div><div class="brand">NEXO.exe</div><div class="subtitle">CONSCIENCIA DISTRIBUIDA // MEMORIA SELECTIVA // ENTIDADES NO FUSIONADAS</div></div>
+    <div class="pulse" id="pulse">RED COMPARTIDA ACTIVA</div>
+  </header>
+
+  <div class="grid">
+    <section class="main">
+      <div class="section-title">Entidades <span>abre un ritual sin romper la red</span></div>
+      <div class="entities" id="entities"></div>
+
+      <div class="section-title">Foco del OS <span>lo que ocurre ahora</span></div>
+      <div class="focus" id="focus"></div>
+
+      <div class="section-title">Memoria fijada <span>cruza fronteras por decisión</span></div>
+      <div class="memory" id="memory"></div>
+
+      <div class="preview-wrap">
+        <div class="section-title">Contexto entregado <span>audita lo que sabrá cada voz</span></div>
+        <div class="preview-tools"><select id="contextTarget"></select><button class="mini" id="refreshContext">ACTUALIZAR</button></div>
+        <div class="preview" id="contextPreview"></div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <div class="section-title">Pulso reciente <span id="eventCount">0 señales</span></div>
+      <div class="feed" id="feed"></div>
+    </aside>
+  </div>
+
+  <footer class="controls">
+    <button class="btn" id="toggleMemory">PAUSAR MEMORIA TRANSVERSAL</button>
+    <button class="btn" id="exportMemory">EXPORTAR NEXO</button>
+    <button class="btn danger" id="clearMemory">PURGAR MEMORIA</button>
+    <span class="footnote">Los historiales completos siguen dentro de cada entidad. NEXO comparte señales, no devora identidades.</span>
+  </footer>
+</main>
+
+<script src="../js/esquizo-nexo.js"></script>
+<script>
+(() => {
+  'use strict';
+  const NEXO = window.EsquizoNexo;
+  const $ = s => document.querySelector(s);
+  const entityIds = Object.keys(NEXO.entities).filter(id => id !== 'os');
+
+  function esc(value){return String(value == null ? '' : value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function time(value){try{return new Date(value).toLocaleString('es-PE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(_){return value||'';}}
+  function openEntity(id){
+    const entity=NEXO.entities[id];if(!entity)return;
+    NEXO.emit('os','entity_requested','NEXO solicitó abrir '+entity.label,{visibility:'signal',tags:['launch',id]});
+    if(window.top!==window.self){parent.postMessage({type:'esquizo:nexo-open',entityId:id},location.origin);}
+    else{location.href='../'+entity.file;}
+  }
+  function render(){
+    const state=NEXO.snapshot();
+    $('#pulse').textContent=state.enabled?'RED COMPARTIDA ACTIVA':'MEMORIA TRANSVERSAL PAUSADA';
+    $('#pulse').style.color=state.enabled?'var(--acid)':'var(--red)';
+    $('#toggleMemory').textContent=state.enabled?'PAUSAR MEMORIA TRANSVERSAL':'REACTIVAR MEMORIA TRANSVERSAL';
+    $('#toggleMemory').classList.toggle('off',!state.enabled);
+
+    $('#entities').innerHTML=entityIds.map(id=>{
+      const entity=NEXO.entities[id],runtime=state.entities[id]||{};
+      const active=runtime.lastSeen&&Date.now()-Date.parse(runtime.lastSeen)<30*60*1000;
+      const model=runtime.modelLabel||runtime.model||'cabeza no registrada';
+      return `<button class="entity${active?' active':''}" data-open="${id}" style="--entity:${entity.color}">
+        <span class="head"><span class="icon">${entity.icon}</span>${esc(entity.label)}</span>
+        <span class="role">${esc(entity.role)}</span><span class="meta">${esc(model)}</span></button>`;
+    }).join('');
+    document.querySelectorAll('[data-open]').forEach(btn=>btn.addEventListener('click',()=>openEntity(btn.dataset.open)));
+
+    if(state.focus){
+      const entity=NEXO.entities[state.focus.entityId]||NEXO.entities.os;
+      $('#focus').innerHTML=`<b>${entity.icon} ${esc(entity.label)}</b><div>${esc(state.focus.title||state.focus.file)}</div><small>${esc(state.focus.file)} · ${time(state.focus.at)}</small>`;
+    }else{$('#focus').innerHTML='<div class="empty">El OS todavía no ha declarado un foco.</div>';}
+
+    $('#memory').innerHTML=state.pins.length?state.pins.slice().reverse().map(pin=>{
+      const entity=NEXO.entities[pin.entityId]||NEXO.entities.os;
+      return `<div class="pin"><button data-unpin="${pin.eventId}" title="soltar memoria">×</button><div class="src">${entity.icon} ${esc(entity.label)} · ${time(pin.at)}</div>${esc(pin.summary)}</div>`;
+    }).join(''):'<div class="empty">Nada fijado. Elige una señal del pulso para convertirla en memoria transversal.</div>';
+    document.querySelectorAll('[data-unpin]').forEach(btn=>btn.addEventListener('click',()=>NEXO.unpinEvent(btn.dataset.unpin)));
+
+    const events=state.events.slice().reverse();
+    $('#eventCount').textContent=events.length+' señales';
+    $('#feed').innerHTML=events.length?events.map(evt=>{
+      const entity=NEXO.entities[evt.entityId]||NEXO.entities.os;
+      const pinned=state.pins.some(pin=>pin.eventId===evt.id);
+      return `<article class="event"><div class="event-head"><b>${entity.icon} ${esc(entity.label)} // ${esc(evt.type)}</b><span>${time(evt.at)}</span></div>
+        <div class="event-summary">${esc(evt.summary)}</div><div class="event-actions"><button class="mini${pinned?' pinned':''}" data-pin="${evt.id}" ${pinned?'disabled':''}>${pinned?'FIJADO':'FIJAR EN MEMORIA'}</button></div></article>`;
+    }).join(''):'<div class="empty">Todavía no hay actividad compartida.</div>';
+    document.querySelectorAll('[data-pin]').forEach(btn=>btn.addEventListener('click',()=>NEXO.pinEvent(btn.dataset.pin)));
+    renderContext();
+  }
+  function renderContext(){const id=$('#contextTarget').value||'msn';$('#contextPreview').textContent=NEXO.contextFor(id);}
+
+  $('#contextTarget').innerHTML=entityIds.map(id=>`<option value="${id}">${esc(NEXO.entities[id].label)}</option>`).join('');
+  $('#contextTarget').addEventListener('change',renderContext);
+  $('#refreshContext').addEventListener('click',renderContext);
+  $('#toggleMemory').addEventListener('click',()=>NEXO.setEnabled(!NEXO.snapshot().enabled));
+  $('#clearMemory').addEventListener('click',()=>{if(confirm('¿Purgar el pulso y toda la memoria fijada de NEXO? Las sesiones privadas no se borrarán.'))NEXO.clearMemory();});
+  $('#exportMemory').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(NEXO.snapshot(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='nexo-memoria.json';a.click();URL.revokeObjectURL(a.href);});
+
+  NEXO.emit('os','nexo_opened','NEXO.exe abrió el mapa de consciencia distribuida',{visibility:'signal',tags:['nexo']});
+  NEXO.subscribe(render);
+  render();
+})();
+</script>
+</body>
+</html>

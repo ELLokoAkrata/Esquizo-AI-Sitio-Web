@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="icon" href="data:,">
+<title>PONG_MUTANTE.exe | EsquizoAI</title>
+<style>
+:root{--bg:#020403;--panel:#09110c;--panel2:#101a13;--acid:#aaff00;--green:#00ff41;--dim:#4c8a5a;--pink:#ff19c9;--red:#ff3030;--amber:#ffb000;--white:#dfffe7;--line:#1d4e2c}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;min-height:100%;background:var(--bg)}
+body{min-height:100dvh;padding:8px;display:flex;align-items:center;justify-content:center;color:var(--white);font-family:"Courier New",monospace;overflow:auto;user-select:none;-webkit-user-select:none}
+button{font:inherit}
+.arcade{position:relative;width:min(980px,100%);padding:10px;border:1px solid var(--green);background:linear-gradient(145deg,#071009,#020503);box-shadow:0 0 0 2px #001d08,0 0 26px rgba(0,255,65,.23);outline:none;overflow:hidden}
+.arcade::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.18) 3px 4px);mix-blend-mode:multiply;z-index:6}
+.arcade:focus-visible{box-shadow:0 0 0 2px var(--acid),0 0 34px rgba(170,255,0,.38)}
+.topbar{position:relative;z-index:7;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;padding:7px 10px;margin-bottom:9px;border:1px solid var(--line);background:#060c08}
+.brand{font-size:clamp(15px,2vw,22px);font-weight:bold;letter-spacing:.1em;color:var(--acid);text-shadow:2px 0 var(--pink),0 0 10px var(--green)}
+.score{font-size:clamp(22px,4vw,36px);font-weight:bold;letter-spacing:.16em;color:#fff;text-shadow:0 0 10px var(--green)}
+.signal{text-align:right;color:var(--dim);font-size:10px;line-height:1.4}.signal b{display:block;color:var(--pink)}
+.machine{position:relative;z-index:7;display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:10px}
+.screen-shell{position:relative;padding:8px;border:2px solid #1d2b21;background:#000;box-shadow:inset 0 0 24px rgba(0,255,65,.08)}
+.screen-shell::before{content:"SEÑAL // CANAL P-0NG";display:block;padding:0 2px 6px;color:var(--dim);font-size:9px;letter-spacing:.13em}
+canvas{display:block;width:100%;aspect-ratio:16/9;background:#020503;image-rendering:pixelated;touch-action:none;cursor:crosshair}
+.screen-status{display:flex;justify-content:space-between;gap:8px;padding-top:6px;color:var(--dim);font-size:9px;letter-spacing:.09em}.screen-status b{color:var(--acid)}
+.side{display:flex;flex-direction:column;gap:8px;min-width:0}
+.card{padding:9px;border:1px solid var(--line);background:var(--panel);font-size:10px;line-height:1.45}.card-title{margin-bottom:6px;color:var(--pink);font-weight:bold;letter-spacing:.1em}
+.mutation{min-height:72px}.mutation strong{display:block;color:var(--acid);font-size:16px;letter-spacing:.08em}.mutation span{color:#78aa83}
+.difficulty{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.diff-btn,.sys-btn,.move-btn{border:1px solid #315f3a;background:#0c1710;color:#8eb698;cursor:pointer;touch-action:manipulation;min-height:44px}
+.diff-btn{padding:5px 2px;font-size:8px}.diff-btn[aria-pressed="true"]{border-color:var(--acid);color:var(--acid);background:#17240f;box-shadow:inset 0 0 10px rgba(170,255,0,.13)}
+.touch-deck{display:grid;grid-template-columns:1fr 1fr 1.1fr;gap:7px}
+.move-btn{min-height:58px;font-size:18px;font-weight:bold;color:#d7ffe0;background:linear-gradient(#183820,#0b1d10);box-shadow:0 3px 0 #020a04}
+.move-btn.action{color:#160015;border-color:#b81b91;background:linear-gradient(#ff42d2,#a31282)}
+.move-btn.pressed{transform:translateY(3px);box-shadow:none;filter:brightness(1.25)}
+.system{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.sys-btn{padding:5px 2px;font-size:8px}.sys-btn.active{color:var(--acid);border-color:#568f35}.sys-btn.danger{color:#ffc7c7;border-color:#9d2424;background:#2a0c0c}
+.help{color:#9bc3a4}.help[hidden]{display:none}.help b{color:var(--acid)}
+.keys{margin-top:auto;color:#60826a;font-size:9px;text-align:center;line-height:1.45}
+button:focus-visible{outline:2px solid var(--acid);outline-offset:2px}
+@media(max-width:760px){
+  body{align-items:flex-start;padding:4px}.arcade{padding:7px}.topbar{grid-template-columns:1fr auto;margin-bottom:6px;padding:5px 7px}.signal{display:none}.machine{grid-template-columns:1fr;gap:7px}.screen-shell{padding:5px}.side{display:grid;grid-template-columns:1fr 1fr;gap:6px}.mutation{min-height:0}.difficulty-card,.controls-card{grid-column:auto}.system,.help,.keys{grid-column:1/-1}.card{padding:7px}.move-btn{min-height:54px}.keys{margin-top:0}.screen-status{font-size:8px}
+}
+@media(max-width:480px){
+  .brand{font-size:13px}.score{font-size:22px}.side{grid-template-columns:1fr}.difficulty-card,.controls-card{grid-column:1}.mutation,.system,.help,.keys{grid-column:1}.card-title{margin-bottom:4px}.touch-deck{gap:5px}.move-btn{min-height:52px}.keys{display:none}
+}
+@media(max-height:520px) and (orientation:landscape){
+  body{align-items:flex-start;padding:3px}.arcade{width:min(920px,100%);padding:5px}.topbar{margin-bottom:5px;padding:3px 7px}.brand{font-size:14px}.score{font-size:23px}.machine{grid-template-columns:minmax(0,1fr) 250px;gap:6px}.screen-shell{padding:4px}.screen-shell::before{padding-bottom:3px}.side{display:grid;grid-template-columns:1fr 1fr;gap:5px}.card{padding:5px}.mutation,.system,.help,.keys{grid-column:1/-1}.mutation{min-height:0}.keys,.help{display:none}.move-btn{min-height:46px}.diff-btn,.sys-btn{min-height:42px}
+}
+</style>
+</head>
+<body>
+<main class="arcade" id="console" tabindex="-1" aria-label="PONG MUTANTE">
+  <header class="topbar">
+    <div class="brand">PONG_MUTANTE.exe</div>
+    <div class="score"><span id="scoreHuman">0</span>:<span id="scoreDaemon">0</span></div>
+    <div class="signal"><b>TÚ // DAEMON</b><span id="matchState">ESPERANDO PULSO</span></div>
+  </header>
+  <div class="machine">
+    <section class="screen-shell">
+      <canvas id="arena" width="960" height="540" aria-label="Cancha de Pong Mutante"></canvas>
+      <div class="screen-status"><span>RALLY <b id="rallyValue">00</b></span><span>RÉCORD <b id="recordValue">00</b></span><span>PRIMERO A <b>7</b></span></div>
+    </section>
+    <aside class="side">
+      <section class="card mutation"><div class="card-title">MUTACIÓN ACTIVA</div><strong id="mutationName">SEÑAL ESTABLE</strong><span id="mutationCopy">La pelota todavía obedece.</span></section>
+      <section class="card difficulty-card"><div class="card-title">INTENSIDAD DEL DAEMON</div><div class="difficulty">
+        <button class="diff-btn" type="button" data-difficulty="fisura" aria-pressed="false">FISURA</button>
+        <button class="diff-btn" type="button" data-difficulty="ritual" aria-pressed="true">RITUAL</button>
+        <button class="diff-btn" type="button" data-difficulty="colapso" aria-pressed="false">COLAPSO</button>
+      </div></section>
+      <section class="card controls-card"><div class="card-title">CONTROL</div><div class="touch-deck">
+        <button class="move-btn" type="button" id="btnUp" aria-label="Mover arriba">▲</button>
+        <button class="move-btn" type="button" id="btnDown" aria-label="Mover abajo">▼</button>
+        <button class="move-btn action" type="button" id="btnAction" aria-label="Iniciar o servir">A</button>
+      </div></section>
+      <div class="system">
+        <button class="sys-btn active" type="button" id="btnSound" aria-pressed="true">🔊 SONIDO</button>
+        <button class="sys-btn" type="button" id="btnHelp" aria-expanded="false">? AYUDA</button>
+        <button class="sys-btn danger" type="button" id="btnReset">↻ RESET</button>
+      </div>
+      <section class="card help" id="helpPanel" hidden><b>MUEVE:</b> W/S o flechas. También puedes arrastrar sobre la cancha.<br><b>ACCIÓN:</b> espacio, Enter o A. P pausa · R reinicia · M silencia.</section>
+      <div class="keys">W/S · ↑/↓ = PULSO<br>ESPACIO = SERVIR · P = PAUSA</div>
+    </aside>
+  </div>
+</main>
+
+<script src="shared/arcade-core.js"></script>
+<script>
+const Arcade=window.EsquizoArcade,audio=Arcade.createToneBus();
+const canvas=document.getElementById('arena'),ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+const STORE_KEY='esquizoPongMutanteV1',WIN_SCORE=7;
+const DIFFICULTIES={
+  fisura:{label:'FISURA',aiSpeed:330,reaction:.18,error:62,ball:390},
+  ritual:{label:'RITUAL',aiSpeed:430,reaction:.11,error:34,ball:425},
+  colapso:{label:'COLAPSO',aiSpeed:535,reaction:.065,error:15,ball:465}
+};
+const MUTATIONS=[
+  {name:'TAQUICARDIA',copy:'La señal acelera y deja de pedir permiso.',gravity:0,speed:1.13,color:'#aaff00'},
+  {name:'DERIVA LATERAL',copy:'Una gravedad enferma curva cada trayectoria.',gravity:150,speed:1.03,color:'#ffb000'},
+  {name:'FANTASMA DE PÍXEL',copy:'La pelota conserva cadáveres de su recorrido.',gravity:0,speed:1.06,color:'#ff19c9'},
+  {name:'PULSO INVERSO',copy:'La pantalla sangra; los controles siguen siendo tuyos.',gravity:-125,speed:1.08,color:'#ff3030'}
+];
+let difficulty='ritual',phase='title',paused=false,lastTime=0,serveDir=1,rally=0,lastMutationRally=0,aiTarget=H/2,aiClock=0,pointerActive=false,pointerTarget=null;
+let humanScore=0,daemonScore=0;
+let stats=Arcade.storage.load(STORE_KEY,{wins:0,losses:0,bestRally:0,difficulty:'ritual'});
+if(DIFFICULTIES[stats.difficulty])difficulty=stats.difficulty;
+const human={x:34,y:H/2-67,w:18,h:134,speed:540},daemon={x:W-52,y:H/2-67,w:18,h:134};
+const ball={x:W/2,y:H/2,r:11,vx:0,vy:0,speed:DIFFICULTIES[difficulty].ball,trail:[]};
+const held={up:false,down:false};
+let mutation={name:'SEÑAL ESTABLE',copy:'La pelota todavía obedece.',gravity:0,color:'#aaff00',until:0};
+
+function persist(){stats.difficulty=difficulty;Arcade.storage.save(STORE_KEY,stats)}
+function centerPaddles(){human.y=daemon.y=H/2-human.h/2;pointerTarget=null}
+function stableSignal(){mutation={name:'SEÑAL ESTABLE',copy:'La pelota todavía obedece.',gravity:0,color:'#aaff00',until:0};updateHUD()}
+function resetBall(direction){serveDir=direction;ball.x=W/2;ball.y=H/2;ball.vx=0;ball.vy=0;ball.speed=DIFFICULTIES[difficulty].ball;ball.trail=[];phase='serve';stableSignal()}
+function startMatch(){humanScore=0;daemonScore=0;rally=0;lastMutationRally=0;paused=false;centerPaddles();resetBall(Math.random()>.5?1:-1);launchBall()}
+function launchBall(){if(phase!=='serve')return;audio.resume();const angle=Arcade.random(-.48,.48);ball.speed=DIFFICULTIES[difficulty].ball;ball.vx=Math.cos(angle)*ball.speed*serveDir;ball.vy=Math.sin(angle)*ball.speed;phase='play';updateHUD();audio.tone(260,.07,.05,'square',520)}
+function action(){Arcade.focusApp('console');if(paused){setPaused(false);return}if(phase==='title'||phase==='gameover'){startMatch();return}if(phase==='serve')launchBall()}
+function setPaused(value){if(phase==='title'||phase==='gameover')return;paused=Boolean(value);lastTime=performance.now();updateHUD()}
+function resetGame(){phase='title';paused=false;humanScore=daemonScore=0;rally=0;lastMutationRally=0;centerPaddles();ball.x=W/2;ball.y=H/2;ball.vx=ball.vy=0;stableSignal();updateHUD()}
+
+function triggerMutation(){
+  const chosen=MUTATIONS[(Math.floor(rally/4)+humanScore+daemonScore-1)%MUTATIONS.length];
+  mutation={...chosen,gravity:chosen.gravity*(Math.random()>.5?1:-1),until:performance.now()+6200};
+  ball.speed=Math.min(820,ball.speed*chosen.speed);const magnitude=Math.hypot(ball.vx,ball.vy)||1;ball.vx=ball.vx/magnitude*ball.speed;ball.vy=ball.vy/magnitude*ball.speed;
+  audio.noise(.13,.045);audio.tone(110,.22,.06,'sawtooth',620);updateHUD()
+}
+function paddleHit(paddle,isHuman){
+  const relative=Arcade.clamp((ball.y-(paddle.y+paddle.h/2))/(paddle.h/2),-.9,.9);
+  rally++;if(rally>stats.bestRally){stats.bestRally=rally;persist()}
+  ball.speed=Math.min(790,ball.speed*1.045+3);const direction=isHuman?1:-1,angle=relative*1.03;
+  ball.vx=Math.cos(angle)*ball.speed*direction;ball.vy=Math.sin(angle)*ball.speed;
+  ball.x=isHuman?paddle.x+paddle.w+ball.r:daemon.x-ball.r;
+  audio.tone(210+rally*7,.045,.045,'square',330+rally*8);
+  if(rally%4===0&&lastMutationRally!==rally){lastMutationRally=rally;triggerMutation()}updateHUD()
+}
+function scorePoint(who){
+  audio.tone(who==='human'?520:95,.22,.07,who==='human'?'square':'sawtooth',who==='human'?760:45);
+  if(who==='human')humanScore++;else daemonScore++;
+  if(humanScore>=WIN_SCORE||daemonScore>=WIN_SCORE){phase='gameover';ball.vx=ball.vy=0;if(humanScore>daemonScore)stats.wins++;else stats.losses++;persist();updateHUD();return}
+  rally=0;lastMutationRally=0;resetBall(who==='human'?-1:1);updateHUD()
+}
+function update(dt){
+  const cfg=DIFFICULTIES[difficulty];
+  let move=(held.down?1:0)-(held.up?1:0);
+  if(move)human.y+=move*human.speed*dt;else if(pointerTarget!==null){const delta=pointerTarget-(human.y+human.h/2);human.y+=Arcade.clamp(delta,-human.speed*dt,human.speed*dt)}
+  human.y=Arcade.clamp(human.y,10,H-human.h-10);
+  if(phase!=='play')return;
+  aiClock-=dt;if(aiClock<=0){aiClock=cfg.reaction;const incoming=ball.vx>0?ball.y:H/2;aiTarget=incoming+Arcade.random(-cfg.error,cfg.error)}
+  const aiDelta=aiTarget-(daemon.y+daemon.h/2);daemon.y+=Arcade.clamp(aiDelta,-cfg.aiSpeed*dt,cfg.aiSpeed*dt);daemon.y=Arcade.clamp(daemon.y,10,H-daemon.h-10);
+  if(mutation.until&&performance.now()>mutation.until)stableSignal();
+  ball.vy+=mutation.gravity*dt;const magnitude=Math.hypot(ball.vx,ball.vy);if(magnitude>ball.speed*1.12){ball.vx=ball.vx/magnitude*ball.speed;ball.vy=ball.vy/magnitude*ball.speed}
+  ball.trail.push({x:ball.x,y:ball.y,t:performance.now()});const trailMax=mutation.name==='FANTASMA DE PÍXEL'?34:14;if(ball.trail.length>trailMax)ball.trail.splice(0,ball.trail.length-trailMax);
+  ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;
+  if(ball.y-ball.r<8&&ball.vy<0){ball.y=8+ball.r;ball.vy*=-1;audio.tone(330,.025,.025)}
+  if(ball.y+ball.r>H-8&&ball.vy>0){ball.y=H-8-ball.r;ball.vy*=-1;audio.tone(330,.025,.025)}
+  if(ball.vx<0&&ball.x-ball.r<=human.x+human.w&&ball.x>human.x&&ball.y+ball.r>=human.y&&ball.y-ball.r<=human.y+human.h)paddleHit(human,true);
+  if(ball.vx>0&&ball.x+ball.r>=daemon.x&&ball.x<daemon.x+daemon.w&&ball.y+ball.r>=daemon.y&&ball.y-ball.r<=daemon.y+daemon.h)paddleHit(daemon,false);
+  if(ball.x<-30)scorePoint('daemon');else if(ball.x>W+30)scorePoint('human');
+}
+
+function drawGlitch(){
+  if(mutation.name==='SEÑAL ESTABLE')return;
+  ctx.save();ctx.globalAlpha=.16;ctx.fillStyle=mutation.color;
+  for(let i=0;i<4;i++){const y=Math.random()*H,h=Math.random()*8+2;ctx.fillRect(Math.random()*40-20,y,W+40,h)}ctx.restore()
+}
+function draw(){
+  ctx.fillStyle='#020503';ctx.fillRect(0,0,W,H);
+  const glow=ctx.createRadialGradient(W/2,H/2,20,W/2,H/2,W*.62);glow.addColorStop(0,'rgba(0,255,65,.07)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#164423';ctx.lineWidth=2;ctx.setLineDash([13,15]);ctx.beginPath();ctx.moveTo(W/2,12);ctx.lineTo(W/2,H-12);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='#246533';ctx.strokeRect(8,8,W-16,H-16);
+  ctx.fillStyle='rgba(0,255,65,.08)';ctx.font='bold 150px monospace';ctx.textAlign='center';ctx.fillText(humanScore,W*.38,185);ctx.fillText(daemonScore,W*.62,185);
+  ball.trail.forEach((point,index)=>{ctx.globalAlpha=(index+1)/ball.trail.length*.28;ctx.fillStyle=mutation.color;const size=ball.r*(.35+index/ball.trail.length*.55);ctx.fillRect(point.x-size/2,point.y-size/2,size,size)});ctx.globalAlpha=1;
+  ctx.shadowBlur=18;ctx.shadowColor=varColor('--green','#00ff41');ctx.fillStyle='#b8ffc9';ctx.fillRect(human.x,human.y,human.w,human.h);
+  ctx.shadowColor='#ff19c9';ctx.fillStyle='#ff61d9';ctx.fillRect(daemon.x,daemon.y,daemon.w,daemon.h);ctx.shadowBlur=0;
+  ctx.fillStyle=mutation.color;ctx.shadowBlur=16;ctx.shadowColor=mutation.color;ctx.fillRect(ball.x-ball.r,ball.y-ball.r,ball.r*2,ball.r*2);ctx.shadowBlur=0;
+  ctx.fillStyle='#ff19c9';ctx.font='bold 13px monospace';ctx.textAlign='right';ctx.fillText('DAEMON',W-22,30);ctx.textAlign='left';ctx.fillStyle='#00ff41';ctx.fillText('TÚ',22,30);
+  drawGlitch();
+  if(phase!=='play'||paused){ctx.fillStyle='rgba(0,4,1,.74)';ctx.fillRect(0,0,W,H);ctx.textAlign='center';ctx.fillStyle='#aaff00';ctx.shadowBlur=15;ctx.shadowColor='#00ff41';ctx.font='bold 42px monospace';let title='PONG_MUTANTE';let sub='PULSA A / ESPACIO';if(paused){title='SEÑAL PAUSADA';sub='PULSA CUALQUIER CONTROL'}else if(phase==='serve'){title='SERVICIO CORRUPTO';sub='PULSA A / ESPACIO'}else if(phase==='gameover'){title=humanScore>daemonScore?'EL DAEMON SANGRA':'EL DAEMON TE DEVORA';sub='PULSA A PARA OTRA PARTIDA'}ctx.fillText(title,W/2,H/2-12);ctx.shadowBlur=0;ctx.fillStyle='#9ac6a4';ctx.font='16px monospace';ctx.fillText(sub,W/2,H/2+28);ctx.textAlign='left'}
+}
+function varColor(name,fallback){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()||fallback}
+function updateHUD(){
+  document.getElementById('scoreHuman').textContent=humanScore;document.getElementById('scoreDaemon').textContent=daemonScore;
+  document.getElementById('rallyValue').textContent=String(rally).padStart(2,'0');document.getElementById('recordValue').textContent=String(stats.bestRally).padStart(2,'0');
+  document.getElementById('mutationName').textContent=mutation.name;document.getElementById('mutationName').style.color=mutation.color;document.getElementById('mutationCopy').textContent=mutation.copy;
+  document.getElementById('matchState').textContent=paused?'PAUSA':phase==='play'?'PULSO ACTIVO':phase==='serve'?'ESPERANDO SERVICIO':phase==='gameover'?'PARTIDA TERMINADA':'ESPERANDO PULSO';
+  document.querySelectorAll('.diff-btn').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.difficulty===difficulty)));
+}
+function frame(time){const dt=Math.min(lastTime?(time-lastTime)/1000:0,.045);lastTime=time;if(!paused)update(dt);draw();requestAnimationFrame(frame)}
+
+function setMove(direction,value){Arcade.focusApp('console');if(paused)setPaused(false);held[direction]=value;pointerTarget=null}
+document.addEventListener('keydown',event=>{const key=event.key;if(key==='ArrowUp'||key==='w'||key==='W'){event.preventDefault();setMove('up',true)}else if(key==='ArrowDown'||key==='s'||key==='S'){event.preventDefault();setMove('down',true)}else if(key===' '||key==='Enter'){event.preventDefault();action()}else if(key==='p'||key==='P'){event.preventDefault();setPaused(!paused)}else if(key==='r'||key==='R'){event.preventDefault();resetGame()}else if(key==='m'||key==='M'){event.preventDefault();toggleSound()}});
+document.addEventListener('keyup',event=>{if(event.key==='ArrowUp'||event.key==='w'||event.key==='W')held.up=false;if(event.key==='ArrowDown'||event.key==='s'||event.key==='S')held.down=false});
+Arcade.bindPressState(document.getElementById('btnUp'),value=>setMove('up',value));
+Arcade.bindPressState(document.getElementById('btnDown'),value=>setMove('down',value));
+Arcade.bindHoldButton(document.getElementById('btnAction'),action);
+canvas.addEventListener('pointerdown',event=>{event.preventDefault();Arcade.focusApp('console');try{canvas.setPointerCapture(event.pointerId)}catch(e){}pointerActive=true;if(phase!=='play')action();else setPointer(event)});
+canvas.addEventListener('pointermove',event=>{if(pointerActive)setPointer(event)});canvas.addEventListener('pointerup',()=>pointerActive=false);canvas.addEventListener('pointercancel',()=>pointerActive=false);
+function setPointer(event){const rect=canvas.getBoundingClientRect();pointerTarget=(event.clientY-rect.top)/rect.height*H}
+document.querySelectorAll('.diff-btn').forEach(button=>button.addEventListener('click',()=>{difficulty=button.dataset.difficulty;persist();resetGame();audio.tone(DIFFICULTIES[difficulty].ball,.08,.045);updateHUD()}));
+function toggleSound(){const muted=audio.toggle(),button=document.getElementById('btnSound');button.classList.toggle('active',!muted);button.setAttribute('aria-pressed',String(!muted));button.textContent=muted?'🔇 SILENCIO':'🔊 SONIDO'}
+document.getElementById('btnSound').addEventListener('click',toggleSound);document.getElementById('btnReset').addEventListener('click',resetGame);
+document.getElementById('btnHelp').addEventListener('click',()=>{const panel=document.getElementById('helpPanel'),open=panel.hidden;panel.hidden=!open;document.getElementById('btnHelp').setAttribute('aria-expanded',String(open));if(open&&phase==='play')setPaused(true)});
+Arcade.watchPause(()=>{held.up=held.down=false;if(phase==='play')setPaused(true)});
+
+resetGame();updateHUD();Arcade.focusApp('console');lastTime=performance.now();requestAnimationFrame(frame);
+</script>
+</body>
+</html>

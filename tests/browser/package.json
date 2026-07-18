@@ -4,6 +4,7 @@
   "private": true,
   "description": "Auditorías locales de navegador para las experiencias generativas de EsquizoAI.",
   "scripts": {
+    "test:games": "node game-audit.cjs",
     "test:radio": "node radio-audit.cjs",
     "test:radio:quick": "node radio-audit.cjs --quick",
     "test:radio:headed": "node radio-audit.cjs --headed"

@@ -2,7 +2,7 @@
 
 > Referencia profunda y accionable del portal. Para el panorama/filosofía, ver `PROJECT_CONTEXT.md`.
 > Aquí está el **cómo**: arquitectura, API interna, cómo extender, gotchas y cómo testear.
-> **Última actualización:** 2026-07-14 — FREE_RADIO v2 y vórtices reactivos al flujo musical.
+> **Última actualización:** 2026-07-18 — núcleo ARCADE MUTANTE, PONG_MUTANTE y MINAS_666.
 
 **Qué es:** `index.html` es un **escritorio Windows 98 acid** autocontenido (HTML + CSS + JS inline, **cero dependencias externas**, solo fuentes de Google). Envuelve y da acceso a todos los artefactos del códice como un "sistema operativo". El portal scrolleable anterior se preservó como `inicio-classic.html`.
 
@@ -10,7 +10,14 @@
 
 ## 1. Fuente única de datos: catálogo `FS`
 
-Objeto JS `const FS = { CLAVE: { label, icon, color, items:[...] } }`. Cada carpeta tiene `items` con `{ label, file, icon, desc? }`. `FS` **genera solo** los iconos del escritorio, los exploradores de carpeta y los submenús del menú Inicio. Es la **única** lista de artefactos: no hay listas duplicadas.
+Objeto JS `const FS = { CLAVE: { label, icon, color, items:[...] } }`. Cada carpeta tiene `items` con
+`{ label, file, icon, desc?, window? }`. `window` admite `{w,h,autofocus}` para declarar el tamaño y foco recomendado
+de una app. `FS` **genera solo** los iconos del escritorio, los exploradores de carpeta y los submenús del menú Inicio.
+Es la **única** lista de artefactos: no hay listas duplicadas.
+
+Todo ítem catalogado se abre con `launchCatalogItem(item)`, tanto desde una carpeta como desde Inicio o VOMIT.SH.
+No llames `openApp(it.file,...)` directamente desde un lanzador de catálogo: ignoraría `item.window` y volvería a crear
+tamaños distintos según la ruta de entrada.
 
 - `const DESKTOP_FOLDERS = [...]` → qué carpetas de `FS` aparecen como iconos en el escritorio.
 - `file` = ruta exacta del artefacto relativa a la raíz del sitio (ej. `grimorios/X.html`, `Psycho-bot-monologues/epNN.html`).
@@ -61,6 +68,9 @@ Carpetas, README, ACERCA_DE_MI, Mi PC, TAREAS y diálogos de error siguen siendo
 | REPRODUCTOR.exe | `openReproductor()` | 540×680 |
 | VOMIT.SH | `openTerminal()` | 720×460 |
 | Administrador de tareas | `openTaskMgr()` | 520×440 |
+| BRICK_GAME.exe | `openBrickGame()` → `launchCatalogItem()` | 600×720 + autofoco |
+| PONG_MUTANTE.exe | `openPongMutante()` → `launchCatalogItem()` | 820×680 + autofoco |
+| MINAS_666.exe | `openMinas666()` → `launchCatalogItem()` | 760×720 + autofoco |
 
 ---
 
@@ -381,6 +391,71 @@ scripts inline de las siete superficies modificadas.
 
 ---
 
+## 7n. ARCADE MUTANTE — núcleo, BRICK_GAME, PONG_MUTANTE y MINAS_666
+
+### Núcleo local (`games/shared/arcade-core.js`)
+
+API `window.EsquizoArcade` sin dependencias externas:
+
+- `storage.load/save` — JSON tolerante a datos corruptos o storage no disponible.
+- `bindHoldButton()` — Pointer Events con captura y repetición opcional.
+- `bindPressState()` — estado continuo para controles como una paleta.
+- `bindLongPress()` — tap frente a pulsación larga con Pointer Events, tolerancia de movimiento y sin acción duplicada.
+- `watchPause()` y `focusApp()` — ciclo de vida coherente dentro del iframe del OS.
+- `createToneBus()` — tonos y ruido Web Audio activados por gesto.
+- `clamp()` / `random()` — utilidades mecánicas.
+
+El núcleo no contiene reglas de juego ni estética. Cada app conserva su física, estado y voz visual.
+
+### BRICK_GAME v2
+
+`games/brick-game.html` es una consola portátil Canvas con cuatro modos: Tetris, Snake, Breakout y Racing. Los modos
+se seleccionan de forma visible y comparten una capa de entrada local:
+
+- Pointer Events para mouse, lápiz y touch; izquierda/derecha/abajo repiten al mantener presionado.
+- Targets táctiles mínimos de 44 px y teclado (flechas/WASD, espacio/Enter, P, R, M, 1–4).
+- Autofoco solicitado desde `FS.items[].window.autofocus`; la primera pulsación también reanuda si el iframe perdió foco.
+- Pausa por botón, `blur` o `visibilitychange`; récord independiente por modo en `localStorage["esquizoBrickRecordsV2"]`.
+- Layout vertical en standalone/móvil y horizontal compacto cuando el iframe tiene poca altura o está en paisaje.
+- Tetris aplica lock delay solo cuando la pieza está apoyada. Los movimientos en el aire no consumen el límite de lock.
+
+Prueba reproducible:
+
+```bash
+cd tests/browser
+npm run test:games
+```
+
+La auditoría cubre teclado, touch, bloqueo aéreo, pausa, reinicio, tamaños, overflow, autofoco del OS y errores de consola.
+
+### PONG_MUTANTE
+
+`games/pong-mutante.html` es un duelo Canvas 16:9 contra el daemon:
+
+- primero a 7; tres intensidades (`FISURA`, `RITUAL`, `COLAPSO`) con velocidad, reacción y error distintos;
+- teclado, botones touch de al menos 44 px y control por arrastre sobre la cancha;
+- récord de rally, victorias/derrotas y dificultad en `localStorage["esquizoPongMutanteV1"]`;
+- mutación cada cuatro rebotes: `TAQUICARDIA`, `DERIVA LATERAL`, `FANTASMA DE PÍXEL` o `PULSO INVERSO`;
+- pausa por pérdida de foco, audio sintetizado y layout sin scroll en su ventana 820×680.
+
+VOMIT.SH: `pong`/`pongmutante` abre PONG; `brick`/`tetris` abre BRICK; `juegos`/`game`/`arcade` abre la carpeta
+JUEGOS para no privilegiar una sola máquina.
+
+### MINAS_666
+
+`games/minas-666.html` es un buscaminas DOM accesible y táctil:
+
+- densidades `FISURA` (8×8/10), `RITUAL` (12×12/22) y `COLAPSO` (14×14/36);
+- colocación diferida: la primera celda revelada y sus ocho vecinas quedan excluidas de las minas;
+- tap/clic revela; pulsación larga, clic derecho o F marca; Enter hace chord; flechas/WASD mueven el foco;
+- expansión BFS de zonas vacías, derrota con minas/banderas incorrectas y victoria por revelar todo lo seguro;
+- cronómetro pausable, mejores tiempos y estadísticas en `localStorage["esquizoMinas666V1"]`;
+- tablero 432 px desktop / 352 px móvil y layout completo sin scroll en ventana 760×720.
+
+VOMIT.SH: `minas`, `minas666` y `buscaminas` abren la app.
+
+---
+
 ## 8. Identidad lingüística — regla global
 
 **Commits:** `63c7d9b`, `7f3c6f1`, `06e5b82`
@@ -420,6 +495,7 @@ Checklist:
 - Click "volver" dentro del artefacto → cierra la ventana
 - Navegación interna de Psycho-bot se queda en la ventana
 - **FREE_RADIO:** sintonizar un canal, cambiar los 4 presets, activar CAOS, comprobar B/M/H/Σ y fallback `PULSO GENERATIVO`
+- **ARCADE MUTANTE:** abrir JUEGOS, iniciar BRICK y PONG con teclado/touch, confirmar pausa al perder foco y ventanas sin scroll.
 - **NEXO:** abrir desde el icono único, lanzar MSN/ORACULO/VOID/TERMINAL/DENTAKORV/GRANJA, verificar foco y pulso.
 - **Memoria transversal:** fijar una señal, revisar la vista previa de dos entidades, pausar y confirmar que desaparece del contexto.
 - **Consola:** cambiar entre ventanas y confirmar que `BroadcastChannel`, `localStorage` y `postMessage` no producen errores.

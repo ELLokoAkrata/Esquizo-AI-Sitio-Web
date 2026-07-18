@@ -8,6 +8,9 @@ Este directorio alojará las auditorías automatizadas del sitio con Puppeteer.
 - Probar vistas de escritorio y móvil.
 - Registrar errores de consola y excepciones de página.
 - Comprobar interacciones, desbordamientos y estados del DOM.
+- Verificar juegos con teclado, Pointer Events, touch, pausa, reinicio, foco del iframe y tamaños de ventana.
+- Probar física mínima de PONG_MUTANTE: paleta, rebote, marcador, victoria a 7, dificultad y mutaciones.
+- Probar MINAS_666: primera zona segura, clic derecho, pulsación larga, teclado, detonación, victoria y tamaños del tablero.
 - Verificar la ráfaga de sintonización y el ADN visual/textual propio de cada frecuencia.
 - Confirmar que el pulso generativo sigue activo cuando no existe telemetría.
 - Capturar escenas generativas para inspección visual.
@@ -27,6 +30,7 @@ Desde la raíz del repositorio, con el servidor local activo en el puerto `8099`
 ```powershell
 cd tests/browser
 npm install
+npm run test:games
 npm run test:radio
 ```
 
@@ -41,6 +45,7 @@ También se puede indicar otra URL:
 
 ```powershell
 node radio-audit.cjs --url=https://esquizo-ai-sitio-web.vercel.app/iptv/
+node game-audit.cjs --url=https://esquizo-ai-sitio-web.vercel.app
 ```
 
 ## Estructura prevista
@@ -49,6 +54,7 @@ node radio-audit.cjs --url=https://esquizo-ai-sitio-web.vercel.app/iptv/
 tests/browser/
 ├── README.md
 ├── package.json
+├── game-audit.cjs
 ├── radio-audit.cjs
 ├── screenshots/      # generado, ignorado
 └── reports/          # generado, ignorado

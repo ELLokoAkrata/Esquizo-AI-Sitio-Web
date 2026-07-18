@@ -7,7 +7,7 @@
 >
 > Leyenda: `[x]` hecho y desplegado · `[~]` en progreso · `[ ]` pendiente
 >
-> **Última actualización:** 2026-07-14
+> **Última actualización:** 2026-07-18
 
 ---
 
@@ -138,6 +138,31 @@ y puede pausarse o purgarse.
 
 ---
 
+## 🎮 FASE 7 — ARCADE MUTANTE (juegos realmente jugables)
+**Estado: 🔶 EN DESARROLLO — implementación local verificada, pendiente deploy** · riesgo bajo · sin costo de API
+
+- [~] **BRICK_GAME.exe v2** — cuatro juegos visibles (Tetris, Snake, Breakout y Racing), Pointer Events con repetición,
+      autofoco, pausa, ayuda contextual, récords locales, reinicio universal y controles táctiles de al menos 44 px.
+- [~] **Tetris reparado** — el límite de movimientos solo opera cuando la pieza está apoyada; ya no bloquea ni termina
+      partidas por movimientos realizados en el aire.
+- [~] **Responsive real** — consola vertical standalone/móvil y layout horizontal compacto dentro del OS o en paisaje;
+      ventana 600×720 sin scroll interno ni controles recortados.
+- [~] **Lanzador único de catálogo** — `FS.items[].window` + `launchCatalogItem()` conservan tamaño y autofoco desde
+      carpeta, Inicio, VOMIT.SH y accesos directos.
+- [~] **Núcleo compartido** — `games/shared/arcade-core.js`: persistencia tolerante, Pointer Events, press/hold,
+      pausa por foco, autofoco y sintetizador Web Audio; BRICK ya consume el núcleo sin regresiones.
+- [~] **Auditoría Puppeteer** — `npm run test:games`: teclado, touch, Tetris, pausa, reinicio, tres viewports, OS,
+      overflow, foco, consola, rebotes de Pong, puntuación, victoria a 7 y mutaciones.
+- [~] **PONG_MUTANTE.exe** — app independiente: tú contra el daemon, tres intensidades, control por teclado/touch/drag,
+      marcador a 7, récord de rally, IA limitada y cuatro mutaciones de señal. Integrado en FS, Inicio y VOMIT.SH.
+- [~] **MINAS_666.exe** — buscaminas Win98 corrupto: tres densidades móviles, primer pulso y vecindad seguros,
+      expansión/chord, banderas por clic derecho/pulsación larga/F, teclado, pausa, cronómetro y récords locales.
+      Integrado en FS, Inicio y VOMIT.SH; auditoría cubre zona segura, bandera, derrota y victoria.
+- [ ] **GLITCH_INVADERS.exe** — shooter arcade por oleadas.
+- [ ] Confirmación manual final + deploy.
+
+---
+
 ## 💡 Ideas sueltas (sin fase asignada)
 
 - [ ] Dominio propio (en vez de `*.vercel.app`) — refuerza identidad
@@ -150,7 +175,7 @@ y puede pausarse o purgarse.
 - [x] ORACULO.exe — I Ching + VALIS, motor de hexagramas con IA, journal, sesión contextual · commit `78bfd08`→`66f9048`
 - [x] TERMINAL_ESQUIZO.exe — dual source (grimorios + 11 episodios Psycho-Bot), rediseño estético `esquizoai-products`, icono en escritorio + Inicio + VOMIT.SH (`terminal`|`dialogo`|`dialogoia`) · commit `e4245b2`
 - [x] `apiBase()` — los 4 frontends IA (MSN, ORACULO, VOID_GLITCH, TERMINAL) detectan `127.0.0.1:8099` y usan la API de producción Vercel; en cualquier otro entorno usan rutas relativas · commit `e4245b2`
-- [x] BRICK_GAME.exe (Fase 1 — Tetris) — consola física CSS + pantalla LCD (Canvas) + audio beeps + controles touch/teclado + integración OS (icono 🎮, VOMIT.SH `brick|tetris|juegos`, Inicio)
+- [x] BRICK_GAME.exe v1 — consola física CSS + pantalla LCD Canvas + integración OS; punto de partida histórico de FASE 7.
 
 ---
 

@@ -139,27 +139,28 @@ y puede pausarse o purgarse.
 ---
 
 ## 🎮 FASE 7 — ARCADE MUTANTE (juegos realmente jugables)
-**Estado: 🔶 EN DESARROLLO — implementación local verificada, pendiente deploy** · riesgo bajo · sin costo de API
+**Estado: 🔶 EN DESARROLLO — checkpoint de tres juegos desplegado** · riesgo bajo · sin costo de API · commit `6f1ea30`
 
-- [~] **BRICK_GAME.exe v2** — cuatro juegos visibles (Tetris, Snake, Breakout y Racing), Pointer Events con repetición,
+- [x] **BRICK_GAME.exe v2** — cuatro juegos visibles (Tetris, Snake, Breakout y Racing), Pointer Events con repetición,
       autofoco, pausa, ayuda contextual, récords locales, reinicio universal y controles táctiles de al menos 44 px.
-- [~] **Tetris reparado** — el límite de movimientos solo opera cuando la pieza está apoyada; ya no bloquea ni termina
+- [x] **Tetris reparado** — el límite de movimientos solo opera cuando la pieza está apoyada; ya no bloquea ni termina
       partidas por movimientos realizados en el aire.
-- [~] **Responsive real** — consola vertical standalone/móvil y layout horizontal compacto dentro del OS o en paisaje;
+- [x] **Responsive real** — consola vertical standalone/móvil y layout horizontal compacto dentro del OS o en paisaje;
       ventana 600×720 sin scroll interno ni controles recortados.
-- [~] **Lanzador único de catálogo** — `FS.items[].window` + `launchCatalogItem()` conservan tamaño y autofoco desde
+- [x] **Lanzador único de catálogo** — `FS.items[].window` + `launchCatalogItem()` conservan tamaño y autofoco desde
       carpeta, Inicio, VOMIT.SH y accesos directos.
-- [~] **Núcleo compartido** — `games/shared/arcade-core.js`: persistencia tolerante, Pointer Events, press/hold,
+- [x] **Núcleo compartido** — `games/shared/arcade-core.js`: persistencia tolerante, Pointer Events, press/hold,
       pausa por foco, autofoco y sintetizador Web Audio; BRICK ya consume el núcleo sin regresiones.
-- [~] **Auditoría Puppeteer** — `npm run test:games`: teclado, touch, Tetris, pausa, reinicio, tres viewports, OS,
+- [x] **Auditoría Puppeteer** — `npm run test:games`: teclado, touch, Tetris, pausa, reinicio, tres viewports, OS,
       overflow, foco, consola, rebotes de Pong, puntuación, victoria a 7 y mutaciones.
-- [~] **PONG_MUTANTE.exe** — app independiente: tú contra el daemon, tres intensidades, control por teclado/touch/drag,
+- [x] **PONG_MUTANTE.exe** — app independiente: tú contra el daemon, tres intensidades, control por teclado/touch/drag,
       marcador a 7, récord de rally, IA limitada y cuatro mutaciones de señal. Integrado en FS, Inicio y VOMIT.SH.
-- [~] **MINAS_666.exe** — buscaminas Win98 corrupto: tres densidades móviles, primer pulso y vecindad seguros,
+- [x] **MINAS_666.exe** — buscaminas Win98 corrupto: tres densidades móviles, primer pulso y vecindad seguros,
       expansión/chord, banderas por clic derecho/pulsación larga/F, teclado, pausa, cronómetro y récords locales.
       Integrado en FS, Inicio y VOMIT.SH; auditoría cubre zona segura, bandera, derrota y victoria.
 - [ ] **GLITCH_INVADERS.exe** — shooter arcade por oleadas.
-- [ ] Confirmación manual final + deploy.
+- [x] Confirmación del checkpoint + deploy en Vercel: OS, Brick, Pong, Minas y núcleo compartido responden `200`
+      y contienen las señales de la versión nueva.
 
 ---
 

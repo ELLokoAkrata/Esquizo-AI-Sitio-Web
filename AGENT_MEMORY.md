@@ -42,12 +42,14 @@ corrige o se marca como histórica; no se acumulan contradicciones silenciosas.
 - `BRICK_GAME.exe` contiene Tetris, Snake, Breakout y Racing. Su contrato de entrada usa Pointer Events, targets de
   al menos 44 px, autofoco desde el OS y pausa al perder foco; no reintroducir handlers touch que cancelen el `click`.
 - `games/shared/arcade-core.js` concentra contratos reutilizables de arcade: storage seguro, botones press/hold,
-  estado de presión, pulsación larga, pausa por foco, autofoco y síntesis Web Audio. BRICK, PONG y MINAS deben seguir
+  estado de presión, pulsación larga, pausa por foco, autofoco y síntesis Web Audio. BRICK, PONG, MINAS e INVADERS deben seguir
   cargándolo por ruta local.
 - `PONG_MUTANTE.exe` es la primera app arcade independiente: partido a 7 contra una IA deliberadamente limitada,
   tres intensidades y mutaciones cada cuatro rebotes. `juegos`/`arcade` abre la carpeta; `brick` y `pong` abren cada app.
 - `MINAS_666.exe` preserva la lógica legible del buscaminas: la primera celda y su vecindad nunca contienen minas;
   tap/clic revela, pulsación larga/clic derecho/F marca y Enter ejecuta chord. Dificultades: 8×8/10, 12×12/22 y 14×14/36.
+- `GLITCH_INVADERS.exe` es un shooter infinito por oleadas: movimiento continuo, fuego sostenido, bomba limitada,
+  cuatro patrones cíclicos y tres intensidades. Sus aliases son `invaders`, `glitchinvaders` e `invasores`.
 - NEXO comparte actividad relevante y memoria fijada, pero mantiene separados los historiales completos y las voces.
 
 ## APIs y entorno
@@ -88,6 +90,9 @@ punto de entrada de `juegos`, `game` y `arcade`, porque esos aliases ya no deben
 
 MINAS_666 amplió el núcleo a `arcade-core.js` v1.1 con `bindLongPress()`. La pulsación larga se resuelve con Pointer
 Events, tolerancia de movimiento y supresión del tap posterior; no mezclarla con handlers touch/click duplicados.
+
+GLITCH_INVADERS cerró el primer conjunto de máquinas con un shooter Canvas por oleadas. Reutiliza el núcleo sin
+agregar abstracciones: formaciones, proyectiles, colisiones y progresión permanecen dentro del artefacto.
 
 ### 2026-07-17 — Base de ARCADE MUTANTE
 

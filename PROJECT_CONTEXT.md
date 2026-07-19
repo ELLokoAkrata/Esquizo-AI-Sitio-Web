@@ -89,7 +89,7 @@ Referencia profunda: `Claude-Knowledge/ESCRITORIO_OS_TECH.md`. El nombre de esa 
 | `void-glitch/` | Juego/ritual del vacío con motor sonoro y respuesta IA. |
 | `granja/` | Frontend del pipeline de pseudoconciencia y verificación. |
 | `iptv/` | `FREE_RADIO`: radio audio-first y visuales generativos reactivos. |
-| `games/` | Arcade vanilla con núcleo local compartido: `BRICK_GAME.exe`, `PONG_MUTANTE.exe` y el buscaminas táctil `MINAS_666.exe`. |
+| `games/` | Arcade vanilla con núcleo local compartido: `BRICK_GAME.exe`, `PONG_MUTANTE.exe`, `MINAS_666.exe` y el shooter por oleadas `GLITCH_INVADERS.exe`. |
 | `tools/` | DENTAKORV, terminales, corruptores y scripts locales. |
 | `Psycho-bot-monologues/` | Serie episódica y su protocolo narrativo. |
 | `grimorios/`, `claude_infection/`, `animaciones/` | Artefactos filosóficos, históricos y visuales. |

@@ -57,6 +57,18 @@ async function minesMetrics(page){
   });
 }
 
+async function invadersMetrics(page){
+  return page.evaluate(() => {
+    const rect = el => {const r=el.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right}};
+    return {
+      viewport:{w:innerWidth,h:innerHeight},body:{scrollW:document.body.scrollWidth,scrollH:document.body.scrollHeight},
+      shell:rect(document.querySelector('.invaders-app')),canvas:rect(document.querySelector('#arena')),
+      controls:[...document.querySelectorAll('.diff-btn,.sys-btn,.move-btn')].map(el=>({id:el.id||el.dataset.difficulty,...rect(el)})),
+      core:window.EsquizoArcade&&window.EsquizoArcade.version
+    };
+  });
+}
+
 let browser;
 (async()=>{
   browser = await puppeteer.launch({headless:true,args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});
@@ -197,6 +209,55 @@ let browser;
   assert.equal(await minesMobile.evaluate(()=>eval('phase')),'playing','tap no inicia MINAS en móvil');
   await minesMobile.screenshot({path:path.join(shots,'minas-666-mobile.png'),fullPage:true});
 
+  const invaders=await browser.newPage();
+  await invaders.setViewport({width:1366,height:768});
+  listen(invaders,errors,'invaders-desktop');
+  await invaders.goto(`${BASE}/games/glitch-invaders.html`,{waitUntil:'networkidle0'});
+  report.invaders=await invadersMetrics(invaders);
+  assert.equal(report.invaders.core,'1.1.0','INVADERS no cargó el núcleo arcade compartido');
+  assert.equal(report.invaders.body.scrollW,1366,'overflow horizontal en INVADERS desktop');
+  assert.ok(report.invaders.controls.every(c=>c.w>=44&&c.h>=44),'hay controles INVADERS menores de 44px');
+  assert.equal(await invaders.evaluate(()=>eval('phase')),'title');
+  await invaders.keyboard.press('Space');
+  assert.equal(await invaders.evaluate(()=>eval('phase')),'play','espacio no inicia INVADERS');
+  assert.ok(await invaders.evaluate(()=>eval('shots.length'))>0,'espacio no dispara en INVADERS');
+  const ix0=await invaders.evaluate(()=>eval('player.x'));
+  await invaders.keyboard.down('ArrowLeft');await new Promise(r=>setTimeout(r,180));await invaders.keyboard.up('ArrowLeft');
+  const ix1=await invaders.evaluate(()=>eval('player.x'));
+  assert.ok(ix1<ix0,'el teclado no mueve la nave de INVADERS');
+  report.invaders.hit=await invaders.evaluate(()=>eval(`spawnWave(1);const target=enemies.find(enemy=>enemy.alive);target.hp=1;shots=[{x:target.x+formationX+10,y:target.y+formationY+5,w:4,h:15,v:0}];const before=score;updateProjectiles(0);({alive:target.alive,scoreDelta:score-before})`));
+  assert.equal(report.invaders.hit.alive,false,'el disparo no destruye un invasor');
+  assert.ok(report.invaders.hit.scoreDelta>0,'destruir un invasor no suma puntaje');
+  report.invaders.bomb=await invaders.evaluate(()=>eval(`spawnWave(4);enemyShots=[{x:10,y:10,w:6,h:14,v:1}];const before=bombs;useBomb();({enemyShots:enemyShots.length,bombs,before,alive:enemies.filter(enemy=>enemy.alive).length})`));
+  assert.equal(report.invaders.bomb.enemyShots,0,'la bomba no limpia los disparos enemigos');
+  assert.equal(report.invaders.bomb.bombs,report.invaders.bomb.before-1,'la bomba no consume una carga');
+  assert.ok(report.invaders.bomb.alive>0,'la bomba destruye toda una oleada reforzada');
+  report.invaders.wave=await invaders.evaluate(()=>eval(`spawnWave(1);enemies.forEach((enemy,index)=>enemy.alive=index===0);enemies[0].hp=1;shots=[{x:enemies[0].x+10,y:enemies[0].y+5,w:4,h:15,v:0}];updateProjectiles(0);({phase,wave})`));
+  assert.deepEqual(report.invaders.wave,{phase:'interwave',wave:2},'INVADERS no avanza al limpiar la oleada');
+  report.invaders.loss=await invaders.evaluate(()=>eval(`clearTimeout(nextWaveTimer);spawnWave(1);lives=1;player.invulnerable=0;damagePlayer();({phase,lives})`));
+  assert.deepEqual(report.invaders.loss,{phase:'gameover',lives:0},'INVADERS no termina al perder la última vida');
+  await invaders.click('[data-difficulty="colapso"]');
+  assert.equal(await invaders.evaluate(()=>eval('difficulty')),'colapso','no cambia la dificultad de INVADERS');
+  await invaders.screenshot({path:path.join(shots,'glitch-invaders-desktop.png'),fullPage:true});
+
+  const invadersMobile=await browser.newPage();
+  await invadersMobile.setViewport({width:390,height:780,isMobile:true,hasTouch:true});
+  listen(invadersMobile,errors,'invaders-mobile');
+  await invadersMobile.goto(`${BASE}/games/glitch-invaders.html`,{waitUntil:'networkidle0'});
+  report.invadersMobile=await invadersMetrics(invadersMobile);
+  assert.equal(report.invadersMobile.body.scrollW,390,'overflow horizontal en INVADERS móvil');
+  assert.ok(report.invadersMobile.controls.every(c=>c.w>=44&&c.h>=44),'hay controles touch INVADERS menores de 44px');
+  const invadersFire=await invadersMobile.$eval('#btnFire',el=>{const r=el.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}});
+  await invadersMobile.touchscreen.tap(invadersFire.x,invadersFire.y);
+  assert.equal(await invadersMobile.evaluate(()=>eval('phase')),'play','A no inicia INVADERS en touch');
+  assert.ok(await invadersMobile.evaluate(()=>eval('shots.length'))>0,'A no dispara en INVADERS touch');
+  const invadersLeft=await invadersMobile.$eval('#btnLeft',el=>{const r=el.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}});
+  const imx0=await invadersMobile.evaluate(()=>eval('player.x'));
+  await invadersMobile.touchscreen.touchStart(invadersLeft.x,invadersLeft.y);await new Promise(r=>setTimeout(r,180));await invadersMobile.touchscreen.touchEnd();
+  const imx1=await invadersMobile.evaluate(()=>eval('player.x'));
+  assert.ok(imx1<imx0,'el control touch no mueve la nave de INVADERS');
+  await invadersMobile.screenshot({path:path.join(shots,'glitch-invaders-mobile.png'),fullPage:true});
+
   const os=await browser.newPage();
   await os.setViewport({width:1366,height:768});
   listen(os,errors,'os');
@@ -247,16 +308,30 @@ let browser;
   });
   assert.equal(Math.round(report.minesOS.window.w),760,'ancho de ventana MINAS incorrecto');
   assert.equal(report.minesOS.active,true,'el iframe de MINAS no recibió foco automático');
-  assert.equal(report.minesOS.items,3,'la carpeta JUEGOS no contiene las tres máquinas');
+  assert.equal(report.minesOS.items,4,'la carpeta JUEGOS no contiene las cuatro máquinas');
   assert.ok(report.minesOS.inner.scrollH<=report.minesOS.inner.viewportH+1,'MINAS requiere scroll vertical dentro del OS');
   await os.keyboard.press('Space');
   assert.equal(await os.evaluate(()=>document.querySelector('iframe[src="games/minas-666.html"]').contentWindow.eval('phase')),'playing','el teclado no inicia MINAS desde el OS');
   await os.screenshot({path:path.join(shots,'minas-666-os.png'),fullPage:true});
+  await os.evaluate(()=>{WM.close('app_games_minas_666_html');openGlitchInvaders()});
+  await os.waitForSelector('iframe[src="games/glitch-invaders.html"]');
+  await new Promise(r=>setTimeout(r,300));
+  report.invadersOS=await os.evaluate(()=>{
+    const win=document.querySelector('.win[data-app-file="games/glitch-invaders.html"]'),frame=win.querySelector('iframe'),wr=win.getBoundingClientRect(),shell=frame.contentDocument.querySelector('.invaders-app').getBoundingClientRect();
+    return {window:{w:wr.width,h:wr.height},active:document.activeElement===frame,phase:frame.contentWindow.eval('phase'),items:FS.JUEGOS.items.length,inner:{viewportH:frame.contentWindow.innerHeight,scrollH:frame.contentDocument.body.scrollHeight,shellBottom:shell.bottom}};
+  });
+  assert.equal(Math.round(report.invadersOS.window.w),840,'ancho de ventana INVADERS incorrecto');
+  assert.equal(report.invadersOS.active,true,'el iframe de INVADERS no recibió foco automático');
+  assert.equal(report.invadersOS.items,4,'la carpeta JUEGOS no contiene las cuatro máquinas');
+  assert.ok(report.invadersOS.inner.scrollH<=report.invadersOS.inner.viewportH+1,'INVADERS requiere scroll vertical dentro del OS');
+  await os.keyboard.press('Space');
+  assert.equal(await os.evaluate(()=>document.querySelector('iframe[src="games/glitch-invaders.html"]').contentWindow.eval('phase')),'play','el teclado no inicia INVADERS desde el OS');
+  await os.screenshot({path:path.join(shots,'glitch-invaders-os.png'),fullPage:true});
 
   assert.deepEqual(errors,[],`errores de navegador:\n${errors.join('\n')}`);
   fs.writeFileSync(path.join(reports,'game-audit.json'),JSON.stringify({...report,errors},null,2));
   console.log('GAME AUDIT OK');
-  console.log(JSON.stringify({brick:{desktop:report.desktop.screen,mobile:report.mobile.screen,landscape:report.landscape.screen,os:report.os},pong:{desktop:report.pong.canvas,mobile:report.pongMobile.canvas,os:report.pongOS},minas:{desktop:report.mines.board,mobile:report.minesMobile.board,os:report.minesOS}},null,2));
+  console.log(JSON.stringify({brick:{desktop:report.desktop.screen,mobile:report.mobile.screen,landscape:report.landscape.screen,os:report.os},pong:{desktop:report.pong.canvas,mobile:report.pongMobile.canvas,os:report.pongOS},minas:{desktop:report.mines.board,mobile:report.minesMobile.board,os:report.minesOS},invaders:{desktop:report.invaders.canvas,mobile:report.invadersMobile.canvas,os:report.invadersOS}},null,2));
   }finally{
     if(browser) await browser.close();
   }

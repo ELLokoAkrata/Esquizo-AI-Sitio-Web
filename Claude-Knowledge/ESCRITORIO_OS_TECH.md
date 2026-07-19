@@ -2,7 +2,7 @@
 
 > Referencia profunda y accionable del portal. Para el panorama/filosofía, ver `PROJECT_CONTEXT.md`.
 > Aquí está el **cómo**: arquitectura, API interna, cómo extender, gotchas y cómo testear.
-> **Última actualización:** 2026-07-18 — núcleo ARCADE MUTANTE, PONG_MUTANTE y MINAS_666.
+> **Última actualización:** 2026-07-18 — ARCADE MUTANTE con cuatro máquinas jugables.
 
 **Qué es:** `index.html` es un **escritorio Windows 98 acid** autocontenido (HTML + CSS + JS inline, **cero dependencias externas**, solo fuentes de Google). Envuelve y da acceso a todos los artefactos del códice como un "sistema operativo". El portal scrolleable anterior se preservó como `inicio-classic.html`.
 
@@ -71,6 +71,7 @@ Carpetas, README, ACERCA_DE_MI, Mi PC, TAREAS y diálogos de error siguen siendo
 | BRICK_GAME.exe | `openBrickGame()` → `launchCatalogItem()` | 600×720 + autofoco |
 | PONG_MUTANTE.exe | `openPongMutante()` → `launchCatalogItem()` | 820×680 + autofoco |
 | MINAS_666.exe | `openMinas666()` → `launchCatalogItem()` | 760×720 + autofoco |
+| GLITCH_INVADERS.exe | `openGlitchInvaders()` → `launchCatalogItem()` | 840×700 + autofoco |
 
 ---
 
@@ -391,7 +392,7 @@ scripts inline de las siete superficies modificadas.
 
 ---
 
-## 7n. ARCADE MUTANTE — núcleo, BRICK_GAME, PONG_MUTANTE y MINAS_666
+## 7n. ARCADE MUTANTE — núcleo y cuatro máquinas
 
 ### Núcleo local (`games/shared/arcade-core.js`)
 
@@ -454,6 +455,21 @@ JUEGOS para no privilegiar una sola máquina.
 
 VOMIT.SH: `minas`, `minas666` y `buscaminas` abren la app.
 
+### GLITCH_INVADERS
+
+`games/glitch-invaders.html` es un shooter Canvas 16:9 de oleadas infinitas:
+
+- intensidades `FISURA`, `RITUAL` y `COLAPSO` cambian vidas, velocidad y cadencia enemiga;
+- formaciones crecientes y cuatro patrones cíclicos (`FISURA VERDE`, `DESFASE LATERAL`, `LLUVIA ÁCIDA`,
+  `COLAPSO CARMESÍ`) alteran movimiento y fuego;
+- teclado, botones Pointer Events de al menos 44 px y arrastre horizontal sobre la pantalla;
+- fuego sostenido, bomba limitada que purga proyectiles, vidas, puntaje, mejor oleada y récord persistente en
+  `localStorage["esquizoGlitchInvadersV1"]`;
+- pausa por foco, audio sintetizado y layout sin scroll en ventana 840×700.
+
+VOMIT.SH: `invaders`, `glitchinvaders` e `invasores` abren la app. `juegos`/`game`/`arcade` continúa abriendo la
+carpeta completa.
+
 ---
 
 ## 8. Identidad lingüística — regla global
@@ -495,7 +511,7 @@ Checklist:
 - Click "volver" dentro del artefacto → cierra la ventana
 - Navegación interna de Psycho-bot se queda en la ventana
 - **FREE_RADIO:** sintonizar un canal, cambiar los 4 presets, activar CAOS, comprobar B/M/H/Σ y fallback `PULSO GENERATIVO`
-- **ARCADE MUTANTE:** abrir JUEGOS, iniciar BRICK y PONG con teclado/touch, confirmar pausa al perder foco y ventanas sin scroll.
+- **ARCADE MUTANTE:** abrir JUEGOS, iniciar las cuatro máquinas con teclado/touch, confirmar pausa al perder foco y ventanas sin scroll.
 - **NEXO:** abrir desde el icono único, lanzar MSN/ORACULO/VOID/TERMINAL/DENTAKORV/GRANJA, verificar foco y pulso.
 - **Memoria transversal:** fijar una señal, revisar la vista previa de dos entidades, pausar y confirmar que desaparece del contexto.
 - **Consola:** cambiar entre ventanas y confirmar que `BroadcastChannel`, `localStorage` y `postMessage` no producen errores.

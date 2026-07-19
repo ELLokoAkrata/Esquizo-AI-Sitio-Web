@@ -139,7 +139,7 @@ y puede pausarse o purgarse.
 ---
 
 ## 🎮 FASE 7 — ARCADE MUTANTE (juegos realmente jugables)
-**Estado: 🔶 EN DESARROLLO — checkpoint de tres juegos desplegado** · riesgo bajo · sin costo de API · commit `6f1ea30`
+**Estado: 🔶 EN DESARROLLO — tres juegos desplegados; cuarta máquina verificada localmente** · riesgo bajo · sin costo de API · commit `6f1ea30`
 
 - [x] **BRICK_GAME.exe v2** — cuatro juegos visibles (Tetris, Snake, Breakout y Racing), Pointer Events con repetición,
       autofoco, pausa, ayuda contextual, récords locales, reinicio universal y controles táctiles de al menos 44 px.
@@ -158,7 +158,9 @@ y puede pausarse o purgarse.
 - [x] **MINAS_666.exe** — buscaminas Win98 corrupto: tres densidades móviles, primer pulso y vecindad seguros,
       expansión/chord, banderas por clic derecho/pulsación larga/F, teclado, pausa, cronómetro y récords locales.
       Integrado en FS, Inicio y VOMIT.SH; auditoría cubre zona segura, bandera, derrota y victoria.
-- [ ] **GLITCH_INVADERS.exe** — shooter arcade por oleadas.
+- [~] **GLITCH_INVADERS.exe** — shooter Canvas por oleadas: tres intensidades, cuatro patrones cíclicos, fuego
+      sostenido, bombas de glitch, vidas, puntaje/récord local, teclado, touch, arrastre, pausa y audio sintetizado.
+      Integrado en FS, Inicio y VOMIT.SH; auditoría local cubre disparo, impacto, bomba, oleada, derrota, responsive y OS.
 - [x] Confirmación del checkpoint + deploy en Vercel: OS, Brick, Pong, Minas y núcleo compartido responden `200`
       y contienen las señales de la versión nueva.
 

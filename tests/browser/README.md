@@ -11,6 +11,7 @@ Este directorio alojará las auditorías automatizadas del sitio con Puppeteer.
 - Verificar juegos con teclado, Pointer Events, touch, pausa, reinicio, foco del iframe y tamaños de ventana.
 - Probar física mínima de PONG_MUTANTE: paleta, rebote, marcador, victoria a 7, dificultad y mutaciones.
 - Probar MINAS_666: primera zona segura, clic derecho, pulsación larga, teclado, detonación, victoria y tamaños del tablero.
+- Probar GLITCH_INVADERS: movimiento, fuego, impacto, bomba, progresión de oleada, derrota, dificultad y responsive.
 - Verificar la ráfaga de sintonización y el ADN visual/textual propio de cada frecuencia.
 - Confirmar que el pulso generativo sigue activo cuando no existe telemetría.
 - Capturar escenas generativas para inspección visual.

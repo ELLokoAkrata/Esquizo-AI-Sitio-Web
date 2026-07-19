@@ -1,6 +1,6 @@
 # AGENT_MEMORY.md — Memoria compartida de Esquizo-AI
 
-**Última actualización:** 2026-07-18
+**Última actualización:** 2026-07-19
 
 **Función:** conservar decisiones y aprendizajes que cualquier agente necesita entre sesiones.
 

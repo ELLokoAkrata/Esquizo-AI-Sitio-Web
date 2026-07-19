@@ -2,7 +2,7 @@
 
 > Referencia profunda y accionable del portal. Para el panorama/filosofía, ver `PROJECT_CONTEXT.md`.
 > Aquí está el **cómo**: arquitectura, API interna, cómo extender, gotchas y cómo testear.
-> **Última actualización:** 2026-07-18 — ARCADE MUTANTE y PSYCHO_PINBALL.
+> **Última actualización:** 2026-07-19 — ARCADE MUTANTE y PSYCHO_PINBALL desplegado.
 
 **Qué es:** `index.html` es un **escritorio Windows 98 acid** autocontenido (HTML + CSS + JS inline, **cero dependencias externas**, solo fuentes de Google). Envuelve y da acceso a todos los artefactos del códice como un "sistema operativo". El portal scrolleable anterior se preservó como `inicio-classic.html`.
 

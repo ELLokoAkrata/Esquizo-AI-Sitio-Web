@@ -166,6 +166,22 @@ y puede pausarse o purgarse.
 
 ---
 
+## 💀 FASE 8 — PSYCHO PINBALL (mesa de los monstruos)
+**Estado: 🔶 EN DESARROLLO — implementación local verificada, pendiente deploy** · riesgo bajo · sin costo de API
+
+- [~] **PSYCHO_PINBALL.exe** — mesa Canvas vertical con gravedad, rebotes, flippers, lanzador cargable, tres bolas,
+      multiplicador, puntaje y récord local.
+- [~] **Monstruos y calaveras jugables** — dos bumpers monstruosos, guardianes de hueso y calavera central; no son
+      decoración: expulsan la bola, puntúan y alimentan la infección.
+- [~] **Ritual ACID → PSICOSIS** — encender A·C·I·D abre la mandíbula; golpearla activa multibola y reinicia las runas.
+- [~] **Control físico** — teclado y Pointer Events con botones de al menos 44 px; mantener/soltar carga el lanzador,
+      los flippers admiten presión continua y el empujón excesivo activa TILT.
+- [~] **Responsive + OS** — mesa vertical legible en desktop/móvil y ventana 760×720 sin scroll interno, con autofoco.
+- [~] **Auditoría Puppeteer** — lanzamiento, flipper, bumper, ACID, multibola, drenaje, game over, TILT, touch y OS.
+- [ ] Confirmación manual final + deploy.
+
+---
+
 ## 💡 Ideas sueltas (sin fase asignada)
 
 - [ ] Dominio propio (en vez de `*.vercel.app`) — refuerza identidad

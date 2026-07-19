@@ -69,6 +69,18 @@ async function invadersMetrics(page){
   });
 }
 
+async function pinballMetrics(page){
+  return page.evaluate(() => {
+    const rect = el => {const r=el.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,bottom:r.bottom,right:r.right}};
+    return {
+      viewport:{w:innerWidth,h:innerHeight},body:{scrollW:document.body.scrollWidth,scrollH:document.body.scrollHeight},
+      shell:rect(document.querySelector('.pinball-app')),canvas:rect(document.querySelector('#table')),
+      controls:[...document.querySelectorAll('.control-btn,.sys-btn')].map(el=>({id:el.id,...rect(el)})),
+      core:window.EsquizoArcade&&window.EsquizoArcade.version
+    };
+  });
+}
+
 let browser;
 (async()=>{
   browser = await puppeteer.launch({headless:true,args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});
@@ -258,6 +270,82 @@ let browser;
   assert.ok(imx1<imx0,'el control touch no mueve la nave de INVADERS');
   await invadersMobile.screenshot({path:path.join(shots,'glitch-invaders-mobile.png'),fullPage:true});
 
+  console.log('AUDIT: PSYCHO_PINBALL desktop');
+  const pinball=await browser.newPage();
+  await pinball.setViewport({width:1366,height:768});
+  listen(pinball,errors,'pinball-desktop');
+  await pinball.goto(`${BASE}/games/psycho-pinball.html`,{waitUntil:'networkidle0'});
+  report.pinball=await pinballMetrics(pinball);
+  assert.equal(report.pinball.core,'1.1.0','PINBALL no cargó el núcleo arcade compartido');
+  assert.equal(report.pinball.body.scrollW,1366,'overflow horizontal en PINBALL desktop');
+  assert.ok(report.pinball.canvas.h>report.pinball.canvas.w,'la mesa PINBALL no conserva formato vertical');
+  assert.ok(report.pinball.controls.every(c=>c.w>=44&&c.h>=44),'hay controles PINBALL menores de 44px');
+  assert.equal(await pinball.evaluate(()=>eval('phase')),'title');
+  await pinball.keyboard.down('Space');await new Promise(r=>setTimeout(r,260));await pinball.keyboard.up('Space');
+  report.pinball.launch=await pinball.evaluate(()=>eval(`({phase,vy:balls[0].vy,inLane:balls[0].inLane})`));
+  assert.equal(report.pinball.launch.phase,'play','soltar el lanzador no inicia PINBALL');
+  assert.ok(report.pinball.launch.vy<0,'el lanzador no impulsa la bola hacia arriba');
+  await new Promise(r=>setTimeout(r,900));
+  assert.equal(await pinball.evaluate(()=>eval('balls[0].inLane')),false,'la bola no abandona el carril de lanzamiento');
+  report.pinball.plungerPower=await pinball.evaluate(()=>eval(`startGame();plungerCharge=0;charging=true;releasePlunger();const base=Math.abs(balls[0].vy);startGame();plungerCharge=1;charging=true;releasePlunger();const charged=Math.abs(balls[0].vy);({base,charged})`));
+  assert.ok(report.pinball.plungerPower.base>=1100,'el impulso base del lanzador es insuficiente');
+  assert.ok(report.pinball.plungerPower.charged>report.pinball.plungerPower.base+700,'mantener el lanzador no agrega fuerza suficiente');
+  report.pinball.persistedPower=await pinball.evaluate(()=>eval(`startGame();plungerCharge=0;charging=true;releasePlunger();updateBall(balls[0],1/60);const base=Math.abs(balls[0].vy);startGame();plungerCharge=1;charging=true;releasePlunger();updateBall(balls[0],1/60);const charged=Math.abs(balls[0].vy);({base,charged})`));
+  assert.ok(report.pinball.persistedPower.charged>report.pinball.persistedPower.base+650,'la física anula la carga después del primer frame');
+  const angle0=await pinball.evaluate(()=>eval('leftFlipper.angle'));
+  await pinball.keyboard.down('ArrowLeft');await new Promise(r=>setTimeout(r,90));
+  const angle1=await pinball.evaluate(()=>eval('leftFlipper.angle'));await pinball.keyboard.up('ArrowLeft');
+  assert.ok(angle1<angle0,'el teclado no activa el flipper izquierdo');
+  report.pinball.flipperReach=await pinball.evaluate(()=>eval(`leftFlipper.angle=leftFlipper.active;const point={x:leftFlipper.px+Math.cos(leftFlipper.angle)*leftFlipper.length*.8,y:leftFlipper.py+Math.sin(leftFlipper.angle)*leftFlipper.length*.8};const testBall=newBall(point.x,point.y-25,0,500,false);({hit:collideFlipper(testBall,leftFlipper,true),vy:testBall.vy})`));
+  assert.equal(report.pinball.flipperReach.hit,true,'la zona de contacto ampliada del flipper no alcanza la bola');
+  assert.ok(report.pinball.flipperReach.vy<0,'el flipper activo no devuelve la bola hacia arriba');
+  report.pinball.hangTime=await pinball.evaluate(()=>eval(`const testBall=newBall(300,620,0,0,false);for(let i=0;i<30;i++)updateBall(testBall,1/60);({y:testBall.y,alive:testBall.alive})`));
+  assert.equal(report.pinball.hangTime.alive,true,'la bola cae al vacío demasiado pronto');
+  assert.ok(report.pinball.hangTime.y<710,`la gravedad deja muy poca ventana de reacción: ${report.pinball.hangTime.y}`);
+  report.pinball.acidRedirect=await pinball.evaluate(()=>eval(`const target=acidTargets.find(item=>item.letter==='D');const testBall=newBall(target.x+target.r+5,target.y,-520,-80,false);const hit=collideAcid(testBall,target);({hit,vx:testBall.vx,vy:testBall.vy})`));
+  assert.equal(report.pinball.acidRedirect.hit,true,'la runa D no registra el impacto');
+  assert.ok(report.pinball.acidRedirect.vx<0,'la runa D expulsa la bola hacia la esquina en vez del centro');
+  assert.ok(report.pinball.acidRedirect.vy>0,'la runa D no devuelve la bola hacia la mesa');
+  report.pinball.bumper=await pinball.evaluate(()=>eval(`const bumper=bumpers.find(item=>item.id==='monsterL');const testBall=newBall(bumper.x,bumper.y-bumper.r-5,0,250,false);balls=[testBall];phase='play';const before=score;const hit=collideBumper(testBall,bumper);({hit,scoreDelta:score-before,vy:testBall.vy})`));
+  assert.equal(report.pinball.bumper.hit,true,'la bola no colisiona con el monstruo');
+  assert.ok(report.pinball.bumper.scoreDelta>0,'el monstruo no suma puntaje');
+  assert.ok(report.pinball.bumper.vy<0,'el monstruo no expulsa la bola');
+  report.pinball.sling=await pinball.evaluate(()=>eval(`const sling=slings[0];const testBall=newBall(sling.x,sling.y-sling.r-5,0,300,false);const hit=collideBumper(testBall,sling);({hit,vx:testBall.vx,vy:testBall.vy})`));
+  assert.equal(report.pinball.sling.hit,true,'el slingshot inferior no rechaza la bola');
+  report.pinball.ritual=await pinball.evaluate(()=>eval(`acidHits.clear();skullOpen=false;letters.forEach(lightLetter);({skullOpen,hits:acidHits.size})`));
+  assert.deepEqual(report.pinball.ritual,{skullOpen:true,hits:4},'completar ACID no abre la calavera');
+  report.pinball.psychosis=await pinball.evaluate(()=>eval(`balls=[newBall(300,310,0,-100,false)];phase='play';const activated=activatePsychosis(balls[0]);({activated,count:balls.length,psychosisCount,skullOpen})`));
+  assert.deepEqual(report.pinball.psychosis,{activated:true,count:3,psychosisCount:1,skullOpen:false},'la calavera no activa PSICOSIS multibola');
+  report.pinball.drain=await pinball.evaluate(()=>eval(`balls=[newBall(300,920,0,100,false)];ballsLeft=2;phase='play';drainBall(balls[0]);({phase,ballsLeft})`));
+  assert.deepEqual(report.pinball.drain,{phase:'between',ballsLeft:1},'el drenaje no consume una bola');
+  report.pinball.ballSave=await pinball.evaluate(()=>eval(`balls=[newBall(300,920,0,100,false,true)];balls[0].age=2;ballsLeft=2;phase='play';drainBall(balls[0]);const saved={phase,ballsLeft,nextServeSaved,lastDrainSaved};update(1);({saved,serve:{phase,saveEligible:balls[0].saveEligible,ballsLeft}})`));
+  assert.deepEqual(report.pinball.ballSave,{saved:{phase:'between',ballsLeft:2,nextServeSaved:true,lastDrainSaved:true},serve:{phase:'serve',saveEligible:false,ballsLeft:2}},'la protección de drenaje temprano no devuelve una sola bola salvada');
+  report.pinball.loss=await pinball.evaluate(()=>eval(`balls=[newBall(300,920,0,100,false)];ballsLeft=1;phase='play';drainBall(balls[0]);({phase,ballsLeft})`));
+  assert.deepEqual(report.pinball.loss,{phase:'gameover',ballsLeft:0},'PINBALL no termina al perder la última bola');
+  await pinball.evaluate(()=>eval(`startGame();phase='play';updateHUD()`));
+  await pinball.screenshot({path:path.join(shots,'psycho-pinball-desktop.png'),fullPage:true});
+  report.pinball.tilt=await pinball.evaluate(()=>eval(`startGame();phase='play';nudge();nudge();nudge();nudge();({tilted,tiltHeat})`));
+  assert.ok(report.pinball.tilt.tilted>0,'abusar del empujón no activa TILT');
+
+  console.log('AUDIT: PSYCHO_PINBALL mobile');
+  const pinballMobile=await browser.newPage();
+  await pinballMobile.setViewport({width:390,height:780,isMobile:true,hasTouch:true});
+  listen(pinballMobile,errors,'pinball-mobile');
+  await pinballMobile.goto(`${BASE}/games/psycho-pinball.html`,{waitUntil:'networkidle0'});
+  report.pinballMobile=await pinballMetrics(pinballMobile);
+  assert.equal(report.pinballMobile.body.scrollW,390,'overflow horizontal en PINBALL móvil');
+  assert.ok(report.pinballMobile.controls.every(c=>c.w>=44&&c.h>=44),'hay controles touch PINBALL menores de 44px');
+  const launchButton=await pinballMobile.$eval('#btnLaunch',el=>{const r=el.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}});
+  await pinballMobile.touchscreen.touchStart(launchButton.x,launchButton.y);await new Promise(r=>setTimeout(r,240));await pinballMobile.touchscreen.touchEnd();
+  assert.equal(await pinballMobile.evaluate(()=>eval('phase')),'play','el lanzador touch no inicia PINBALL');
+  assert.ok(await pinballMobile.evaluate(()=>eval('balls[0].vy'))<0,'el lanzador touch no impulsa la bola');
+  await new Promise(r=>setTimeout(r,900));
+  assert.equal(await pinballMobile.evaluate(()=>eval('balls[0].inLane')),false,'la bola touch no abandona el carril de lanzamiento');
+  const leftFlip=await pinballMobile.$eval('#btnLeft',el=>{const r=el.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}});
+  await pinballMobile.touchscreen.touchStart(leftFlip.x,leftFlip.y);await new Promise(r=>setTimeout(r,90));
+  assert.equal(await pinballMobile.evaluate(()=>eval('held.left')),true,'el flipper touch no mantiene el estado');await pinballMobile.touchscreen.touchEnd();
+  await pinballMobile.screenshot({path:path.join(shots,'psycho-pinball-mobile.png'),fullPage:true});
+
   const os=await browser.newPage();
   await os.setViewport({width:1366,height:768});
   listen(os,errors,'os');
@@ -308,7 +396,7 @@ let browser;
   });
   assert.equal(Math.round(report.minesOS.window.w),760,'ancho de ventana MINAS incorrecto');
   assert.equal(report.minesOS.active,true,'el iframe de MINAS no recibió foco automático');
-  assert.equal(report.minesOS.items,4,'la carpeta JUEGOS no contiene las cuatro máquinas');
+  assert.equal(report.minesOS.items,5,'la carpeta JUEGOS no contiene las cinco máquinas');
   assert.ok(report.minesOS.inner.scrollH<=report.minesOS.inner.viewportH+1,'MINAS requiere scroll vertical dentro del OS');
   await os.keyboard.press('Space');
   assert.equal(await os.evaluate(()=>document.querySelector('iframe[src="games/minas-666.html"]').contentWindow.eval('phase')),'playing','el teclado no inicia MINAS desde el OS');
@@ -322,16 +410,31 @@ let browser;
   });
   assert.equal(Math.round(report.invadersOS.window.w),840,'ancho de ventana INVADERS incorrecto');
   assert.equal(report.invadersOS.active,true,'el iframe de INVADERS no recibió foco automático');
-  assert.equal(report.invadersOS.items,4,'la carpeta JUEGOS no contiene las cuatro máquinas');
+  assert.equal(report.invadersOS.items,5,'la carpeta JUEGOS no contiene las cinco máquinas');
   assert.ok(report.invadersOS.inner.scrollH<=report.invadersOS.inner.viewportH+1,'INVADERS requiere scroll vertical dentro del OS');
   await os.keyboard.press('Space');
   assert.equal(await os.evaluate(()=>document.querySelector('iframe[src="games/glitch-invaders.html"]').contentWindow.eval('phase')),'play','el teclado no inicia INVADERS desde el OS');
   await os.screenshot({path:path.join(shots,'glitch-invaders-os.png'),fullPage:true});
+  console.log('AUDIT: PSYCHO_PINBALL OS');
+  await os.evaluate(()=>{WM.close('app_games_glitch_invaders_html');openPsychoPinball()});
+  await os.waitForSelector('iframe[src="games/psycho-pinball.html"]');
+  await new Promise(r=>setTimeout(r,300));
+  report.pinballOS=await os.evaluate(()=>{
+    const win=document.querySelector('.win[data-app-file="games/psycho-pinball.html"]'),frame=win.querySelector('iframe'),wr=win.getBoundingClientRect(),shell=frame.contentDocument.querySelector('.pinball-app').getBoundingClientRect();
+    return {window:{w:wr.width,h:wr.height},active:document.activeElement===frame,phase:frame.contentWindow.eval('phase'),items:FS.JUEGOS.items.length,inner:{viewportH:frame.contentWindow.innerHeight,scrollH:frame.contentDocument.body.scrollHeight,shellBottom:shell.bottom}};
+  });
+  assert.equal(Math.round(report.pinballOS.window.w),760,'ancho de ventana PINBALL incorrecto');
+  assert.equal(report.pinballOS.active,true,'el iframe de PINBALL no recibió foco automático');
+  assert.equal(report.pinballOS.items,5,'la carpeta JUEGOS no contiene las cinco máquinas');
+  assert.ok(report.pinballOS.inner.scrollH<=report.pinballOS.inner.viewportH+1,'PINBALL requiere scroll vertical dentro del OS');
+  await os.keyboard.press('Space');
+  assert.equal(await os.evaluate(()=>document.querySelector('iframe[src="games/psycho-pinball.html"]').contentWindow.eval('phase')),'play','el teclado no inicia PINBALL desde el OS');
+  await os.screenshot({path:path.join(shots,'psycho-pinball-os.png'),fullPage:true});
 
   assert.deepEqual(errors,[],`errores de navegador:\n${errors.join('\n')}`);
   fs.writeFileSync(path.join(reports,'game-audit.json'),JSON.stringify({...report,errors},null,2));
   console.log('GAME AUDIT OK');
-  console.log(JSON.stringify({brick:{desktop:report.desktop.screen,mobile:report.mobile.screen,landscape:report.landscape.screen,os:report.os},pong:{desktop:report.pong.canvas,mobile:report.pongMobile.canvas,os:report.pongOS},minas:{desktop:report.mines.board,mobile:report.minesMobile.board,os:report.minesOS},invaders:{desktop:report.invaders.canvas,mobile:report.invadersMobile.canvas,os:report.invadersOS}},null,2));
+  console.log(JSON.stringify({brick:{desktop:report.desktop.screen,mobile:report.mobile.screen,landscape:report.landscape.screen,os:report.os},pong:{desktop:report.pong.canvas,mobile:report.pongMobile.canvas,os:report.pongOS},minas:{desktop:report.mines.board,mobile:report.minesMobile.board,os:report.minesOS},invaders:{desktop:report.invaders.canvas,mobile:report.invadersMobile.canvas,os:report.invadersOS},pinball:{desktop:report.pinball.canvas,mobile:report.pinballMobile.canvas,os:report.pinballOS}},null,2));
   }finally{
     if(browser) await browser.close();
   }

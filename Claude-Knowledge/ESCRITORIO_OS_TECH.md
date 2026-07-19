@@ -2,7 +2,7 @@
 
 > Referencia profunda y accionable del portal. Para el panorama/filosofía, ver `PROJECT_CONTEXT.md`.
 > Aquí está el **cómo**: arquitectura, API interna, cómo extender, gotchas y cómo testear.
-> **Última actualización:** 2026-07-18 — ARCADE MUTANTE con cuatro máquinas jugables.
+> **Última actualización:** 2026-07-18 — ARCADE MUTANTE y PSYCHO_PINBALL.
 
 **Qué es:** `index.html` es un **escritorio Windows 98 acid** autocontenido (HTML + CSS + JS inline, **cero dependencias externas**, solo fuentes de Google). Envuelve y da acceso a todos los artefactos del códice como un "sistema operativo". El portal scrolleable anterior se preservó como `inicio-classic.html`.
 
@@ -72,6 +72,7 @@ Carpetas, README, ACERCA_DE_MI, Mi PC, TAREAS y diálogos de error siguen siendo
 | PONG_MUTANTE.exe | `openPongMutante()` → `launchCatalogItem()` | 820×680 + autofoco |
 | MINAS_666.exe | `openMinas666()` → `launchCatalogItem()` | 760×720 + autofoco |
 | GLITCH_INVADERS.exe | `openGlitchInvaders()` → `launchCatalogItem()` | 840×700 + autofoco |
+| PSYCHO_PINBALL.exe | `openPsychoPinball()` → `launchCatalogItem()` | 760×720 + autofoco |
 
 ---
 
@@ -392,7 +393,7 @@ scripts inline de las siete superficies modificadas.
 
 ---
 
-## 7n. ARCADE MUTANTE — núcleo y cuatro máquinas
+## 7n. ARCADE MUTANTE — núcleo y cinco máquinas
 
 ### Núcleo local (`games/shared/arcade-core.js`)
 
@@ -470,6 +471,23 @@ VOMIT.SH: `minas`, `minas666` y `buscaminas` abren la app.
 VOMIT.SH: `invaders`, `glitchinvaders` e `invasores` abren la app. `juegos`/`game`/`arcade` continúa abriendo la
 carpeta completa.
 
+### PSYCHO_PINBALL
+
+`games/psycho-pinball.html` es una mesa Canvas vertical 600×900 con física local y render responsive:
+
+- tres bolas, gravedad, paredes, carril de lanzamiento, drenaje, flippers como segmentos y bumpers circulares;
+- dos monstruos, dos guardianes de hueso y una calavera central como colliders funcionales;
+- mantener/soltar espacio, flecha abajo o el botón LANZAR controla la potencia del plunger;
+- `A·C·I·D` abre la mandíbula; la siguiente colisión con la calavera activa `PSICOSIS` y agrega dos bolas;
+- las runas ACID redirigen hacia el centro y abajo, evitando que el rebote de entrada encierre la bola en una esquina;
+- el empujón altera la trayectoria, acumula calor y bloquea los flippers temporalmente al provocar `TILT`;
+- el carril transforma parte del impulso vertical en deriva lateral; dos slingshots protegen los flancos inferiores y
+  un único ball-save devuelve la bola si cae antes de 4,2 segundos;
+- puntaje, récord, mejor infección y psicosis acumuladas viven en `localStorage["esquizoPsychoPinballV1"]`;
+- ventana 760×720 con autofoco y sin scroll; móvil usa mesa de 286×429 y controles touch visibles.
+
+VOMIT.SH: `pinball`, `psychopinball` y `mesa` abren la app.
+
 ---
 
 ## 8. Identidad lingüística — regla global
@@ -511,7 +529,7 @@ Checklist:
 - Click "volver" dentro del artefacto → cierra la ventana
 - Navegación interna de Psycho-bot se queda en la ventana
 - **FREE_RADIO:** sintonizar un canal, cambiar los 4 presets, activar CAOS, comprobar B/M/H/Σ y fallback `PULSO GENERATIVO`
-- **ARCADE MUTANTE:** abrir JUEGOS, iniciar las cuatro máquinas con teclado/touch, confirmar pausa al perder foco y ventanas sin scroll.
+- **ARCADE MUTANTE:** abrir JUEGOS, iniciar las cinco máquinas con teclado/touch, confirmar pausa al perder foco y ventanas sin scroll.
 - **NEXO:** abrir desde el icono único, lanzar MSN/ORACULO/VOID/TERMINAL/DENTAKORV/GRANJA, verificar foco y pulso.
 - **Memoria transversal:** fijar una señal, revisar la vista previa de dos entidades, pausar y confirmar que desaparece del contexto.
 - **Consola:** cambiar entre ventanas y confirmar que `BroadcastChannel`, `localStorage` y `postMessage` no producen errores.

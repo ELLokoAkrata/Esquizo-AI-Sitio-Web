@@ -666,6 +666,7 @@ const FS = {
     {label:"PONG_MUTANTE.exe", file:"games/pong-mutante.html", icon:"🏓", desc:"tu pulso contra el daemon — primero a 7", window:{w:820,h:680,autofocus:true}},
     {label:"MINAS_666.exe", file:"games/minas-666.html", icon:"💣", desc:"buscaminas corrupto — el primer pulso no mata", window:{w:760,h:720,autofocus:true}},
     {label:"GLITCH_INVADERS.exe", file:"games/glitch-invaders.html", icon:"🛸", desc:"shooter mutante — oleadas, bombas y fuego sostenido", window:{w:840,h:700,autofocus:true}},
+    {label:"PSYCHO_PINBALL.exe", file:"games/psycho-pinball.html", icon:"💀", desc:"mesa psycho acid — monstruos, calaveras y multibola", window:{w:760,h:720,autofocus:true}},
   ]},
 };
 
@@ -1112,6 +1113,7 @@ function openBrickGame(){ return launchCatalogItem(findCatalogItem("games/brick-
 function openPongMutante(){ return launchCatalogItem(findCatalogItem("games/pong-mutante.html")); }
 function openMinas666(){ return launchCatalogItem(findCatalogItem("games/minas-666.html")); }
 function openGlitchInvaders(){ return launchCatalogItem(findCatalogItem("games/glitch-invaders.html")); }
+function openPsychoPinball(){ return launchCatalogItem(findCatalogItem("games/psycho-pinball.html")); }
 function openArcade(){ return openFolder("JUEGOS"); }
 function openGlitchCam(){ return openApp("glitch-cam-web/index.html","GLITCH.CAM","📹",{w:740,h:500}); }
 function openIPTV(){ return openApp("iptv/index.html","FREE_RADIO.exe","📻",{w:860,h:640}); }
@@ -2156,6 +2158,7 @@ function openTerminal(){
     pong:openPongMutante, pongmutante:openPongMutante,
     minas:openMinas666, minas666:openMinas666, buscaminas:openMinas666,
     invaders:openGlitchInvaders, glitchinvaders:openGlitchInvaders, invasores:openGlitchInvaders,
+    pinball:openPsychoPinball, psychopinball:openPsychoPinball, mesa:openPsychoPinball,
     juegos:openArcade, game:openArcade, arcade:openArcade,
     glitchcam:openGlitchCam, cam:openGlitchCam,
     iptv:openIPTV, tv:openIPTV, glitchtv:openIPTV, television:openIPTV, radio:openIPTV, freeradio:openIPTV
@@ -2183,6 +2186,7 @@ function openTerminal(){
         await type("  pong · pongmutante    — tu pulso contra el daemon","corrupt");
         await type("  minas · minas666 · buscaminas  — campo minado corrupto","corrupt");
         await type("  invaders · invasores  — shooter por oleadas mutantes","corrupt");
+        await type("  pinball · mesa        — monstruos, calaveras y multibola","corrupt");
         await type("  glitchcam · cam  — glitch en vivo sobre webcam","corrupt");
         await type("  iptv · tv · glitchtv · radio  — radio libre con glitch en tiempo real","corrupt");
         await type("  hack · matrix · acid  — corromper la pantalla","acid");
@@ -2264,8 +2268,10 @@ function openTerminal(){
         await type("abriendo MINAS_666.exe — el primer pulso no mata; los siguientes no prometen nada...","acid"); openMinas666(); break;
       case "invaders": case "glitchinvaders": case "glitch-invaders": case "invasores":
         await type("abriendo GLITCH_INVADERS.exe — el enjambre entra por la fisura...","acid"); openGlitchInvaders(); break;
+      case "pinball": case "psychopinball": case "psycho-pinball": case "mesa":
+        await type("abriendo PSYCHO_PINBALL.exe — alimenta la mesa de los monstruos...","acid"); openPsychoPinball(); break;
       case "juegos": case "game": case "arcade":
-        await type("abriendo ARCADE MUTANTE — cuatro máquinas despiertas, ninguna se queda quieta...","acid"); openArcade(); break;
+        await type("abriendo ARCADE MUTANTE — cinco máquinas despiertas, ninguna se queda quieta...","acid"); openArcade(); break;
       case "glitchcam": case "glitch-cam": case "cam":
         await type("abriendo GLITCH.CAM — corrompiendo la realidad en vivo...","corrupt"); openGlitchCam(); break;
       case "iptv": case "tv": case "glitchtv": case "television": case "televisión": case "radio": case "freeradio":
@@ -2454,6 +2460,7 @@ function buildStart(){
     {ic:"🏓",lb:"PONG_MUTANTE (tú contra el daemon)",fn:openPongMutante},
     {ic:"💣",lb:"MINAS_666 (campo de infección)",fn:openMinas666},
     {ic:"🛸",lb:"GLITCH_INVADERS (shooter por oleadas)",fn:openGlitchInvaders},
+    {ic:"💀",lb:"PSYCHO_PINBALL (mesa de los monstruos)",fn:openPsychoPinball},
     {ic:"›_",lb:"VOMIT.SH (terminal)",fn:openTerminal},
     {ic:"🖥",lb:"Mi PC",fn:openMiPC},
     {ic:"💾",lb:"MIS_ARCHIVOS",fn:()=>openMisArchivos()},

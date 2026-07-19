@@ -50,6 +50,10 @@ corrige o se marca como histórica; no se acumulan contradicciones silenciosas.
   tap/clic revela, pulsación larga/clic derecho/F marca y Enter ejecuta chord. Dificultades: 8×8/10, 12×12/22 y 14×14/36.
 - `GLITCH_INVADERS.exe` es un shooter infinito por oleadas: movimiento continuo, fuego sostenido, bomba limitada,
   cuatro patrones cíclicos y tres intensidades. Sus aliases son `invaders`, `glitchinvaders` e `invasores`.
+- `PSYCHO_PINBALL.exe` es una mesa vertical con física local: el lanzador se carga al mantener y dispara al soltar;
+  `ACID` abre la calavera y su impacto activa multibola. La entrada convierte impulso vertical en deriva lateral,
+  los slingshots inferiores son colliders y cada bola dispone de un solo salvado si drena antes de 4,2 s. Sus aliases
+  son `pinball`, `psychopinball` y `mesa`.
 - NEXO comparte actividad relevante y memoria fijada, pero mantiene separados los historiales completos y las voces.
 
 ## APIs y entorno
@@ -93,6 +97,9 @@ Events, tolerancia de movimiento y supresión del tap posterior; no mezclarla co
 
 GLITCH_INVADERS cerró el primer conjunto de máquinas con un shooter Canvas por oleadas. Reutiliza el núcleo sin
 agregar abstracciones: formaciones, proyectiles, colisiones y progresión permanecen dentro del artefacto.
+
+PSYCHO_PINBALL abre la Fase 8 con mesa vertical y física propia. Monstruos y calaveras son colliders funcionales;
+el contrato de control exige presión continua para flippers y carga/soltado para el lanzador, tanto en teclado como touch.
 
 ### 2026-07-17 — Base de ARCADE MUTANTE
 
